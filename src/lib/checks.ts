@@ -302,20 +302,73 @@ export function analyzeOnPage($: cheerio.CheerioAPI, baseUrl: string): CategoryR
     checks.push(check("pass", "H1 სათაური", `H1 ერთია: "${h1Text}"`, undefined, h1Text));
   }
 
-  const h2 = $("h2").length;
-  const h3 = $("h3").length;
-  const h4 = $("h4").length;
-  const headingStructure = `H2: ${h2}, H3: ${h3}, H4: ${h4}`;
-  if (h2 === 0 && h3 === 0) {
-    checks.push(check("warn", "სათაურების იერარქია", "H2-H6 სათაურები არ არის", "დაამატეთ ქვესათაურები კონტენტის სტრუქტურირებისთვის."));
-  } else {
-    checks.push(check("pass", "სათაურების იერარქია", headingStructure, undefined, headingStructure));
+  // Walk headings in document order to detect skipped levels (H1 → H3 etc.)
+  // Counting alone misses real accessibility issues — screen readers rely
+  // on contiguous nesting.
+  const headingLevels: number[] = [];
+  const headingCounts: Record<string, number> = {
+    h1: 0, h2: 0, h3: 0, h4: 0, h5: 0, h6: 0,
+  };
+  $("h1, h2, h3, h4, h5, h6").each((_, el) => {
+    const tag = (el as { tagName?: string }).tagName ?? "";
+    const level = parseInt(tag.slice(1), 10);
+    if (level >= 1 && level <= 6) {
+      headingLevels.push(level);
+      headingCounts[`h${level}`]++;
+    }
+  });
+
+  const skipped: string[] = [];
+  for (let i = 1; i < headingLevels.length; i++) {
+    const prev = headingLevels[i - 1];
+    const cur = headingLevels[i];
+    if (cur > prev + 1) {
+      skipped.push(`H${prev}→H${cur}`);
+    }
   }
 
+  const headingSummary =
+    `H1: ${headingCounts.h1}, H2: ${headingCounts.h2}, H3: ${headingCounts.h3}, H4: ${headingCounts.h4}` +
+    (headingCounts.h5 > 0 ? `, H5: ${headingCounts.h5}` : "") +
+    (headingCounts.h6 > 0 ? `, H6: ${headingCounts.h6}` : "");
+
+  if (headingCounts.h2 === 0 && headingCounts.h3 === 0) {
+    checks.push(
+      check(
+        "warn",
+        "სათაურების იერარქია",
+        "H2-H6 სათაურები არ არის",
+        "დაამატეთ ქვესათაურები კონტენტის სტრუქტურირებისთვის.",
+        headingSummary
+      )
+    );
+  } else if (skipped.length > 0) {
+    checks.push(
+      check(
+        "warn",
+        "სათაურების იერარქია",
+        `${headingSummary} — გადახტომები: ${skipped.slice(0, 3).join(", ")}`,
+        "სათაურების დონეები გამოტოვებული გაქვთ — ეკრანის წამკითხავი ხელსაწყო ვერ ცნობს სტრუქტურას სწორად. გამოიყენეთ მხოლოდ მომიჯნავე დონეები (H1→H2→H3).",
+        skipped
+      )
+    );
+  } else {
+    checks.push(
+      check("pass", "სათაურების იერარქია", headingSummary, undefined, headingSummary)
+    );
+  }
+
+  // Three-bucket ALT analysis:
+  //   descriptiveAlt — alt="actual text"  → good for content images
+  //   emptyAlt       — alt=""             → correct only for decorative images
+  //   missingAlt     — no alt attribute   → always wrong (screen readers read filename)
+  // Previous code lumped empty + descriptive together as "with alt", masking
+  // the common mistake of putting alt="" on content images.
   const allImages = $("img");
   let totalImages = 0;
-  let withAlt = 0;
-  let withoutAlt = 0;
+  let descriptiveAlt = 0;
+  let emptyAlt = 0;
+  let missingAlt = 0;
   let lazyImages = 0;
   let modernFormat = 0;
   const missingAltSrcs: string[] = [];
@@ -334,11 +387,13 @@ export function analyzeOnPage($: cheerio.CheerioAPI, baseUrl: string): CategoryR
 
     totalImages++;
     const alt = $el.attr("alt");
-    if (alt !== undefined) {
-      withAlt++;
-    } else {
-      withoutAlt++;
+    if (alt === undefined) {
+      missingAlt++;
       if (missingAltSrcs.length < 5) missingAltSrcs.push(src);
+    } else if (alt.trim() === "") {
+      emptyAlt++;
+    } else {
+      descriptiveAlt++;
     }
     const loading = $el.attr("loading");
     if (loading === "lazy") lazyImages++;
@@ -350,6 +405,11 @@ export function analyzeOnPage($: cheerio.CheerioAPI, baseUrl: string): CategoryR
     ? " (HTML-ში მოცემულ სურათებზე — JavaScript-ით დატვირთული სურათები არ ჩანს ბოტებისთვის)"
     : "";
 
+  const altRatio = `${descriptiveAlt}/${totalImages}`;
+  const truncSrcs = missingAltSrcs.map((s) =>
+    s.length > 80 ? s.slice(0, 80) + "…" : s
+  );
+
   if (totalImages === 0) {
     checks.push(
       check(
@@ -358,26 +418,40 @@ export function analyzeOnPage($: cheerio.CheerioAPI, baseUrl: string): CategoryR
         "HTML-ში სურათები არ მოიძებნა — შესაძლოა საიტი JavaScript-ით ხატავს კონტენტს, რასაც ჩვენი სკანერი ვერ ხედავს."
       )
     );
-  } else if (withoutAlt === 0) {
+  } else if (missingAlt === 0 && emptyAlt === 0) {
+    // All images have descriptive alt
     checks.push(
       check(
         "pass",
         "ALT ტექსტები",
-        `ყველა ${totalImages} სურათს აქვს ALT ატრიბუტი ✓${jsNote}`,
+        `ყველა ${totalImages} სურათს აქვს აღწერითი ALT ✓${jsNote}`,
         undefined,
-        `${withAlt}/${totalImages}`
+        altRatio
       )
     );
-  } else if (withoutAlt / totalImages > 0.5) {
+  } else if (missingAlt === 0 && emptyAlt > 0) {
+    // No missing, but some empty — could be decorative (correct) or
+    // content image with wrong empty alt (false-pass risk). Warn so
+    // the auditor checks in person.
+    checks.push(
+      check(
+        "warn",
+        "ALT ტექსტები",
+        `${emptyAlt}/${totalImages} სურათს ცარიელი ALT (alt="") აქვს${jsNote}.`,
+        "ცარიელი ALT სწორია მხოლოდ წმინდა დეკორატიული სურათებისთვის (ფონი, separator). თუ ეს კონტენტ-სურათია (პროდუქტი, ლოგო, ილუსტრაცია) — შეავსეთ აღწერითი ტექსტი.",
+        `აღწერითი: ${descriptiveAlt}, ცარიელი: ${emptyAlt}, ამოკლული: 0 / სულ ${totalImages}`
+      )
+    );
+  } else if (missingAlt / totalImages > 0.5) {
     checks.push(
       check(
         "fail",
         "ALT ტექსტები",
-        `${withoutAlt}/${totalImages} სურათს არ აქვს alt ატრიბუტი${jsNote}.`,
-        "დაამატეთ აღწერითი ALT ტექსტი — accessibility + SEO. დეკორატიული სურათებისთვის გამოიყენეთ alt=\"\" (ცარიელი).",
-        missingAltSrcs.length > 0
-          ? missingAltSrcs.map((s) => s.length > 80 ? s.slice(0, 80) + "…" : s)
-          : `${withAlt}/${totalImages}`
+        `${missingAlt}/${totalImages} სურათს alt ატრიბუტი საერთოდ არ აქვს${jsNote}${
+          emptyAlt > 0 ? `, ${emptyAlt} კი ცარიელი ALT-ით` : ""
+        }.`,
+        "დაამატეთ აღწერითი alt ტექსტი — accessibility + SEO. დეკორატიული სურათებისთვის alt=\"\" (ცარიელი) სწორია; კონტენტ-სურათისთვის — სავალდებულო აღწერა.",
+        truncSrcs.length > 0 ? truncSrcs : altRatio
       )
     );
   } else {
@@ -385,11 +459,11 @@ export function analyzeOnPage($: cheerio.CheerioAPI, baseUrl: string): CategoryR
       check(
         "warn",
         "ALT ტექსტები",
-        `${withoutAlt}/${totalImages} სურათს არ აქვს alt ატრიბუტი${jsNote}.`,
-        "შეავსეთ დარჩენილი ALT-ები. დეკორატიული სურათებისთვის გამოიყენეთ alt=\"\" (ცარიელი).",
-        missingAltSrcs.length > 0
-          ? missingAltSrcs.map((s) => s.length > 80 ? s.slice(0, 80) + "…" : s)
-          : `${withAlt}/${totalImages}`
+        `${missingAlt}/${totalImages} სურათს alt ატრიბუტი არ აქვს${jsNote}${
+          emptyAlt > 0 ? `, ${emptyAlt} ცარიელი ALT-ით` : ""
+        }.`,
+        "შეავსეთ დარჩენილი ALT-ები. დეკორატიული სურათებისთვის alt=\"\" (ცარიელი).",
+        truncSrcs.length > 0 ? truncSrcs : altRatio
       )
     );
   }
@@ -407,46 +481,94 @@ export function analyzeOnPage($: cheerio.CheerioAPI, baseUrl: string): CategoryR
     }
   }
 
-  let internal = 0;
-  let external = 0;
+  // Dedupe links (same URL counted once) and treat subdomains of the same
+  // registrable domain as internal — blog.coridoor.ge and coridoor.ge
+  // belong to the same site.
+  const uniqueInternal = new Set<string>();
+  const uniqueExternal = new Set<string>();
   let host = "";
   try {
-    host = new URL(baseUrl).hostname;
+    host = new URL(baseUrl).hostname.replace(/^www\./, "");
   } catch {
     host = "";
   }
+
+  const sameSite = (a: string, b: string): boolean => {
+    if (!a || !b) return false;
+    const aClean = a.replace(/^www\./, "");
+    const bClean = b.replace(/^www\./, "");
+    return (
+      aClean === bClean ||
+      aClean.endsWith("." + bClean) ||
+      bClean.endsWith("." + aClean)
+    );
+  };
+
   $("a[href]").each((_, el) => {
     const href = $(el).attr("href") ?? "";
-    if (!href || href.startsWith("#") || href.startsWith("javascript:") || href.startsWith("mailto:") || href.startsWith("tel:")) return;
+    if (
+      !href ||
+      href.startsWith("#") ||
+      href.startsWith("javascript:") ||
+      href.startsWith("mailto:") ||
+      href.startsWith("tel:")
+    )
+      return;
     try {
       const full = new URL(href, baseUrl);
-      if (full.hostname === host) internal++;
-      else external++;
+      full.hash = "";
+      const normalized = full.toString();
+      if (sameSite(full.hostname, host)) {
+        uniqueInternal.add(normalized);
+      } else {
+        uniqueExternal.add(normalized);
+      }
     } catch {
       // ignore malformed
     }
   });
 
+  const internal = uniqueInternal.size;
+  const external = uniqueExternal.size;
+
   if (internal < 3) {
-    checks.push(check("warn", "შიდა ბმულები", `მხოლოდ ${internal} შიდა ბმული`, "დაამატეთ შიდა ბმულები სტრუქტურისა და topical authority-სთვის."));
+    checks.push(check("warn", "შიდა ბმულები", `მხოლოდ ${internal} უნიკალური შიდა ბმული`, "დაამატეთ შიდა ბმულები სტრუქტურისა და topical authority-სთვის."));
   } else {
-    checks.push(check("pass", "შიდა ბმულები", `${internal} შიდა ბმული`, undefined, internal));
+    checks.push(check("pass", "შიდა ბმულები", `${internal} უნიკალური შიდა ბმული (subdomain-ებიც)`, undefined, internal));
   }
 
   if (external === 0) {
     checks.push(check("info", "გარე ბმულები", "გარე ბმულები არ არის", "ავტორიტეტულ წყაროებზე ბმულები ნდობას ზრდის."));
   } else {
-    checks.push(check("pass", "გარე ბმულები", `${external} გარე ბმული`, undefined, external));
+    checks.push(check("pass", "გარე ბმულები", `${external} უნიკალური გარე ბმული`, undefined, external));
   }
 
-  const bodyText = $("body").text().replace(/\s+/g, " ").trim();
-  const wordCount = bodyText.split(" ").filter((w) => w.length > 1).length;
+  // Word count over CONTENT only — strip nav/header/footer/aside/script/
+  // style/noscript before counting. Prefer <main>/<article> as content
+  // root if the site is structured semantically; fall back to <body>.
+  // Previous version counted entire body (incl. menus, cookie banners,
+  // copyright) which inflated counts wildly on small sites.
+  const $content = $("main").first().length > 0
+    ? $("main").first()
+    : $("article").first().length > 0
+    ? $("article").first()
+    : $("body");
+  const $contentClone = $content.clone();
+  $contentClone
+    .find(
+      "nav, header, footer, aside, script, style, noscript, " +
+        "[role='navigation'], [role='banner'], [role='contentinfo']"
+    )
+    .remove();
+  const contentText = $contentClone.text().replace(/\s+/g, " ").trim();
+  const wordCount = contentText.split(" ").filter((w) => w.length > 1).length;
+
   if (wordCount < 300) {
-    checks.push(check("warn", "კონტენტის მოცულობა", `${wordCount} სიტყვა — ცოტაა`, "მინიმუმ 600-1000 სიტყვა, იდეალურად 1500+.", wordCount));
+    checks.push(check("warn", "კონტენტის მოცულობა", `${wordCount} სიტყვა — ცოტაა (nav/footer გამოთიშულია)`, "მინიმუმ 600-1000 სიტყვა, იდეალურად 1500+.", wordCount));
   } else if (wordCount < 600) {
-    checks.push(check("warn", "კონტენტის მოცულობა", `${wordCount} სიტყვა`, "ვრცელი კონტენტი (1500+ სიტყვა) ფრიად გაგიადვილებთ რანკინგს კონკურენტულ keyword-ებზე.", wordCount));
+    checks.push(check("warn", "კონტენტის მოცულობა", `${wordCount} სიტყვა (nav/footer გამოთიშულია)`, "ვრცელი კონტენტი (1500+ სიტყვა) ფრიად გაგიადვილებთ რანკინგს კონკურენტულ keyword-ებზე.", wordCount));
   } else {
-    checks.push(check("pass", "კონტენტის მოცულობა", `${wordCount} სიტყვა`, undefined, wordCount));
+    checks.push(check("pass", "კონტენტის მოცულობა", `${wordCount} სიტყვა (nav/footer გამოთიშულია)`, undefined, wordCount));
   }
 
   return { name: "On-Page SEO", icon: "FileText", checks };
