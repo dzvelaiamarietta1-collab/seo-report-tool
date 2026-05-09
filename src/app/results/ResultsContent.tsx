@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, ReactNode } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
@@ -50,6 +50,7 @@ import {
   type PriorityItem,
 } from "@/lib/checkMeta";
 import { storageKey } from "@/lib/presentation";
+import { calculateSummary } from "@/lib/summary";
 
 const CATEGORY_ICONS: Record<string, LucideIcon> = {
   Wrench,
@@ -1069,7 +1070,9 @@ interface AnalysisState {
   categories: Partial<AnalysisResult["categories"]>;
   summary: AnalysisResult["summary"] | null;
   stages: StageState[];
-  done: boolean;
+  done: boolean; // /api/analyze stream complete
+  pagespeedFetched: boolean; // /api/pagespeed responded (ok or error)
+  pagespeedSkipped: boolean; // bot-protected → pagespeed not run
   error: string | null;
 }
 
@@ -1087,6 +1090,8 @@ const initialState = (): AnalysisState => ({
   summary: null,
   stages: initialStages(),
   done: false,
+  pagespeedFetched: false,
+  pagespeedSkipped: false,
   error: null,
 });
 
@@ -1096,6 +1101,21 @@ export default function ResultsContent() {
   const [state, setState] = useState<AnalysisState>(initialState);
   const [filter, setFilter] = useState<CheckStatus | null>(null);
 
+  // Recompute summary client-side because /api/pagespeed lands AFTER
+  // /api/analyze's `complete` event — the server's pre-pagespeed summary
+  // would otherwise miss the performance category.
+  const summary = useMemo(() => {
+    if (!state.done) return null;
+    if (Object.keys(state.categories).length === 0) return null;
+    return calculateSummary(state.categories);
+  }, [state.done, state.categories]);
+
+  // "fully done" = analyze stream complete AND pagespeed terminal (or
+  // skipped because of bot-protection). Export buttons gate on this so
+  // PDF/Presentation never miss the performance section.
+  const fullyDone =
+    state.done && (state.pagespeedSkipped || state.pagespeedFetched);
+
   useEffect(() => {
     if (!url) {
       setState((s) => ({ ...s, error: "URL არ არის მოწოდებული" }));
@@ -1104,6 +1124,7 @@ export default function ResultsContent() {
 
     setState(initialState());
     const ac = new AbortController();
+    let pagespeedFired = false;
 
     const applyEvent = (event: StreamEvent) => {
       setState((prev) => {
@@ -1162,6 +1183,69 @@ export default function ResultsContent() {
       });
     };
 
+    const firePagespeed = async (targetUrl: string) => {
+      setState((prev) => ({
+        ...prev,
+        stages: prev.stages.map((s) =>
+          s.id === "pagespeed"
+            ? { ...s, status: "running" as const, label: STAGE_LABELS.pagespeed }
+            : s
+        ),
+      }));
+
+      const start = Date.now();
+      try {
+        const res = await fetch(
+          `/api/pagespeed?url=${encodeURIComponent(targetUrl)}`,
+          { signal: ac.signal }
+        );
+        const data = (await res.json()) as {
+          category?: CategoryResult;
+          error?: string;
+        };
+        const durationMs = Date.now() - start;
+        setState((prev) => {
+          const ok = !!data.category;
+          return {
+            ...prev,
+            stages: prev.stages.map((s) =>
+              s.id !== "pagespeed"
+                ? s
+                : ok
+                ? { ...s, status: "done" as const, durationMs }
+                : {
+                    ...s,
+                    status: "error" as const,
+                    durationMs,
+                    error: data.error ?? "PageSpeed შეცდომა",
+                  }
+            ),
+            categories: ok
+              ? { ...prev.categories, performance: data.category }
+              : prev.categories,
+            pagespeedFetched: true,
+          };
+        });
+      } catch (e) {
+        if (ac.signal.aborted) return;
+        const durationMs = Date.now() - start;
+        setState((prev) => ({
+          ...prev,
+          stages: prev.stages.map((s) =>
+            s.id === "pagespeed"
+              ? {
+                  ...s,
+                  status: "error" as const,
+                  durationMs,
+                  error: e instanceof Error ? e.message : "ქსელის შეცდომა",
+                }
+              : s
+          ),
+          pagespeedFetched: true,
+        }));
+      }
+    };
+
     const consume = async () => {
       let response: Response;
       try {
@@ -1213,10 +1297,25 @@ export default function ResultsContent() {
           for (const line of lines) {
             const trimmed = line.trim();
             if (!trimmed) continue;
+            let event: StreamEvent;
             try {
-              applyEvent(JSON.parse(trimmed) as StreamEvent);
+              event = JSON.parse(trimmed) as StreamEvent;
             } catch (parseErr) {
               console.warn("Failed to parse stream event", trimmed, parseErr);
+              continue;
+            }
+            applyEvent(event);
+
+            // Fire /api/pagespeed in parallel after we know whether
+            // the site is bot-protected (skip pagespeed in that case —
+            // PSI would just fail on a challenge page).
+            if (event.type === "meta" && !pagespeedFired) {
+              pagespeedFired = true;
+              if (event.botProtection.detected) {
+                setState((s) => ({ ...s, pagespeedSkipped: true }));
+              } else {
+                void firePagespeed(event.url);
+              }
             }
           }
         }
@@ -1255,7 +1354,7 @@ export default function ResultsContent() {
   const handlePrint = () => window.print();
 
   const handlePresentation = () => {
-    if (!state.meta || !state.summary || !state.done) return;
+    if (!state.meta || !summary || !fullyDone) return;
     const targetUrl = state.meta.finalUrl ?? state.meta.url;
     const fullAnalysis = {
       url: state.meta.url,
@@ -1266,7 +1365,7 @@ export default function ResultsContent() {
       responseTimeMs: state.meta.responseTimeMs,
       botProtection: state.meta.botProtection,
       categories: state.categories,
-      summary: state.summary,
+      summary,
     };
     const payload = {
       url: targetUrl,
@@ -1329,7 +1428,6 @@ export default function ResultsContent() {
   }
 
   const meta = state.meta!;
-  const summary = state.summary;
   const blocked = meta.botProtection.detected;
   const fixContext = buildFixContext(meta.url, meta.finalUrl);
   const statusLabel = !summary
@@ -1365,7 +1463,7 @@ export default function ResultsContent() {
             <button
               type="button"
               onClick={handlePresentation}
-              disabled={!state.done}
+              disabled={!fullyDone}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 text-xs text-zinc-700 dark:text-zinc-300 hover:border-purple-500/40 hover:text-purple-700 dark:hover:text-purple-400 hover:bg-purple-500/5 transition disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <Presentation className="w-3.5 h-3.5" />
@@ -1374,7 +1472,7 @@ export default function ResultsContent() {
             <button
               type="button"
               onClick={handlePrint}
-              disabled={!state.done}
+              disabled={!fullyDone}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 text-xs text-zinc-700 dark:text-zinc-300 hover:border-purple-500/40 hover:text-purple-700 dark:hover:text-purple-400 hover:bg-purple-500/5 transition disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <Download className="w-3.5 h-3.5" />
@@ -1560,7 +1658,18 @@ export default function ResultsContent() {
                   filter={filter}
                 />
               );
-            if (state.done) return null;
+            if (state.done) {
+              // Performance lands separately from /api/pagespeed — keep its
+              // placeholder visible until pagespeed terminates.
+              if (
+                key === "performance" &&
+                !state.pagespeedSkipped &&
+                !state.pagespeedFetched
+              ) {
+                return <CategoryPlaceholder key={key} categoryKey={key} />;
+              }
+              return null;
+            }
             return <CategoryPlaceholder key={key} categoryKey={key} />;
           })}
         </div>

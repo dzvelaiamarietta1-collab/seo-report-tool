@@ -8,9 +8,8 @@ import {
   analyzeOnPage,
   analyzeSchema,
   analyzeAiEra,
-  fetchPageSpeed,
-  calculateSummary,
 } from "@/lib/checks";
+import { calculateSummary } from "@/lib/summary";
 import { extractPreview } from "@/lib/preview";
 import {
   extractInternalLinks,
@@ -27,7 +26,10 @@ import type {
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-export const maxDuration = 60;
+// PageSpeed lives in its own /api/pagespeed route now — this route only
+// covers fast HTML-based analysis (5-15s typical). 30s gives safe margin
+// on Vercel Hobby (60s ceiling with Fluid Compute).
+export const maxDuration = 30;
 
 export async function GET(req: NextRequest) {
   const urlParam = req.nextUrl.searchParams.get("url");
@@ -172,19 +174,12 @@ export async function GET(req: NextRequest) {
             sendCategory("linkHealth", buildLinkHealthCategory(linkHealth));
           }
 
-          const performance = await stage(
-            "pagespeed",
-            "Google PageSpeed Insights (15-25 წამი)",
-            () => fetchPageSpeed(normalized)
-          );
-          if (performance) {
-            sendCategory("performance", performance);
-          }
+          // Performance / PageSpeed runs in /api/pagespeed in parallel from
+          // the client. Keeping it here would couple analyze's timeout to
+          // PSI's slow API and risk killing the whole pipeline on Hobby.
         }
 
-        const summary = calculateSummary({
-          categories: collected,
-        } as AnalysisResult);
+        const summary = calculateSummary(collected);
         send({ type: "complete", summary });
 
         controller.close();

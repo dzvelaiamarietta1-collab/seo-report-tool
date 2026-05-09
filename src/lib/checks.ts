@@ -1,6 +1,6 @@
 import * as cheerio from "cheerio";
 import axios, { AxiosResponse } from "axios";
-import type { CheckResult, CategoryResult, AnalysisResult, BotProtection } from "./types";
+import type { CheckResult, CategoryResult, BotProtection } from "./types";
 import { fetchPageWithBrowser } from "./browser";
 
 const UA =
@@ -732,22 +732,3 @@ export async function fetchPageSpeed(url: string): Promise<CategoryResult> {
   return { name: "Performance (Core Web Vitals)", icon: "Zap", checks };
 }
 
-export function calculateSummary(result: AnalysisResult): AnalysisResult["summary"] {
-  let passed = 0;
-  let warnings = 0;
-  let failed = 0;
-  let total = 0;
-
-  for (const cat of Object.values(result.categories)) {
-    for (const c of cat.checks) {
-      if (c.status === "info") continue;
-      total++;
-      if (c.status === "pass") passed++;
-      else if (c.status === "warn") warnings++;
-      else if (c.status === "fail") failed++;
-    }
-  }
-
-  const score = total === 0 ? 0 : Math.round(((passed + warnings * 0.5) / total) * 100);
-  return { score, passed, warnings, failed, totalChecks: total };
-}
