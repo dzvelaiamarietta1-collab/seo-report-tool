@@ -2,6 +2,7 @@ import * as cheerio from "cheerio";
 import axios, { AxiosResponse } from "axios";
 import type { CheckResult, CategoryResult, BotProtection } from "./types";
 import { fetchPageWithBrowser } from "./browser";
+import { inventorySchema } from "./schemaTypes";
 
 const UA =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36";
@@ -453,38 +454,46 @@ export function analyzeOnPage($: cheerio.CheerioAPI, baseUrl: string): CategoryR
 
 export function analyzeSchema($: cheerio.CheerioAPI): CategoryResult {
   const checks: CheckResult[] = [];
+  const inventory = inventorySchema($);
 
-  const jsonLdScripts = $('script[type="application/ld+json"]');
-  const types: string[] = [];
-  jsonLdScripts.each((_, el) => {
-    try {
-      const data = JSON.parse($(el).html() ?? "{}");
-      const items = Array.isArray(data) ? data : [data];
-      for (const item of items) {
-        if (item && typeof item === "object") {
-          if (item["@type"]) {
-            const t = Array.isArray(item["@type"]) ? item["@type"].join(", ") : item["@type"];
-            types.push(t);
-          }
-          if (item["@graph"] && Array.isArray(item["@graph"])) {
-            for (const g of item["@graph"]) {
-              if (g["@type"]) {
-                const t = Array.isArray(g["@type"]) ? g["@type"].join(", ") : g["@type"];
-                types.push(t);
-              }
-            }
-          }
-        }
-      }
-    } catch {
-      // ignore parse errors
-    }
-  });
-
-  if (jsonLdScripts.length === 0) {
-    checks.push(check("warn", "Schema Markup (JSON-LD)", "JSON-LD სტრუქტურირებული მონაცემები ვერ მოიძებნა", "დაამატეთ JSON-LD: Organization, Article, Product, FAQ — AI Overviews-ისთვის კრიტიკულია 2026-ში."));
+  if (!inventory.anyStructuredData) {
+    checks.push(
+      check(
+        "warn",
+        "Schema Markup (JSON-LD)",
+        "სტრუქტურირებული მონაცემები ვერ მოიძებნა (არც JSON-LD, არც microdata)",
+        "დაამატეთ JSON-LD: Organization, Article, Product, FAQ — AI Overviews-ისთვის კრიტიკულია 2026-ში."
+      )
+    );
+  } else if (inventory.jsonLdBlocks > 0) {
+    const note =
+      inventory.microdataBlocks > 0
+        ? ` + ${inventory.microdataBlocks} microdata`
+        : "";
+    checks.push(
+      check(
+        "pass",
+        "Schema Markup (JSON-LD)",
+        `${inventory.jsonLdBlocks} JSON-LD ბლოკი${note}, ტიპები: ${
+          inventory.types.join(", ") || "უცნობი"
+        }`,
+        undefined,
+        inventory.types
+      )
+    );
   } else {
-    checks.push(check("pass", "Schema Markup (JSON-LD)", `${jsonLdScripts.length} JSON-LD ბლოკი, ტიპები: ${types.join(", ") || "უცნობი"}`, undefined, types));
+    // Microdata-only: works for Google but JSON-LD is the recommended modern path.
+    checks.push(
+      check(
+        "warn",
+        "Schema Markup (JSON-LD)",
+        `${inventory.microdataBlocks} microdata ნოდი, JSON-LD არ არის. ტიპები: ${
+          inventory.types.join(", ") || "უცნობი"
+        }`,
+        "Google იღებს microdata-ს, მაგრამ JSON-LD რეკომენდებულია 2026-ისთვის — უფრო მარტივი მოვლა, AI ბოტები უკეთ კითხულობენ.",
+        inventory.types
+      )
+    );
   }
 
   const ogProps = ["og:title", "og:description", "og:image", "og:url", "og:type"];
@@ -516,36 +525,36 @@ export function analyzeAiEra($: cheerio.CheerioAPI, llmsTxt: boolean): CategoryR
       : check("warn", "llms.txt", "llms.txt ფაილი ვერ მოიძებნა", "შექმენით /llms.txt — ChatGPT, Claude, Perplexity-სთვის ახალი 2026 სტანდარტი.")
   );
 
-  const faqSchema = $('script[type="application/ld+json"]').toArray().some((el) => {
-    try {
-      const data = JSON.parse($(el).html() ?? "{}");
-      const items = Array.isArray(data) ? data : [data];
-      return items.some((it) => it["@type"] === "FAQPage" || (it["@graph"] && it["@graph"].some?.((g: { "@type"?: string }) => g["@type"] === "FAQPage")));
-    } catch {
-      return false;
-    }
-  });
+  const inventory = inventorySchema($);
 
   checks.push(
-    faqSchema
-      ? check("pass", "FAQ Schema", "FAQPage schema ნაპოვნია — AI Overviews-ისთვის ღონიერი სიგნალი ✓")
-      : check("info", "FAQ Schema", "FAQPage schema არ არის", "თუ გვერდზე კითხვა-პასუხია, FAQ schema მნიშვნელოვნად ზრდის AI Overviews-ში გამოჩენის შანსს.")
+    inventory.hasFAQPage
+      ? check(
+          "pass",
+          "FAQ Schema",
+          "FAQPage schema ნაპოვნია — AI Overviews-ისთვის ღონიერი სიგნალი ✓"
+        )
+      : check(
+          "info",
+          "FAQ Schema",
+          "FAQPage schema არ არის",
+          "თუ გვერდზე კითხვა-პასუხია, FAQ schema მნიშვნელოვნად ზრდის AI Overviews-ში გამოჩენის შანსს."
+        )
   );
 
-  const orgSchema = $('script[type="application/ld+json"]').toArray().some((el) => {
-    try {
-      const data = JSON.parse($(el).html() ?? "{}");
-      const items = Array.isArray(data) ? data : [data];
-      return items.some((it) => it["@type"] === "Organization" || (it["@graph"] && it["@graph"].some?.((g: { "@type"?: string }) => g["@type"] === "Organization")));
-    } catch {
-      return false;
-    }
-  });
-
   checks.push(
-    orgSchema
-      ? check("pass", "Organization Schema", "Organization schema მითითებულია — ბრენდის ცნობადობა AI-სთვის ✓")
-      : check("warn", "Organization Schema", "Organization schema არ არის", "დაამატეთ Organization schema sameAs ლინკებით სოც.მედიასა და Wikipedia-ზე.")
+    inventory.hasOrganization
+      ? check(
+          "pass",
+          "Organization Schema",
+          "Organization (ან მისი ქვე-ტიპი — LocalBusiness, Store, FurnitureStore და ა.შ.) schema მითითებულია — ბრენდის ცნობადობა AI-სთვის ✓"
+        )
+      : check(
+          "warn",
+          "Organization Schema",
+          "Organization schema არ არის",
+          "დაამატეთ Organization (ან რელევანტური ქვე-ტიპი — LocalBusiness ლოკალური ბიზნესისთვის, Restaurant რესტორნისთვის, Store მაღაზიისთვის) sameAs ლინკებით სოც.მედიაზე."
+        )
   );
 
   const noscriptContent = $("noscript").text().trim();
