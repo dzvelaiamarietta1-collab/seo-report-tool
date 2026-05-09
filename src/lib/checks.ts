@@ -4,7 +4,7 @@ import type { CheckResult, CategoryResult, AnalysisResult, BotProtection } from 
 import { fetchPageWithBrowser } from "./browser";
 
 const UA =
-  "Mozilla/5.0 (compatible; SEOReportToolBot/0.1; +https://seo-report-tool.local)";
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36";
 const FETCH_TIMEOUT = 15000;
 
 async function fetchWithTimeout(
@@ -17,51 +17,97 @@ async function fetchWithTimeout(
       method: options.method ?? "GET",
       timeout: FETCH_TIMEOUT,
       maxRedirects: options.followRedirects === false ? 0 : 5,
-      headers: { "User-Agent": UA, Accept: "text/html,application/xhtml+xml,*/*" },
+      headers: {
+        "User-Agent": UA,
+        Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.9,ka;q=0.8",
+        "Accept-Encoding": "gzip, deflate, br",
+      },
       validateStatus: () => true,
       responseType: "text",
       transformResponse: [(data) => data],
+      decompress: true,
     });
   } catch {
     return null;
   }
 }
 
-export async function fetchPage(url: string): Promise<{
+type FetchPageResult = {
   html: string;
   status: number;
   headers: Record<string, string>;
   finalUrl: string;
   responseTimeMs: number;
-} | null> {
+};
+
+function lowercaseHeaders(
+  headers: Record<string, unknown>
+): Record<string, string> {
+  return Object.fromEntries(
+    Object.entries(headers).map(([k, v]) => [k.toLowerCase(), String(v)])
+  );
+}
+
+function looksThin(html: string): boolean {
+  if (html.length < 2000) return true;
+  const bodyMatch = html.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
+  if (!bodyMatch) return true;
+  const visibleText = bodyMatch[1]
+    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, "")
+    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  return visibleText.length < 200;
+}
+
+export async function fetchPage(url: string): Promise<FetchPageResult | null> {
+  // Phase 1: try axios first (fast path, ~1-3s).
+  // Most sites serve real HTML to plain HTTP — no need to spin up Chrome.
+  const start = Date.now();
+  const axiosRes = await fetchWithTimeout(url);
+  const axiosHtml =
+    axiosRes && typeof axiosRes.data === "string" ? axiosRes.data : "";
+  const axiosOk =
+    !!axiosRes && axiosRes.status >= 200 && axiosRes.status < 400;
+
+  if (axiosRes && axiosOk && !looksThin(axiosHtml)) {
+    return {
+      html: axiosHtml,
+      status: axiosRes.status,
+      headers: lowercaseHeaders(axiosRes.headers),
+      finalUrl: axiosRes.request?.res?.responseUrl ?? url,
+      responseTimeMs: Date.now() - start,
+    };
+  }
+
+  // Phase 2: fallback to headless browser for SPAs, bot-protected sites,
+  // or anything where raw HTML is too thin to analyze.
   const browserResult = await fetchPageWithBrowser(url);
   if (browserResult) {
     return {
       html: browserResult.html,
       status: browserResult.status,
-      headers: Object.fromEntries(
-        Object.entries(browserResult.headers).map(([k, v]) => [
-          k.toLowerCase(),
-          String(v),
-        ])
-      ),
+      headers: lowercaseHeaders(browserResult.headers),
       finalUrl: browserResult.finalUrl,
       responseTimeMs: browserResult.responseTimeMs,
     };
   }
 
-  const start = Date.now();
-  const res = await fetchWithTimeout(url);
-  if (!res) return null;
-  return {
-    html: typeof res.data === "string" ? res.data : "",
-    status: res.status,
-    headers: Object.fromEntries(
-      Object.entries(res.headers).map(([k, v]) => [k.toLowerCase(), String(v)])
-    ),
-    finalUrl: res.request?.res?.responseUrl ?? url,
-    responseTimeMs: Date.now() - start,
-  };
+  // Last resort: return whatever axios gave us, even if thin or 4xx —
+  // the route will detect bot-protection downstream.
+  if (axiosRes) {
+    return {
+      html: axiosHtml,
+      status: axiosRes.status,
+      headers: lowercaseHeaders(axiosRes.headers),
+      finalUrl: axiosRes.request?.res?.responseUrl ?? url,
+      responseTimeMs: Date.now() - start,
+    };
+  }
+
+  return null;
 }
 
 function check(
