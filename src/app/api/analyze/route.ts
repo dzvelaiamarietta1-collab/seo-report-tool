@@ -116,7 +116,12 @@ export async function GET(req: NextRequest) {
           "robots.txt, sitemap.xml, llms.txt შემოწმება",
           () => checkExtras(normalized)
         );
-        const safeExtras = extras ?? { robotsTxt: false, sitemap: false, llmsTxt: false };
+        const safeExtras = extras ?? {
+          robotsTxt: false,
+          sitemap: false,
+          llmsTxt: false,
+          httpToHttps: "n/a" as const,
+        };
 
         if (botProtection.detected) {
           await stage(

@@ -185,7 +185,7 @@ export function analyzeTechnical(
   status: number,
   headers: Record<string, string>,
   $: cheerio.CheerioAPI,
-  extras: { robotsTxt: boolean; sitemap: boolean; llmsTxt: boolean },
+  extras: ExtrasResult,
   options?: { skipHtmlChecks?: boolean }
 ): CategoryResult {
   const checks: CheckResult[] = [];
@@ -202,6 +202,35 @@ export function analyzeTechnical(
           "გადაიყვანეთ საიტი HTTPS-ზე SSL სერტიფიკატით — Google-ის რანკინგისთვის აუცილებელია."
         )
   );
+
+  if (isHttps) {
+    if (extras.httpToHttps === "ok") {
+      checks.push(
+        check(
+          "pass",
+          "HTTP→HTTPS Redirect",
+          "http:// ვერსია 301-ით გადადის https://-ზე ✓"
+        )
+      );
+    } else if (extras.httpToHttps === "missing") {
+      checks.push(
+        check(
+          "fail",
+          "HTTP→HTTPS Redirect",
+          "http:// ვერსია ცოცხალია და redirect-ი არ აქვს",
+          "მოაწყვეთ 301 redirect http:// → https:// (Apache: .htaccess; Nginx: server block; Cloudflare: Always Use HTTPS rule). სხვაგვარად Google ცალკე ინდექსაციას უკეთებს http ვერსიას — duplicate content."
+        )
+      );
+    } else {
+      checks.push(
+        check(
+          "info",
+          "HTTP→HTTPS Redirect",
+          "http:// ვერსია მიუწვდომელია — სავარაუდოდ მხოლოდ https გაშვება (კარგია)"
+        )
+      );
+    }
+  }
 
   if (status >= 200 && status < 300) {
     checks.push(check("pass", "HTTP სტატუსი", `მთავარი გვერდი აბრუნებს ${status} OK`, undefined, status));
@@ -261,6 +290,73 @@ export function analyzeTechnical(
       checks.push(check("pass", "hreflang", `${hreflangs.length} hreflang მითითება ნაპოვნია`, undefined, hreflangs));
     } else {
       checks.push(check("info", "hreflang", "hreflang teag-ები არ არის (მხოლოდ ერთენოვანი საიტისთვის ნორმალურია)"));
+    }
+
+    // <html lang> — accessibility + Google's local search signal.
+    // Common Georgian-site bug: lang="en" left over from a starter template.
+    const htmlLang = $("html").attr("lang")?.trim() ?? "";
+    if (!htmlLang) {
+      checks.push(
+        check(
+          "warn",
+          "HTML lang",
+          "<html lang> ატრიბუტი არ არის",
+          'დაამატეთ <html lang="ka"> (ქართულისთვის) ან შესაბამისი კოდი — ეკრანის წამკითხავი ხელსაწყო და Google ლოკალური SEO ამას იყენებს.'
+        )
+      );
+    } else if (!/^[a-zA-Z]{2,3}(-[a-zA-Z0-9]{2,8})*$/.test(htmlLang)) {
+      checks.push(
+        check(
+          "warn",
+          "HTML lang",
+          `<html lang="${htmlLang}"> ფორმატი ეჭვს ბადებს`,
+          'სტანდარტული BCP-47 ფორმატი: ka, ka-GE, en, en-US.',
+          htmlLang
+        )
+      );
+    } else {
+      checks.push(
+        check("pass", "HTML lang", `<html lang="${htmlLang}">`, undefined, htmlLang)
+      );
+    }
+
+    // Mixed content — only meaningful on HTTPS pages. <a href> excluded
+    // since browsers don't fetch link targets (no mixed-content warning).
+    if (isHttps) {
+      const httpResources: string[] = [];
+      $(
+        "img[src], script[src], iframe[src], video[src], audio[src], source[src], " +
+          'link[rel="stylesheet"][href], link[rel="preload"][href], ' +
+          'link[rel="prefetch"][href], link[rel="manifest"][href], ' +
+          'link[rel="icon"][href], link[rel="canonical"][href]'
+      ).each((_, el) => {
+        const $el = $(el);
+        const ref = $el.attr("src") ?? $el.attr("href") ?? "";
+        if (ref.startsWith("http://")) {
+          if (httpResources.length < 5) httpResources.push(ref);
+          else if (httpResources.length < 100) httpResources.push("");
+        }
+      });
+      const httpCount = httpResources.length;
+      const examples = httpResources
+        .filter((r) => r !== "")
+        .map((u) => (u.length > 80 ? u.slice(0, 80) + "…" : u));
+
+      if (httpCount === 0) {
+        checks.push(
+          check("pass", "Mixed Content", "ყველა რესურსი HTTPS-ზე ✓")
+        );
+      } else {
+        checks.push(
+          check(
+            "fail",
+            "Mixed Content",
+            `${httpCount}${httpCount >= 100 ? "+" : ""} HTTP რესურსი HTTPS გვერდზე`,
+            "ბრაუზერი აქტიურ რესურსებს (script, iframe) დაბლოკავს, პასიურებზე (img) გაფრთხილებას აჩვენებს. გადაიყვანეთ ყველაფერი https://-ზე ან გამოიყენეთ პროტოკოლ-ნეიტრალური `//`-ით დაწყებული URL.",
+            examples.length > 0 ? examples : httpCount
+          )
+        );
+      }
     }
   }
 
@@ -742,16 +838,45 @@ function extractSitemapsFromRobots(robotsBody: string): string[] {
   return matches;
 }
 
-export async function checkExtras(baseUrl: string): Promise<{
+async function checkHttpToHttpsRedirect(
+  origin: string
+): Promise<"ok" | "missing" | "n/a"> {
+  if (!origin.startsWith("https://")) return "n/a";
+  const httpUrl = origin.replace(/^https:/, "http:");
+  try {
+    const res = await axios.get(httpUrl, {
+      timeout: 10000,
+      maxRedirects: 0,
+      headers: { "User-Agent": BROWSER_UA, Accept: "*/*" },
+      validateStatus: () => true,
+      transformResponse: [(data) => data],
+    });
+    if (res.status >= 300 && res.status < 400) {
+      const location = String(res.headers["location"] ?? "");
+      if (location.startsWith("https://")) return "ok";
+    }
+    if (res.status >= 200 && res.status < 300) return "missing";
+    return "n/a";
+  } catch {
+    // ECONNREFUSED on http means no insecure listener — that's fine.
+    return "n/a";
+  }
+}
+
+export interface ExtrasResult {
   robotsTxt: boolean;
   sitemap: boolean;
   llmsTxt: boolean;
-}> {
+  httpToHttps: "ok" | "missing" | "n/a";
+}
+
+export async function checkExtras(baseUrl: string): Promise<ExtrasResult> {
   const origin = new URL(baseUrl).origin;
 
-  const [robots, llms] = await Promise.all([
+  const [robots, llms, httpToHttps] = await Promise.all([
     fetchExtraFile(`${origin}/robots.txt`),
     fetchExtraFile(`${origin}/llms.txt`),
+    checkHttpToHttpsRedirect(origin),
   ]);
 
   let sitemapFound = false;
@@ -781,6 +906,7 @@ export async function checkExtras(baseUrl: string): Promise<{
     robotsTxt: !!robots?.ok,
     sitemap: sitemapFound,
     llmsTxt: !!llms?.ok,
+    httpToHttps,
   };
 }
 
