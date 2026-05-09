@@ -109,12 +109,6 @@ export async function GET(req: NextRequest) {
           fetchedAt: new Date().toISOString(),
         });
 
-        const previewData = await extractPreview(
-          $,
-          page.finalUrl ?? normalized
-        );
-        send({ type: "preview", data: previewData });
-
         const extras = await stage(
           "extras",
           "robots.txt, sitemap.xml, llms.txt შემოწმება",
@@ -122,44 +116,70 @@ export async function GET(req: NextRequest) {
         );
         const safeExtras = extras ?? { robotsTxt: false, sitemap: false, llmsTxt: false };
 
-        await stage("analyze", "HTML-ის სტრუქტურის ანალიზი", async () => {
-          sendCategory(
-            "technical",
-            analyzeTechnical(
-              page.finalUrl ?? normalized,
-              page.status,
-              page.headers,
-              $,
-              safeExtras
-            )
+        if (botProtection.detected) {
+          await stage(
+            "analyze",
+            "მხოლოდ HTTP/header ანალიზი (challenge გვერდის გამო)",
+            async () => {
+              sendCategory(
+                "technical",
+                analyzeTechnical(
+                  page.finalUrl ?? normalized,
+                  page.status,
+                  page.headers,
+                  $,
+                  safeExtras,
+                  { skipHtmlChecks: true }
+                )
+              );
+            }
           );
-          sendCategory("onPage", analyzeOnPage($, page.finalUrl ?? normalized));
-          sendCategory("schema", analyzeSchema($));
-          sendCategory("aiEra", analyzeAiEra($, safeExtras.llmsTxt));
-        });
+        } else {
+          const previewData = await extractPreview(
+            $,
+            page.finalUrl ?? normalized
+          );
+          send({ type: "preview", data: previewData });
 
-        const internalLinks = extractInternalLinks(
-          $,
-          page.finalUrl ?? normalized
-        );
-        const linkLabel =
-          internalLinks.length === 0
-            ? "შიდა ბმულების შემოწმება"
-            : `შიდა ბმულების შემოწმება (${Math.min(internalLinks.length, 30)})`;
-        const linkHealth = await stage("links", linkLabel, () =>
-          checkLinkHealth(internalLinks)
-        );
-        if (linkHealth) {
-          sendCategory("linkHealth", buildLinkHealthCategory(linkHealth));
-        }
+          await stage("analyze", "HTML-ის სტრუქტურის ანალიზი", async () => {
+            sendCategory(
+              "technical",
+              analyzeTechnical(
+                page.finalUrl ?? normalized,
+                page.status,
+                page.headers,
+                $,
+                safeExtras
+              )
+            );
+            sendCategory("onPage", analyzeOnPage($, page.finalUrl ?? normalized));
+            sendCategory("schema", analyzeSchema($));
+            sendCategory("aiEra", analyzeAiEra($, safeExtras.llmsTxt));
+          });
 
-        const performance = await stage(
-          "pagespeed",
-          "Google PageSpeed Insights (15-25 წამი)",
-          () => fetchPageSpeed(normalized)
-        );
-        if (performance) {
-          sendCategory("performance", performance);
+          const internalLinks = extractInternalLinks(
+            $,
+            page.finalUrl ?? normalized
+          );
+          const linkLabel =
+            internalLinks.length === 0
+              ? "შიდა ბმულების შემოწმება"
+              : `შიდა ბმულების შემოწმება (${Math.min(internalLinks.length, 30)})`;
+          const linkHealth = await stage("links", linkLabel, () =>
+            checkLinkHealth(internalLinks)
+          );
+          if (linkHealth) {
+            sendCategory("linkHealth", buildLinkHealthCategory(linkHealth));
+          }
+
+          const performance = await stage(
+            "pagespeed",
+            "Google PageSpeed Insights (15-25 წამი)",
+            () => fetchPageSpeed(normalized)
+          );
+          if (performance) {
+            sendCategory("performance", performance);
+          }
         }
 
         const summary = calculateSummary({

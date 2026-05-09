@@ -1394,8 +1394,9 @@ export default function ResultsContent() {
               </span>
             </div>
             <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-2 leading-relaxed">
-              შედეგები ეფუძნება challenge-გვერდს, არა საიტის რეალურ კონტენტს.
-              Title, Meta, H1, ALT, Schema — ყველა მცდარია.
+              საიტი არ გვაძლევს რეალურ HTML-ს — Title, H1, Schema და სხვა
+              გვერდულივი შემოწმებები გამოვტოვეთ, რადგან მათი შედეგი ცრუ იქნებოდა.
+              ქვემოთ მხოლოდ HTTP/header-დონის რეალური სიგნალებია.
             </p>
             <p className="text-xs font-mono text-zinc-400 dark:text-zinc-600 break-all">
               {meta.botProtection.reason}

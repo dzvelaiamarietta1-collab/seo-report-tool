@@ -138,10 +138,12 @@ export function analyzeTechnical(
   status: number,
   headers: Record<string, string>,
   $: cheerio.CheerioAPI,
-  extras: { robotsTxt: boolean; sitemap: boolean; llmsTxt: boolean }
+  extras: { robotsTxt: boolean; sitemap: boolean; llmsTxt: boolean },
+  options?: { skipHtmlChecks?: boolean }
 ): CategoryResult {
   const checks: CheckResult[] = [];
   const isHttps = url.startsWith("https://");
+  const skipHtml = options?.skipHtmlChecks === true;
 
   checks.push(
     isHttps
@@ -174,22 +176,24 @@ export function analyzeTechnical(
       : check("warn", "XML Sitemap", "sitemap.xml ფაილი ვერ მოიძებნა", "შექმენით XML sitemap და დაარეგისტრირეთ Google Search Console-ში.")
   );
 
-  const canonical = $('link[rel="canonical"]').attr("href");
-  checks.push(
-    canonical
-      ? check("pass", "Canonical Tag", `Canonical tag მითითებულია: ${canonical}`, undefined, canonical)
-      : check("warn", "Canonical Tag", "Canonical tag არ არის მითითებული", "დაამატეთ <link rel=\"canonical\"> დუბლირებული კონტენტის თავიდან ასაცილებლად.")
-  );
+  if (!skipHtml) {
+    const canonical = $('link[rel="canonical"]').attr("href");
+    checks.push(
+      canonical
+        ? check("pass", "Canonical Tag", `Canonical tag მითითებულია: ${canonical}`, undefined, canonical)
+        : check("warn", "Canonical Tag", "Canonical tag არ არის მითითებული", "დაამატეთ <link rel=\"canonical\"> დუბლირებული კონტენტის თავიდან ასაცილებლად.")
+    );
 
-  const metaRobots = $('meta[name="robots"]').attr("content");
-  if (metaRobots) {
-    if (/noindex/i.test(metaRobots)) {
-      checks.push(check("fail", "Meta Robots", `noindex მითითებულია: "${metaRobots}"`, "მთავარ გვერდზე noindex Google-ს უკრძალავს ინდექსაციას — გადახედეთ.", metaRobots));
+    const metaRobots = $('meta[name="robots"]').attr("content");
+    if (metaRobots) {
+      if (/noindex/i.test(metaRobots)) {
+        checks.push(check("fail", "Meta Robots", `noindex მითითებულია: "${metaRobots}"`, "მთავარ გვერდზე noindex Google-ს უკრძალავს ინდექსაციას — გადახედეთ.", metaRobots));
+      } else {
+        checks.push(check("pass", "Meta Robots", `Meta robots: "${metaRobots}"`, undefined, metaRobots));
+      }
     } else {
-      checks.push(check("pass", "Meta Robots", `Meta robots: "${metaRobots}"`, undefined, metaRobots));
+      checks.push(check("info", "Meta Robots", "Meta robots tag არ არის — ნაგულისხმევად index, follow"));
     }
-  } else {
-    checks.push(check("info", "Meta Robots", "Meta robots tag არ არის — ნაგულისხმევად index, follow"));
   }
 
   const hasCSP = !!headers["content-security-policy"];
@@ -204,11 +208,13 @@ export function analyzeTechnical(
     checks.push(check("warn", "Security Headers", "უსაფრთხოების headers ვერ მოიძებნა", "კონფიგურაცია გააკეთეთ სერვერზე CSP, X-Frame-Options, HSTS-სთვის."));
   }
 
-  const hreflangs = $('link[rel="alternate"][hreflang]').map((_, el) => $(el).attr("hreflang")).get();
-  if (hreflangs.length > 0) {
-    checks.push(check("pass", "hreflang", `${hreflangs.length} hreflang მითითება ნაპოვნია`, undefined, hreflangs));
-  } else {
-    checks.push(check("info", "hreflang", "hreflang teag-ები არ არის (მხოლოდ ერთენოვანი საიტისთვის ნორმალურია)"));
+  if (!skipHtml) {
+    const hreflangs = $('link[rel="alternate"][hreflang]').map((_, el) => $(el).attr("hreflang")).get();
+    if (hreflangs.length > 0) {
+      checks.push(check("pass", "hreflang", `${hreflangs.length} hreflang მითითება ნაპოვნია`, undefined, hreflangs));
+    } else {
+      checks.push(check("info", "hreflang", "hreflang teag-ები არ არის (მხოლოდ ერთენოვანი საიტისთვის ნორმალურია)"));
+    }
   }
 
   return { name: "ტექნიკური SEO", icon: "Wrench", checks };
