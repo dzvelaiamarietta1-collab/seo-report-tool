@@ -238,6 +238,40 @@ export interface ParsedSchemaInventory {
   microdataBlocks: number;
   // Whether structured data exists at all (JSON-LD OR microdata OR RDFa)
   anyStructuredData: boolean;
+  // First Organization-like node (for field validation in analyzeAiEra).
+  // Microdata sites have this null — we can't extract fields without
+  // walking itemprop attributes, which is out of scope for now.
+  organizationNode: Record<string, unknown> | null;
+}
+
+export interface OrganizationFieldIssues {
+  missingRequired: string[]; // name, url — Google requires these
+  missingRecommended: string[]; // logo, sameAs, contactPoint — improves Knowledge Graph
+}
+
+export function validateOrganizationFields(
+  node: Record<string, unknown>
+): OrganizationFieldIssues {
+  const missingRequired: string[] = [];
+  const missingRecommended: string[] = [];
+
+  const hasNonEmpty = (key: string): boolean => {
+    const v = node[key];
+    if (typeof v === "string") return v.trim().length > 0;
+    if (Array.isArray(v)) return v.length > 0;
+    if (v && typeof v === "object") return Object.keys(v).length > 0;
+    return false;
+  };
+
+  if (!hasNonEmpty("name")) missingRequired.push("name");
+  if (!hasNonEmpty("url")) missingRequired.push("url");
+  if (!hasNonEmpty("logo")) missingRecommended.push("logo");
+  if (!hasNonEmpty("sameAs")) missingRecommended.push("sameAs");
+  if (!hasNonEmpty("contactPoint") && !hasNonEmpty("telephone") && !hasNonEmpty("email")) {
+    missingRecommended.push("contactPoint (ან telephone/email)");
+  }
+
+  return { missingRequired, missingRecommended };
 }
 
 const SCHEMA_ORG_HOST_RE = /(?:https?:)?\/\/schema\.org\/([A-Z][A-Za-z0-9]*)/;
@@ -275,6 +309,7 @@ export function inventorySchema($: CheerioAPI): ParsedSchemaInventory {
   let hasOrganization = false;
   let hasFAQPage = false;
   let jsonLdBlocks = 0;
+  let organizationNode: Record<string, unknown> | null = null;
 
   $('script[type="application/ld+json"]').each((_, el) => {
     jsonLdBlocks++;
@@ -290,7 +325,13 @@ export function inventorySchema($: CheerioAPI): ParsedSchemaInventory {
       const typeValue = node["@type"];
       const typeStrings = getTypeStrings(typeValue);
       if (typeStrings.length > 0) types.push(typeStrings.join(", "));
-      if (isOrganizationType(typeValue)) hasOrganization = true;
+      if (isOrganizationType(typeValue)) {
+        hasOrganization = true;
+        // Capture the first Organization-like node for field validation.
+        // Pages typically have a primary Organization in @graph plus
+        // references; the first hit is usually the canonical one.
+        if (!organizationNode) organizationNode = node;
+      }
       if (isFAQPageType(typeValue)) hasFAQPage = true;
     }
   });
@@ -323,5 +364,6 @@ export function inventorySchema($: CheerioAPI): ParsedSchemaInventory {
     jsonLdBlocks,
     microdataBlocks,
     anyStructuredData,
+    organizationNode,
   };
 }

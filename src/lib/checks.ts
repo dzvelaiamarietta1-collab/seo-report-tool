@@ -2,7 +2,8 @@ import * as cheerio from "cheerio";
 import axios, { AxiosResponse } from "axios";
 import type { CheckResult, CategoryResult, BotProtection } from "./types";
 import { fetchPageWithBrowser } from "./browser";
-import { inventorySchema } from "./schemaTypes";
+import { inventorySchema, validateOrganizationFields } from "./schemaTypes";
+import type { ShareImageCheck } from "./types";
 
 const UA =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36";
@@ -670,7 +671,13 @@ export function analyzeOnPage($: cheerio.CheerioAPI, baseUrl: string): CategoryR
   return { name: "On-Page SEO", icon: "FileText", checks };
 }
 
-export function analyzeSchema($: cheerio.CheerioAPI): CategoryResult {
+export function analyzeSchema(
+  $: cheerio.CheerioAPI,
+  shareImages?: {
+    ogImageCheck: ShareImageCheck;
+    twitterImageCheck: ShareImageCheck;
+  }
+): CategoryResult {
   const checks: CheckResult[] = [];
   const inventory = inventorySchema($);
 
@@ -724,6 +731,58 @@ export function analyzeSchema($: cheerio.CheerioAPI): CategoryResult {
     checks.push(check("warn", "Open Graph", "Open Graph tags არ არის", "დაამატეთ og:title, og:description, og:image — Facebook/LinkedIn გაზიარებისთვის."));
   }
 
+  // Surface the OG image probe verdict (already computed in extractPreview).
+  // The Open Graph check above only verifies tag *presence*; this one
+  // verifies the actual image is the right size/aspect/format. Without it
+  // a site can have og:image="logo-100x100.png" and pass "Open Graph: 5/5"
+  // while looking broken in Facebook share.
+  if (shareImages) {
+    const og = shareImages.ogImageCheck;
+    if (og.verdict === "good") {
+      checks.push(
+        check(
+          "pass",
+          "OG Image",
+          `OG image ვალიდურია — ${og.reason}`,
+          undefined,
+          og.url
+        )
+      );
+    } else if (og.verdict === "missing") {
+      // Already covered by Open Graph tag check — skip to avoid duplication.
+    } else if (og.verdict === "fail") {
+      checks.push(
+        check(
+          "fail",
+          "OG Image",
+          `OG image-ი პრობლემურია — ${og.reason}`,
+          og.recommendation,
+          og.url
+        )
+      );
+    } else if (og.verdict === "warn") {
+      checks.push(
+        check(
+          "warn",
+          "OG Image",
+          `OG image-ის გადახედვა საჭიროა — ${og.reason}`,
+          og.recommendation,
+          og.url
+        )
+      );
+    } else {
+      checks.push(
+        check(
+          "info",
+          "OG Image",
+          og.reason || "OG image ვერ შემოწმდა",
+          og.recommendation,
+          og.url
+        )
+      );
+    }
+  }
+
   const twitterCard = $('meta[name="twitter:card"]').attr("content");
   if (twitterCard) {
     checks.push(check("pass", "Twitter Card", `Twitter Card: ${twitterCard}`, undefined, twitterCard));
@@ -760,20 +819,57 @@ export function analyzeAiEra($: cheerio.CheerioAPI, llmsTxt: boolean): CategoryR
         )
   );
 
-  checks.push(
-    inventory.hasOrganization
-      ? check(
-          "pass",
+  if (!inventory.hasOrganization) {
+    checks.push(
+      check(
+        "warn",
+        "Organization Schema",
+        "Organization schema არ არის",
+        "დაამატეთ Organization (ან რელევანტური ქვე-ტიპი — LocalBusiness ლოკალური ბიზნესისთვის, Restaurant რესტორნისთვის, Store მაღაზიისთვის) sameAs ლინკებით სოც.მედიაზე."
+      )
+    );
+  } else if (!inventory.organizationNode) {
+    // Microdata-based — we can't introspect fields without a separate
+    // microdata parser, so just confirm presence.
+    checks.push(
+      check(
+        "pass",
+        "Organization Schema",
+        "Organization schema მითითებულია (microdata) — ბრენდის ცნობადობა AI-სთვის ✓"
+      )
+    );
+  } else {
+    const fields = validateOrganizationFields(inventory.organizationNode);
+    if (fields.missingRequired.length > 0) {
+      checks.push(
+        check(
+          "fail",
           "Organization Schema",
-          "Organization (ან მისი ქვე-ტიპი — LocalBusiness, Store, FurnitureStore და ა.შ.) schema მითითებულია — ბრენდის ცნობადობა AI-სთვის ✓"
+          `Organization schema-ს აკლია სავალდებულო ველები: ${fields.missingRequired.join(", ")}`,
+          "Google-ის Knowledge Graph-ში ბრენდის გამოსაჩენად name + url სავალდებულოა. დამატებითი — logo, sameAs (სოც.მედიის ბმულები) — Knowledge Panel-ში გამოჩენის შანსს ზრდის.",
+          fields.missingRequired
         )
-      : check(
+      );
+    } else if (fields.missingRecommended.length > 0) {
+      checks.push(
+        check(
           "warn",
           "Organization Schema",
-          "Organization schema არ არის",
-          "დაამატეთ Organization (ან რელევანტური ქვე-ტიპი — LocalBusiness ლოკალური ბიზნესისთვის, Restaurant რესტორნისთვის, Store მაღაზიისთვის) sameAs ლინკებით სოც.მედიაზე."
+          `Organization schema სრულდება, მაგრამ აკლია რეკომენდებული ველები: ${fields.missingRecommended.join(", ")}`,
+          "name + url არის — საფუძველი დადებულია. მიზანი: logo (Knowledge Panel-ისთვის), sameAs (Facebook/LinkedIn/Wikipedia ბმულები — Google ბრენდს ცნობს ერთი არსებობით).",
+          fields.missingRecommended
         )
-  );
+      );
+    } else {
+      checks.push(
+        check(
+          "pass",
+          "Organization Schema",
+          "Organization (ან მისი ქვე-ტიპი — LocalBusiness, Store და ა.შ.) schema სრულია: name, url, logo, sameAs, contact info ✓"
+        )
+      );
+    }
+  }
 
   const noscriptContent = $("noscript").text().trim();
   const bodyTextLength = $("body").text().replace(/\s+/g, " ").trim().length;

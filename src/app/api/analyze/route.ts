@@ -160,7 +160,13 @@ export async function GET(req: NextRequest) {
               )
             );
             sendCategory("onPage", analyzeOnPage($, page.finalUrl ?? normalized));
-            sendCategory("schema", analyzeSchema($));
+            sendCategory(
+              "schema",
+              analyzeSchema($, {
+                ogImageCheck: previewData.ogImageCheck,
+                twitterImageCheck: previewData.twitterImageCheck,
+              })
+            );
             sendCategory("aiEra", analyzeAiEra($, safeExtras.llmsTxt));
           });
 
