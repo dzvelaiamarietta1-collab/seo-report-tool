@@ -414,6 +414,18 @@ export interface StoredAnalysis {
 
 const STORAGE_KEY_PREFIX = "presentation:";
 
+// Deterministic 32-bit hash so writer (results page) and reader
+// (presentation page) agree without depending on URL encoding rules.
+// Avoids special-character key collisions like ?utm=… or fragments.
+function hashUrl(url: string): string {
+  let h = 0;
+  for (let i = 0; i < url.length; i++) {
+    h = (h << 5) - h + url.charCodeAt(i);
+    h |= 0;
+  }
+  return Math.abs(h).toString(36);
+}
+
 export function storageKey(url: string): string {
-  return STORAGE_KEY_PREFIX + url;
+  return STORAGE_KEY_PREFIX + hashUrl(url);
 }

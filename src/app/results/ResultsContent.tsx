@@ -1100,6 +1100,9 @@ export default function ResultsContent() {
   const url = params.get("url");
   const [state, setState] = useState<AnalysisState>(initialState);
   const [filter, setFilter] = useState<CheckStatus | null>(null);
+  const [presentationError, setPresentationError] = useState<string | null>(
+    null
+  );
 
   // Recompute summary client-side because /api/pagespeed lands AFTER
   // /api/analyze's `complete` event — the server's pre-pagespeed summary
@@ -1355,6 +1358,7 @@ export default function ResultsContent() {
 
   const handlePresentation = () => {
     if (!state.meta || !summary || !fullyDone) return;
+    setPresentationError(null);
     const targetUrl = state.meta.finalUrl ?? state.meta.url;
     const fullAnalysis = {
       url: state.meta.url,
@@ -1367,23 +1371,56 @@ export default function ResultsContent() {
       categories: state.categories,
       summary,
     };
-    const payload = {
+    const fullPayload = {
       url: targetUrl,
       fetchedAt: state.meta.fetchedAt,
       analysis: fullAnalysis,
       preview: state.preview,
     };
-    try {
-      localStorage.setItem(storageKey(targetUrl), JSON.stringify(payload));
-    } catch (e) {
-      console.warn("Failed to save presentation data", e);
+
+    const isQuotaError = (e: unknown): boolean =>
+      e instanceof DOMException &&
+      (e.name === "QuotaExceededError" ||
+        e.name === "NS_ERROR_DOM_QUOTA_REACHED" ||
+        // Some browsers report it via code 22 / 1014 instead of name
+        e.code === 22 ||
+        e.code === 1014);
+
+    const trySave = (payload: typeof fullPayload): "ok" | "quota" | "error" => {
+      try {
+        localStorage.setItem(storageKey(targetUrl), JSON.stringify(payload));
+        return "ok";
+      } catch (e) {
+        return isQuotaError(e) ? "quota" : "error";
+      }
+    };
+
+    let result = trySave(fullPayload);
+    if (result === "quota") {
+      // Preview (especially share-image probes with sizeBytes) is the
+      // largest dispensable chunk — drop it and retry. Presentation page
+      // already tolerates a missing preview.
+      result = trySave({ ...fullPayload, preview: null });
+    }
+
+    if (result === "ok") {
+      window.open(
+        `/presentation?url=${encodeURIComponent(targetUrl)}`,
+        "_blank",
+        "noopener,noreferrer"
+      );
       return;
     }
-    window.open(
-      `/presentation?url=${encodeURIComponent(targetUrl)}`,
-      "_blank",
-      "noopener,noreferrer"
-    );
+
+    if (result === "quota") {
+      setPresentationError(
+        "მონაცემები ძალიან დიდია ლოკალური საცავისთვის — გასუფთავეთ ბრაუზერის storage და სცადეთ ხელახლა."
+      );
+    } else {
+      setPresentationError(
+        "პრეზენტაციის მონაცემების შენახვა ვერ მოხერხდა."
+      );
+    }
   };
 
   if (!state.meta && !state.error) {
@@ -1448,6 +1485,14 @@ export default function ResultsContent() {
   return (
     <div className="flex-1 px-4 py-10 sm:py-14">
       <div className="max-w-5xl mx-auto">
+        {presentationError && (
+          <div
+            data-print-hide
+            className="mb-4 rounded-md border-l-2 border-red-500 bg-red-50 dark:bg-red-950/20 px-4 py-2.5 text-sm text-red-700 dark:text-red-400"
+          >
+            {presentationError}
+          </div>
+        )}
         <div
           data-print-hide
           className="flex items-center justify-between mb-10"
