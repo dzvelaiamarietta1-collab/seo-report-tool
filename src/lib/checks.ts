@@ -41,6 +41,11 @@ type FetchPageResult = {
   headers: Record<string, string>;
   finalUrl: string;
   responseTimeMs: number;
+  // True when the raw (no-JS) HTML was too thin to analyze, i.e. the page
+  // is JS-rendered. This is the real SSR signal: it means AI bots like
+  // GPTBot/ClaudeBot/PerplexityBot — which don't execute JavaScript —
+  // would see a near-empty page even though end users see content.
+  rawHtmlThin: boolean;
 };
 
 function lowercaseHeaders(
@@ -74,13 +79,18 @@ export async function fetchPage(url: string): Promise<FetchPageResult | null> {
   const axiosOk =
     !!axiosRes && axiosRes.status >= 200 && axiosRes.status < 400;
 
-  if (axiosRes && axiosOk && !looksThin(axiosHtml)) {
+  // Single source of truth for "is the no-JS HTML usable?" — used both
+  // for the fast-path decision and the SSR signal we expose downstream.
+  const rawAxiosThin = !axiosRes || !axiosOk || looksThin(axiosHtml);
+
+  if (axiosRes && axiosOk && !rawAxiosThin) {
     return {
       html: axiosHtml,
       status: axiosRes.status,
       headers: lowercaseHeaders(axiosRes.headers),
       finalUrl: axiosRes.request?.res?.responseUrl ?? url,
       responseTimeMs: Date.now() - start,
+      rawHtmlThin: false,
     };
   }
 
@@ -94,6 +104,8 @@ export async function fetchPage(url: string): Promise<FetchPageResult | null> {
       headers: lowercaseHeaders(browserResult.headers),
       finalUrl: browserResult.finalUrl,
       responseTimeMs: browserResult.responseTimeMs,
+      // Browser was needed because raw HTML was thin → SSR concern is real.
+      rawHtmlThin: rawAxiosThin,
     };
   }
 
@@ -106,6 +118,7 @@ export async function fetchPage(url: string): Promise<FetchPageResult | null> {
       headers: lowercaseHeaders(axiosRes.headers),
       finalUrl: axiosRes.request?.res?.responseUrl ?? url,
       responseTimeMs: Date.now() - start,
+      rawHtmlThin: rawAxiosThin,
     };
   }
 
@@ -793,7 +806,11 @@ export function analyzeSchema(
   return { name: "Schema & სოც.მედია", icon: "Tag", checks };
 }
 
-export function analyzeAiEra($: cheerio.CheerioAPI, llmsTxt: boolean): CategoryResult {
+export function analyzeAiEra(
+  $: cheerio.CheerioAPI,
+  llmsTxt: boolean,
+  rawHtmlThin: boolean = false
+): CategoryResult {
   const checks: CheckResult[] = [];
 
   checks.push(
@@ -871,12 +888,40 @@ export function analyzeAiEra($: cheerio.CheerioAPI, llmsTxt: boolean): CategoryR
     }
   }
 
+  // Real SSR check: rawHtmlThin is true when the no-JS axios fetch
+  // returned thin content and we had to fall back to Puppeteer to see
+  // anything. That's exactly the signal AI bots experience — they don't
+  // run JavaScript, so they see what axios saw, not what Puppeteer renders.
+  // The previous body-length check ran AFTER Puppeteer, so it always
+  // passed even on full SPAs. Note: noscript fallback can rescue this —
+  // if the page provides substantial <noscript> content, AI bots see that.
   const noscriptContent = $("noscript").text().trim();
-  const bodyTextLength = $("body").text().replace(/\s+/g, " ").trim().length;
-  if (bodyTextLength < 500 && noscriptContent.length < 100) {
-    checks.push(check("warn", "Server-Side Rendering", "გვერდი ცარიელი ჩანს server-რენდერში", "AI კრაულერები (ChatGPT, Claude, Perplexity) JavaScript-ს არ ასრულებენ — გამოიყენეთ SSR/SSG."));
+  if (rawHtmlThin && noscriptContent.length < 200) {
+    checks.push(
+      check(
+        "warn",
+        "Server-Side Rendering",
+        "გვერდი ცარიელი ჩანს JavaScript-ის გარეშე — AI კრაულერები ვერ ხედავენ კონტენტს",
+        "AI კრაულერები (GPTBot, ClaudeBot, PerplexityBot) JavaScript-ს არ ასრულებენ. გამოსავალი: SSR (Next.js getServerSideProps), SSG (static export), ან მნიშვნელოვანი კონტენტის <noscript> ბლოკში დუბლირება."
+      )
+    );
+  } else if (rawHtmlThin && noscriptContent.length >= 200) {
+    checks.push(
+      check(
+        "warn",
+        "Server-Side Rendering",
+        "გვერდი JS-ს საჭიროებს, მაგრამ <noscript> ბლოკი არსებობს — ნაწილობრივ ფარავს AI ბოტებს",
+        "უკეთესია სრული SSR/SSG. <noscript>-ი ხშირად მხოლოდ მცირე fallback-ია, არა სრული კონტენტი."
+      )
+    );
   } else {
-    checks.push(check("pass", "Server-Side Rendering", "კონტენტი ხელმისაწვდომია server-რენდერში — AI-სთვის ხილვადი ✓"));
+    checks.push(
+      check(
+        "pass",
+        "Server-Side Rendering",
+        "კონტენტი ხელმისაწვდომია JavaScript-ის გარეშე — AI კრაულერებისთვის ხილვადი ✓"
+      )
+    );
   }
 
   return { name: "GEO — Generative Engine", icon: "Bot", checks };

@@ -167,7 +167,10 @@ export async function GET(req: NextRequest) {
                 twitterImageCheck: previewData.twitterImageCheck,
               })
             );
-            sendCategory("aiEra", analyzeAiEra($, safeExtras.llmsTxt));
+            sendCategory(
+              "aiEra",
+              analyzeAiEra($, safeExtras.llmsTxt, page.rawHtmlThin)
+            );
           });
 
           const internalLinks = extractInternalLinks(
