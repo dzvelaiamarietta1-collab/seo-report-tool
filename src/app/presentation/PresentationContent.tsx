@@ -16,13 +16,14 @@ import {
   Presentation as PresentationIcon,
   Loader2,
 } from "lucide-react";
-import type { AnalysisResult, PreviewData } from "@/lib/types";
+import type { AnalysisResult, PageReport, PreviewData } from "@/lib/types";
 import {
   buildSlides,
   storageKey,
   STATS_LABELS,
   type PresentationSlide,
   type ProblemEntry,
+  type ProblemPageRow,
   type PassEntry,
   type PresentationGroup,
   type ServiceBlock,
@@ -42,6 +43,7 @@ interface StoredAnalysis {
   fetchedAt: string;
   analysis: AnalysisResult;
   preview?: PreviewData | null;
+  subPages?: PageReport[] | null;
 }
 
 export default function PresentationContent() {
@@ -80,7 +82,7 @@ export default function PresentationContent() {
 
   const slides = useMemo<PresentationSlide[]>(() => {
     if (!stored) return [];
-    return buildSlides(stored.analysis, stored.preview);
+    return buildSlides(stored.analysis, stored.preview, stored.subPages);
   }, [stored]);
 
   if (error) {
@@ -241,6 +243,14 @@ function SlideRenderer({
       return (
         <SummarySlide slide={slide} slideNumber={slideNumber} total={total} />
       );
+    case "problem-pages":
+      return (
+        <ProblemPagesSlide
+          slide={slide}
+          slideNumber={slideNumber}
+          total={total}
+        />
+      );
     case "problem":
       return (
         <ProblemSlide slide={slide} slideNumber={slideNumber} total={total} />
@@ -262,6 +272,120 @@ function SlideRenderer({
         />
       );
   }
+}
+
+function ProblemPagesSlide({
+  slide,
+  slideNumber,
+  total,
+}: {
+  slide: Extract<PresentationSlide, { kind: "problem-pages" }>;
+  slideNumber: number;
+  total: number;
+}) {
+  const scoreColor = (score: number, error?: string): string => {
+    if (error) return "text-zinc-500";
+    if (score >= 80) return "text-emerald-400";
+    if (score >= 50) return "text-amber-400";
+    return "text-red-400";
+  };
+
+  const avgColor = scoreColor(slide.averageScore);
+
+  return (
+    <div
+      className="w-full h-full relative px-12 pt-10 pb-14 text-white flex flex-col"
+      style={{ background: SLIDE_BG }}
+    >
+      <header className="flex items-end justify-between gap-4 mb-6">
+        <div>
+          <p className="text-[10px] font-mono uppercase tracking-[0.3em] text-cyan-400 mb-2">
+            მთლიანი საიტი
+          </p>
+          <h2 className="text-5xl font-semibold tracking-tight">
+            პრობლემური გვერდები
+          </h2>
+        </div>
+        <div className="text-right shrink-0">
+          <p className="text-[10px] font-mono uppercase tracking-wider text-white/50 mb-1">
+            საშუალო ქულა
+          </p>
+          <p className={`text-5xl font-semibold tabular-nums ${avgColor}`}>
+            {slide.averageScore}
+          </p>
+        </div>
+      </header>
+
+      <div className="flex-1 min-h-0 overflow-hidden rounded-lg border border-white/10 bg-white/[0.03]">
+        <div className="grid grid-cols-[2.5rem_1fr_auto_auto_auto] gap-x-4 px-5 py-2.5 border-b border-white/10 text-[10px] font-mono uppercase tracking-wider text-white/50">
+          <span>#</span>
+          <span>გვერდი</span>
+          <span className="text-right">პრობლემები</span>
+          <span>მთავარი ხარვეზი</span>
+          <span className="text-right">ქულა</span>
+        </div>
+        <ul className="divide-y divide-white/5">
+          {slide.pages.slice(0, 12).map((p, i) => (
+            <li
+              key={`${p.url}-${i}`}
+              className="grid grid-cols-[2.5rem_1fr_auto_auto_auto] gap-x-4 px-5 py-3 items-center"
+            >
+              <span className="text-[11px] font-mono text-white/40 tabular-nums">
+                {i + 1}
+              </span>
+              <div className="min-w-0">
+                <p className="text-[12px] text-white/90 truncate">
+                  {p.url.replace(/^https?:\/\//, "")}
+                  {p.isHome && (
+                    <span className="ml-2 text-[9px] font-mono uppercase tracking-wider text-cyan-400">
+                      მთავარი
+                    </span>
+                  )}
+                </p>
+              </div>
+              <div className="text-right text-[11px] font-mono tabular-nums whitespace-nowrap">
+                {p.error ? (
+                  <span className="text-zinc-500">—</span>
+                ) : (
+                  <>
+                    <span className="text-amber-400">{p.warnings}w</span>
+                    <span className="mx-1.5 text-white/20">·</span>
+                    <span className="text-red-400">{p.failed}f</span>
+                  </>
+                )}
+              </div>
+              <div className="min-w-0 max-w-[14rem]">
+                <p className="text-[11px] text-white/70 truncate">
+                  {p.topIssue}
+                </p>
+              </div>
+              <div className="text-right">
+                <span
+                  className={`text-lg font-semibold tabular-nums ${scoreColor(
+                    p.score,
+                    p.error
+                  )}`}
+                >
+                  {p.error ? "—" : p.score}
+                </span>
+              </div>
+            </li>
+          ))}
+        </ul>
+        {slide.pages.length > 12 && (
+          <p className="px-5 py-2 text-[10px] font-mono uppercase tracking-wider text-white/40 border-t border-white/10">
+            + {slide.pages.length - 12} დამატებითი გვერდი
+          </p>
+        )}
+      </div>
+
+      <SlideFooter
+        slideNumber={slideNumber}
+        total={total}
+        label={slide.siteName}
+      />
+    </div>
+  );
 }
 
 function GeometricSquares({ className }: { className?: string }) {

@@ -67,8 +67,23 @@ export type StreamEvent =
     }
   | { type: "preview"; data: PreviewData }
   | { type: "category"; key: CategoryKey; data: CategoryResult }
+  // Up to ~30 unique internal URLs the multi-page crawl can pick from.
+  // Sent after extractInternalLinks runs; client uses this when depth > 1.
+  | { type: "internalUrls"; urls: string[] }
   | { type: "complete"; summary: AnalysisResult["summary"] }
   | { type: "error"; message: string };
+
+export interface PageReport {
+  url: string;
+  finalUrl: string;
+  fetchedAt: string;
+  httpStatus: number;
+  botProtection: BotProtection;
+  categories: Partial<AnalysisResult["categories"]>;
+  summary: AnalysisResult["summary"] | null;
+  preview: PreviewData | null;
+  error?: string;
+}
 
 export interface ImageProbe {
   width: number;

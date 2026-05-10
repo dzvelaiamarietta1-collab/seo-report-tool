@@ -3,9 +3,10 @@ import type {
   CategoryKey,
   CategoryResult,
   CheckResult,
+  PageReport,
   PreviewData,
 } from "./types";
-import { CHECK_IMPACT, CHECK_SEO_IMPACT } from "./checkMeta";
+import { CHECK_IMPACT, CHECK_SEO_IMPACT, getTopPriorities } from "./checkMeta";
 
 export type PresentationGroup = "technical" | "onPage" | "offPage";
 
@@ -197,6 +198,16 @@ export interface PassEntry {
   group: PresentationGroup;
 }
 
+export interface ProblemPageRow {
+  url: string;
+  score: number;
+  failed: number;
+  warnings: number;
+  topIssue: string;
+  isHome: boolean;
+  error?: string;
+}
+
 export type PresentationSlide =
   | {
       kind: "cover";
@@ -209,6 +220,13 @@ export type PresentationSlide =
       kind: "summary";
       groups: Record<PresentationGroup, PassEntry[]>;
       siteName: string;
+    }
+  | {
+      kind: "problem-pages";
+      siteName: string;
+      siteUrl: string;
+      pages: ProblemPageRow[];
+      averageScore: number;
     }
   | {
       kind: "problem";
@@ -344,9 +362,60 @@ export function buildRecommendations(
   ).map(({ title, text }) => ({ title, text }));
 }
 
+function buildProblemPagesRows(
+  homeAnalysis: AnalysisResult,
+  subPages?: PageReport[] | null
+): ProblemPageRow[] {
+  const rows: ProblemPageRow[] = [];
+
+  const homeTop = getTopPriorities(homeAnalysis.categories, 1)[0];
+  rows.push({
+    url: homeAnalysis.finalUrl ?? homeAnalysis.url,
+    score: homeAnalysis.summary?.score ?? 0,
+    failed: homeAnalysis.summary?.failed ?? 0,
+    warnings: homeAnalysis.summary?.warnings ?? 0,
+    topIssue: homeTop?.check.label ?? "—",
+    isHome: true,
+  });
+
+  if (subPages) {
+    for (const sub of subPages) {
+      if (sub.error || !sub.summary) {
+        rows.push({
+          url: sub.finalUrl ?? sub.url,
+          score: 0,
+          failed: 0,
+          warnings: 0,
+          topIssue: "ანალიზი ვერ მოხერხდა",
+          isHome: false,
+          error: sub.error,
+        });
+        continue;
+      }
+      const subTop = getTopPriorities(sub.categories, 1)[0];
+      rows.push({
+        url: sub.finalUrl ?? sub.url,
+        score: sub.summary.score,
+        failed: sub.summary.failed,
+        warnings: sub.summary.warnings,
+        topIssue: subTop?.check.label ?? "—",
+        isHome: false,
+      });
+    }
+  }
+
+  // Sort: errors last, then ascending by score (worst non-error first).
+  return rows.sort((a, b) => {
+    if (a.error && !b.error) return 1;
+    if (!a.error && b.error) return -1;
+    return a.score - b.score;
+  });
+}
+
 export function buildSlides(
   analysis: AnalysisResult,
-  preview?: PreviewData | null
+  preview?: PreviewData | null,
+  subPages?: PageReport[] | null
 ): PresentationSlide[] {
   const slides: PresentationSlide[] = [];
   const siteUrl = analysis.finalUrl ?? analysis.url;
@@ -376,6 +445,27 @@ export function buildSlides(
     groups: passes,
     siteName,
   });
+
+  // Problem Pages slide — only when multi-page audit was run. Shows the
+  // home page + each sub-page sorted by score (worst first), with the
+  // top issue per page so the client can scan health at a glance.
+  if (subPages && subPages.length > 0) {
+    const pages = buildProblemPagesRows(analysis, subPages);
+    const validScores = pages.filter((p) => !p.error).map((p) => p.score);
+    const averageScore =
+      validScores.length > 0
+        ? Math.round(
+            validScores.reduce((sum, s) => sum + s, 0) / validScores.length
+          )
+        : 0;
+    slides.push({
+      kind: "problem-pages",
+      siteName,
+      siteUrl,
+      pages,
+      averageScore,
+    });
+  }
 
   const problems = collectProblems(analysis.categories);
   problems.forEach((problem, slideIndex) => {
@@ -410,6 +500,7 @@ export interface StoredAnalysis {
   fetchedAt: string;
   analysis: AnalysisResult;
   preview?: PreviewData | null;
+  subPages?: PageReport[] | null;
 }
 
 const STORAGE_KEY_PREFIX = "presentation:";

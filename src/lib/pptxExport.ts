@@ -1754,6 +1754,247 @@ export async function exportToPptx(
   await pptx.writeFile({ fileName: safeFileName });
 }
 
+function addProblemPagesSlide(
+  pptx: Pptx,
+  data: Extract<PresentationSlide, { kind: "problem-pages" }>,
+  slideNum: number,
+  total: number
+) {
+  const slide = navySlide(pptx);
+
+  // Section label
+  slide.addText("მთლიანი საიტი", {
+    x: 0.5,
+    y: 0.5,
+    w: 8,
+    h: 0.4,
+    fontSize: 10,
+    color: CYAN,
+    fontFace: FONT,
+    bold: true,
+    charSpacing: 6,
+  });
+
+  // Title
+  slide.addText("პრობლემური გვერდები", {
+    x: 0.5,
+    y: 0.95,
+    w: 8,
+    h: 0.8,
+    fontSize: 36,
+    color: WHITE,
+    fontFace: FONT,
+    bold: true,
+  });
+
+  // Average score on the right
+  const avgColor =
+    data.averageScore >= 80 ? CYAN : data.averageScore >= 50 ? AMBER : RED_TEXT;
+
+  slide.addText("საშუალო ქულა", {
+    x: 9,
+    y: 0.5,
+    w: 3.8,
+    h: 0.4,
+    fontSize: 10,
+    color: WHITE_DIM,
+    fontFace: FONT,
+    align: "right",
+    charSpacing: 4,
+  });
+  slide.addText(String(data.averageScore), {
+    x: 9,
+    y: 0.85,
+    w: 3.8,
+    h: 1.2,
+    fontSize: 60,
+    color: avgColor,
+    fontFace: FONT,
+    align: "right",
+    bold: true,
+  });
+
+  // Table header
+  const tableY = 2.55;
+  slide.addText("#", {
+    x: 0.5,
+    y: tableY,
+    w: 0.4,
+    h: 0.3,
+    fontSize: 9,
+    color: WHITE_DIM,
+    fontFace: FONT_MONO,
+    charSpacing: 4,
+  });
+  slide.addText("გვერდი", {
+    x: 0.95,
+    y: tableY,
+    w: 6.5,
+    h: 0.3,
+    fontSize: 9,
+    color: WHITE_DIM,
+    fontFace: FONT,
+    bold: true,
+    charSpacing: 4,
+  });
+  slide.addText("ხარვეზები", {
+    x: 7.5,
+    y: tableY,
+    w: 1.5,
+    h: 0.3,
+    fontSize: 9,
+    color: WHITE_DIM,
+    fontFace: FONT,
+    bold: true,
+    align: "right",
+    charSpacing: 4,
+  });
+  slide.addText("მთავარი ხარვეზი", {
+    x: 9.1,
+    y: tableY,
+    w: 2.5,
+    h: 0.3,
+    fontSize: 9,
+    color: WHITE_DIM,
+    fontFace: FONT,
+    bold: true,
+    charSpacing: 4,
+  });
+  slide.addText("ქულა", {
+    x: 11.7,
+    y: tableY,
+    w: 1.1,
+    h: 0.3,
+    fontSize: 9,
+    color: WHITE_DIM,
+    fontFace: FONT,
+    bold: true,
+    align: "right",
+    charSpacing: 4,
+  });
+
+  slide.addShape("line", {
+    x: 0.5,
+    y: tableY + 0.3,
+    w: 12.3,
+    h: 0,
+    line: { color: WHITE_FAINT, width: 0.5 },
+  });
+
+  const rows = data.pages.slice(0, 12);
+  const rowH = 0.42;
+  const startY = tableY + 0.45;
+
+  rows.forEach((row, i) => {
+    const rowY = startY + i * rowH;
+    const cleanUrl = row.url.replace(/^https?:\/\//, "");
+
+    slide.addText(String(i + 1), {
+      x: 0.5,
+      y: rowY,
+      w: 0.4,
+      h: 0.35,
+      fontSize: 10,
+      color: WHITE_FAINT,
+      fontFace: FONT_MONO,
+    });
+
+    const urlRuns: TextRun[] = [
+      {
+        text: truncate(cleanUrl, 60),
+        options: { color: WHITE_BRIGHT, fontFace: FONT, fontSize: 11 },
+      },
+    ];
+    if (row.isHome) {
+      urlRuns.push({
+        text: "  მთავარი",
+        options: {
+          color: CYAN,
+          fontFace: FONT_MONO,
+          fontSize: 8,
+          charSpacing: 4,
+        },
+      });
+    }
+    slide.addText(urlRuns, { x: 0.95, y: rowY, w: 6.5, h: 0.35 });
+
+    if (!row.error) {
+      slide.addText(
+        [
+          {
+            text: `${row.warnings}w`,
+            options: { color: AMBER, fontFace: FONT_MONO, fontSize: 11 },
+          },
+          {
+            text: " · ",
+            options: { color: WHITE_FAINT, fontFace: FONT_MONO, fontSize: 11 },
+          },
+          {
+            text: `${row.failed}f`,
+            options: { color: RED_TEXT, fontFace: FONT_MONO, fontSize: 11 },
+          },
+        ],
+        { x: 7.5, y: rowY, w: 1.5, h: 0.35, align: "right" }
+      );
+    } else {
+      slide.addText("—", {
+        x: 7.5,
+        y: rowY,
+        w: 1.5,
+        h: 0.35,
+        align: "right",
+        color: WHITE_FAINT,
+        fontSize: 11,
+        fontFace: FONT_MONO,
+      });
+    }
+
+    slide.addText(truncate(row.topIssue, 28), {
+      x: 9.1,
+      y: rowY,
+      w: 2.5,
+      h: 0.35,
+      color: WHITE_MUTED,
+      fontFace: FONT,
+      fontSize: 10,
+    });
+
+    const scoreColor = row.error
+      ? WHITE_FAINT
+      : row.score >= 80
+      ? CYAN
+      : row.score >= 50
+      ? AMBER
+      : RED_TEXT;
+    slide.addText(row.error ? "—" : String(row.score), {
+      x: 11.7,
+      y: rowY,
+      w: 1.1,
+      h: 0.35,
+      align: "right",
+      color: scoreColor,
+      fontFace: FONT_MONO,
+      fontSize: 16,
+      bold: true,
+    });
+  });
+
+  if (data.pages.length > 12) {
+    slide.addText(`+ ${data.pages.length - 12} დამატებითი გვერდი`, {
+      x: 0.5,
+      y: startY + 12 * rowH + 0.1,
+      w: 12.3,
+      h: 0.3,
+      fontSize: 9,
+      color: WHITE_FAINT,
+      fontFace: FONT,
+      italic: true,
+    });
+  }
+
+  addFooter(slide, slideNum, total, data.siteName);
+}
+
 function addSlide(
   pptx: Pptx,
   data: PresentationSlide,
@@ -1765,6 +2006,8 @@ function addSlide(
       return addCoverSlide(pptx, data);
     case "summary":
       return addSummarySlide(pptx, data, slideNum, total);
+    case "problem-pages":
+      return addProblemPagesSlide(pptx, data, slideNum, total);
     case "problem":
       return addProblemSlide(pptx, data, slideNum, total);
     case "recommendations":

@@ -177,6 +177,11 @@ export async function GET(req: NextRequest) {
             $,
             page.finalUrl ?? normalized
           );
+          // Expose URLs to the client so multi-page crawl mode can fan
+          // out additional analyses without re-fetching the home page.
+          // Cap at 30 to keep the payload small.
+          send({ type: "internalUrls", urls: internalLinks.slice(0, 30) });
+
           const linkLabel =
             internalLinks.length === 0
               ? "შიდა ბმულების შემოწმება"

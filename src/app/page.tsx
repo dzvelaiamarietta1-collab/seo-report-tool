@@ -47,8 +47,17 @@ const RESOURCES: { label: string; href: string; description: string }[] = [
   },
 ];
 
+type Depth = 1 | 5 | 10;
+
+const DEPTH_OPTIONS: { value: Depth; label: string; hint: string }[] = [
+  { value: 1, label: "მთავარი", hint: "5-15წ · მხოლოდ მთავარი გვერდი" },
+  { value: 5, label: "ღრმა (5)", hint: "30-60წ · მთავარი + 4 ქვეგვერდი" },
+  { value: 10, label: "სრული (10)", hint: "60-120წ · მთავარი + 9 ქვეგვერდი" },
+];
+
 export default function Home() {
   const [url, setUrl] = useState("");
+  const [depth, setDepth] = useState<Depth>(1);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -74,7 +83,8 @@ export default function Home() {
     setError("");
     setLoading(true);
     const normalized = url.startsWith("http") ? url : `https://${url}`;
-    router.push(`/results?url=${encodeURIComponent(normalized)}`);
+    const depthParam = depth > 1 ? `&depth=${depth}` : "";
+    router.push(`/results?url=${encodeURIComponent(normalized)}${depthParam}`);
   };
 
   return (
@@ -127,6 +137,40 @@ export default function Home() {
           {error && (
             <p className="text-sm text-red-500 mb-3">{error}</p>
           )}
+
+          <div className="mt-1">
+            <p className="text-[11px] font-mono uppercase tracking-wider text-zinc-500 mb-2">
+              ანალიზის სიღრმე
+            </p>
+            <div className="grid grid-cols-3 gap-2">
+              {DEPTH_OPTIONS.map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => setDepth(opt.value)}
+                  disabled={loading}
+                  className={`text-left rounded-lg border px-3 py-2 transition disabled:opacity-50 disabled:cursor-not-allowed ${
+                    depth === opt.value
+                      ? "border-purple-500 bg-purple-500/[0.06] dark:bg-purple-500/[0.08]"
+                      : "border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700"
+                  }`}
+                >
+                  <div
+                    className={`text-sm font-medium ${
+                      depth === opt.value
+                        ? "text-purple-700 dark:text-purple-400"
+                        : "text-zinc-900 dark:text-zinc-100"
+                    }`}
+                  >
+                    {opt.label}
+                  </div>
+                  <div className="text-[11px] text-zinc-500 dark:text-zinc-500 leading-snug mt-0.5">
+                    {opt.hint}
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
         </form>
 
         <div className="mt-12 pt-8 border-t border-zinc-200 dark:border-zinc-900">

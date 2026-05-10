@@ -31,6 +31,7 @@ import type {
   CategoryResult,
   CheckResult,
   CheckStatus,
+  PageReport,
   PreviewData,
   ShareImageCheck,
   StageId,
@@ -1083,6 +1084,98 @@ const initialStages = (): StageState[] =>
     status: "pending",
   }));
 
+// Consume a single /api/analyze stream and aggregate it into a PageReport.
+// Used for sub-page crawls in deep mode — we don't show their per-event
+// progress, just collect the final shape.
+async function fetchPageReport(
+  targetUrl: string,
+  signal: AbortSignal
+): Promise<PageReport> {
+  const report: PageReport = {
+    url: targetUrl,
+    finalUrl: targetUrl,
+    fetchedAt: new Date().toISOString(),
+    httpStatus: 0,
+    botProtection: { detected: false, provider: "", reason: "" },
+    categories: {},
+    summary: null,
+    preview: null,
+  };
+
+  let response: Response;
+  try {
+    response = await fetch(`/api/analyze?url=${encodeURIComponent(targetUrl)}`, {
+      signal,
+    });
+  } catch (e) {
+    report.error = e instanceof Error ? e.message : "ქსელის შეცდომა";
+    return report;
+  }
+
+  if (!response.ok || !response.body) {
+    report.error = `HTTP ${response.status}`;
+    return report;
+  }
+
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split("\n");
+      buffer = lines.pop() ?? "";
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (!trimmed) continue;
+        let event: StreamEvent;
+        try {
+          event = JSON.parse(trimmed) as StreamEvent;
+        } catch {
+          continue;
+        }
+        switch (event.type) {
+          case "meta":
+            report.url = event.url;
+            report.finalUrl = event.finalUrl;
+            report.fetchedAt = event.fetchedAt;
+            report.httpStatus = event.httpStatus;
+            report.botProtection = event.botProtection;
+            break;
+          case "preview":
+            report.preview = event.data;
+            break;
+          case "category":
+            report.categories[event.key] = event.data;
+            break;
+          case "complete":
+            // Recompute summary client-side after pagespeed; for sub-pages
+            // we skip pagespeed (covered below), so server's value is fine.
+            report.summary = event.summary;
+            break;
+          case "error":
+            report.error = event.message;
+            break;
+        }
+      }
+    }
+  } catch (e) {
+    if (signal.aborted) return report;
+    report.error = e instanceof Error ? e.message : "სტრიმის შეცდომა";
+  }
+
+  // Recompute summary across all categories we got, since server's
+  // summary excludes performance (pagespeed runs separately).
+  if (Object.keys(report.categories).length > 0) {
+    report.summary = calculateSummary(report.categories);
+  }
+
+  return report;
+}
+
 const initialState = (): AnalysisState => ({
   meta: null,
   preview: null,
@@ -1098,11 +1191,15 @@ const initialState = (): AnalysisState => ({
 export default function ResultsContent() {
   const params = useSearchParams();
   const url = params.get("url");
+  const depthRaw = parseInt(params.get("depth") ?? "1", 10);
+  const depth = depthRaw === 5 || depthRaw === 10 ? depthRaw : 1;
   const [state, setState] = useState<AnalysisState>(initialState);
   const [filter, setFilter] = useState<CheckStatus | null>(null);
   const [presentationError, setPresentationError] = useState<string | null>(
     null
   );
+  const [subPages, setSubPages] = useState<PageReport[]>([]);
+  const [subPagesTotal, setSubPagesTotal] = useState(0);
 
   // Recompute summary client-side because /api/pagespeed lands AFTER
   // /api/analyze's `complete` event — the server's pre-pagespeed summary
@@ -1114,10 +1211,13 @@ export default function ResultsContent() {
   }, [state.done, state.categories]);
 
   // "fully done" = analyze stream complete AND pagespeed terminal (or
-  // skipped because of bot-protection). Export buttons gate on this so
-  // PDF/Presentation never miss the performance section.
+  // skipped because of bot-protection) AND all queued sub-pages finished.
+  // Export buttons gate on this so PDF/Presentation never miss data.
+  const subPagesDone = subPagesTotal === 0 || subPages.length >= subPagesTotal;
   const fullyDone =
-    state.done && (state.pagespeedSkipped || state.pagespeedFetched);
+    state.done &&
+    (state.pagespeedSkipped || state.pagespeedFetched) &&
+    subPagesDone;
 
   useEffect(() => {
     if (!url) {
@@ -1126,8 +1226,12 @@ export default function ResultsContent() {
     }
 
     setState(initialState());
+    setSubPages([]);
+    setSubPagesTotal(0);
     const ac = new AbortController();
     let pagespeedFired = false;
+    let subPagesFired = false;
+    let homeFinalUrl = url;
 
     const applyEvent = (event: StreamEvent) => {
       setState((prev) => {
@@ -1184,6 +1288,18 @@ export default function ResultsContent() {
           }
         }
       });
+    };
+
+    const fireSubPages = async (urls: string[]) => {
+      // Sequential to keep load on Vercel Hobby low — 5 pages × ~10s = ~50s.
+      // Parallel would be faster but easily trips concurrent-function limits
+      // and burns more compute time per analysis.
+      for (const subUrl of urls) {
+        if (ac.signal.aborted) return;
+        const report = await fetchPageReport(subUrl, ac.signal);
+        if (ac.signal.aborted) return;
+        setSubPages((prev) => [...prev, report]);
+      }
     };
 
     const firePagespeed = async (targetUrl: string) => {
@@ -1312,12 +1428,33 @@ export default function ResultsContent() {
             // Fire /api/pagespeed in parallel after we know whether
             // the site is bot-protected (skip pagespeed in that case —
             // PSI would just fail on a challenge page).
-            if (event.type === "meta" && !pagespeedFired) {
-              pagespeedFired = true;
-              if (event.botProtection.detected) {
-                setState((s) => ({ ...s, pagespeedSkipped: true }));
-              } else {
-                void firePagespeed(event.url);
+            if (event.type === "meta") {
+              homeFinalUrl = event.finalUrl || event.url;
+              if (!pagespeedFired) {
+                pagespeedFired = true;
+                if (event.botProtection.detected) {
+                  setState((s) => ({ ...s, pagespeedSkipped: true }));
+                } else {
+                  void firePagespeed(event.url);
+                }
+              }
+            }
+
+            // Multi-page crawl: when depth > 1, fan out to additional
+            // internal URLs once the home page exposes them. Skipped on
+            // bot-protected sites (subpages would also be blocked).
+            if (
+              event.type === "internalUrls" &&
+              !subPagesFired &&
+              depth > 1
+            ) {
+              subPagesFired = true;
+              const candidates = event.urls
+                .filter((u) => u !== homeFinalUrl)
+                .slice(0, depth - 1);
+              if (candidates.length > 0) {
+                setSubPagesTotal(candidates.length);
+                void fireSubPages(candidates);
               }
             }
           }
@@ -1376,6 +1513,7 @@ export default function ResultsContent() {
       fetchedAt: state.meta.fetchedAt,
       analysis: fullAnalysis,
       preview: state.preview,
+      subPages: subPages.length > 0 ? subPages : undefined,
     };
 
     const isQuotaError = (e: unknown): boolean =>
@@ -1718,6 +1856,88 @@ export default function ResultsContent() {
             return <CategoryPlaceholder key={key} categoryKey={key} />;
           })}
         </div>
+
+        {depth > 1 && subPagesTotal > 0 && (
+          <section className="mt-16">
+            <header className="flex items-end justify-between mb-4 pb-3 border-b border-zinc-200 dark:border-zinc-900">
+              <h2 className="text-[15px] font-medium text-zinc-900 dark:text-zinc-100">
+                ქვე-გვერდები
+              </h2>
+              <p className="text-[11px] font-mono uppercase tracking-wider text-zinc-500 tabular-nums">
+                {subPages.length} / {subPagesTotal}
+              </p>
+            </header>
+            <ul className="space-y-2">
+              {subPages.map((p, i) => {
+                const score = p.summary?.score ?? null;
+                const scoreColor =
+                  score === null
+                    ? "text-zinc-400"
+                    : score >= 80
+                    ? "text-emerald-500"
+                    : score >= 50
+                    ? "text-amber-500"
+                    : "text-red-500";
+                return (
+                  <li
+                    key={`${p.url}-${i}`}
+                    className="flex items-center gap-3 px-4 py-2 rounded-lg border border-zinc-200 dark:border-zinc-900"
+                  >
+                    <span className="font-mono text-[11px] text-zinc-400 dark:text-zinc-600 tabular-nums w-5">
+                      {i + 1}
+                    </span>
+                    <a
+                      href={p.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex-1 truncate text-[13px] text-zinc-700 dark:text-zinc-300 hover:text-purple-600 dark:hover:text-purple-400 transition"
+                      title={p.url}
+                    >
+                      {p.url}
+                    </a>
+                    {p.error ? (
+                      <span className="text-[11px] text-red-500 truncate max-w-[200px]">
+                        {p.error}
+                      </span>
+                    ) : p.summary ? (
+                      <>
+                        <span className="text-[11px] text-zinc-500 tabular-nums">
+                          <span className="text-amber-600 dark:text-amber-500">
+                            {p.summary.warnings}w
+                          </span>
+                          <span className="mx-1">·</span>
+                          <span className="text-red-600 dark:text-red-500">
+                            {p.summary.failed}f
+                          </span>
+                        </span>
+                        <span
+                          className={`text-sm font-semibold tabular-nums ${scoreColor} w-9 text-right`}
+                        >
+                          {score}
+                        </span>
+                      </>
+                    ) : (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin text-zinc-400" />
+                    )}
+                  </li>
+                );
+              })}
+              {Array.from({
+                length: Math.max(0, subPagesTotal - subPages.length),
+              }).map((_, i) => (
+                <li
+                  key={`pending-${i}`}
+                  className="flex items-center gap-3 px-4 py-2 rounded-lg border border-dashed border-zinc-200 dark:border-zinc-900 opacity-50"
+                >
+                  <Loader2 className="w-3.5 h-3.5 animate-spin text-zinc-400" />
+                  <span className="text-[13px] text-zinc-500">
+                    გვერდი {subPages.length + i + 1} ანალიზდება...
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
 
         <p className="text-center text-[10px] font-mono uppercase tracking-wider text-zinc-400 dark:text-zinc-600 mt-20">
           SEO Report Tool · v0.1 MVP
