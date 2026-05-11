@@ -435,7 +435,7 @@ function SlideFooter({
 }) {
   return (
     <footer className="absolute bottom-6 left-10 right-10 flex items-center justify-between text-[11px] font-mono uppercase tracking-[0.2em] text-white/40">
-      <span>{BRAND.name.toUpperCase()}</span>
+      <span>{BRAND.agency.toUpperCase()}</span>
       {label && <span className="text-white/50">{label}</span>}
       <span>
         {slideNumber} / {total}
@@ -522,7 +522,7 @@ function CoverSlide({
       <footer className="absolute bottom-8 left-0 right-0 text-center">
         <p className="text-[11px] font-mono uppercase tracking-[0.4em] text-white/50">
           made by{" "}
-          <span className="text-white font-medium">{BRAND.name.toUpperCase()}</span>
+          <span className="text-white font-medium">{BRAND.agency.toUpperCase()}</span>
         </p>
       </footer>
     </div>
@@ -858,7 +858,7 @@ function ServicesSlide({
     >
       <header className="mb-6">
         <p className="text-[10px] font-mono uppercase tracking-[0.3em] text-accent mb-2">
-          {BRAND.name.toUpperCase()}
+          {BRAND.agency.toUpperCase()}
         </p>
         <h2 className="text-4xl font-semibold tracking-tight text-white">
           რას მოიცავს SEO სერვისი?

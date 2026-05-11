@@ -1,10 +1,15 @@
-// Single source of truth for product name + tagline. All UI/PPTX/metadata
-// references read from here so renaming is one edit, not a project-wide
-// search-and-replace.
+// Brand identifiers used across the app.
+//
+// Two separate fields because the tool itself and the agency that
+// delivers the audit are different things:
+//   - toolName: shown in the web UI (landing page, browser tab title) —
+//     this is the descriptive name of the tool itself.
+//   - agency:   shown in client-facing deliverables (PPTX footer, /presentation
+//     cover and footer) — this is the consultancy brand that signs the work.
 export const BRAND = {
-  name: "Audita",
+  toolName: "SEO Report Tool",
   tagline: "ვებგვერდის SEO ანალიზი",
   description:
     "ტექნიკური, On-Page, Performance და AI-ეპოქის სრული აუდიტი — ერთი ხელსაწყოთი.",
-  author: "Audita",
+  agency: "INFINITY SOLUTIONS",
 } as const;

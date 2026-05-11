@@ -52,7 +52,7 @@ function addFooter(
   total: number,
   middleLabel?: string
 ) {
-  slide.addText(BRAND.name.toUpperCase(), {
+  slide.addText(BRAND.agency.toUpperCase(), {
     x: 0.5,
     y: 7.05,
     w: 4,
@@ -187,7 +187,7 @@ function addCoverSlide(
     [
       { text: "made by ", options: { color: WHITE_DIM } },
       {
-        text: BRAND.name.toUpperCase(),
+        text: BRAND.agency.toUpperCase(),
         options: { color: WHITE, bold: true },
       },
     ],
@@ -1622,7 +1622,7 @@ function addServicesSlide(
 ) {
   const slide = navySlide(pptx);
 
-  slide.addText(BRAND.name.toUpperCase(), {
+  slide.addText(BRAND.agency.toUpperCase(), {
     x: 0.5,
     y: 0.5,
     w: 12.3,

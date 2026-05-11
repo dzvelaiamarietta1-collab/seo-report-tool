@@ -28,7 +28,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: `${BRAND.name} · ${BRAND.tagline}`,
+  title: `${BRAND.toolName} · ${BRAND.tagline}`,
   description: BRAND.description,
 };
 

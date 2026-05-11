@@ -3,7 +3,7 @@ import ResultsContent from "./ResultsContent";
 import { BRAND } from "@/lib/brand";
 
 export const metadata = {
-  title: `ანალიზის შედეგები · ${BRAND.name}`,
+  title: `ანალიზის შედეგები · ${BRAND.toolName}`,
 };
 
 function LoadingFallback() {

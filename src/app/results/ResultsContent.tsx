@@ -1491,9 +1491,9 @@ export default function ResultsContent() {
       // ignore
     }
     const date = new Date(state.meta.fetchedAt).toISOString().slice(0, 10);
-    document.title = `${BRAND.name} — ${host} — ${date}`;
+    document.title = `${BRAND.toolName} — ${host} — ${date}`;
     return () => {
-      document.title = `ანალიზის შედეგები · ${BRAND.name}`;
+      document.title = `ანალიზის შედეგები · ${BRAND.toolName}`;
     };
   }, [state.meta]);
 
@@ -1946,7 +1946,7 @@ export default function ResultsContent() {
         )}
 
         <p className="text-center text-[10px] font-mono uppercase tracking-wider text-foreground-subtle mt-20">
-          {BRAND.name} · v0.1 MVP
+          {BRAND.toolName} · v0.1 MVP
         </p>
       </div>
     </div>

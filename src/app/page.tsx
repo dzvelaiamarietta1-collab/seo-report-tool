@@ -93,7 +93,7 @@ export default function Home() {
       <div className="w-full max-w-xl">
         <div className="mb-12">
           <p className="text-xs font-mono uppercase tracking-[0.2em] text-foreground-muted mb-4">
-            {BRAND.name} · 2026
+            {BRAND.toolName} · 2026
           </p>
           <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight text-foreground mb-4 leading-tight">
             {BRAND.tagline}
