@@ -8,26 +8,30 @@ import type {
   ServiceBlock,
 } from "./presentation";
 import { GROUP_LABEL } from "./presentation";
+import { BRAND } from "./brand";
 
 type Pptx = PptxGenJS;
 type Slide = PptxGenJS.Slide;
 type TextRun = PptxGenJS.TextProps;
 
-const NAVY = "08086D";
-const CYAN = "22D3EE";
+// Audita brand palette — monochrome + electric lime accent.
+// Constant names kept (NAVY, CYAN) to avoid rewriting every call site;
+// values now reflect the dark theme used on web so the PPTX matches.
+const NAVY = "0A0A0A"; // page background (was navy)
+const CYAN = "BFFF00"; // brand accent (was cyan) — electric lime
 const WHITE = "FFFFFF";
-const WHITE_BRIGHT = "E6E6F2";
-const WHITE_MUTED = "B8B8D6";
-const WHITE_DIM = "8888B0";
-const WHITE_FAINT = "5C5C8C";
+const WHITE_BRIGHT = "FAFAFA";
+const WHITE_MUTED = "C4C4C4";
+const WHITE_DIM = "9CA3AF";
+const WHITE_FAINT = "6B7280";
 const RED = "EF4444";
 const RED_TEXT = "F87171";
 const AMBER = "FCD34D";
 const AMBER_DARK = "78350F";
-const BLUE_LINK = "1D4ED8";
+const BLUE_LINK = "60A5FA";
 
-const FONT = "Sylfaen";
-const FONT_MONO = "Consolas";
+const FONT = "FiraGO";
+const FONT_MONO = "JetBrains Mono";
 
 const SLIDE_W = 13.333;
 
@@ -48,7 +52,7 @@ function addFooter(
   total: number,
   middleLabel?: string
 ) {
-  slide.addText("INFINITY SOLUTIONS", {
+  slide.addText(BRAND.name.toUpperCase(), {
     x: 0.5,
     y: 7.05,
     w: 4,
@@ -183,7 +187,7 @@ function addCoverSlide(
     [
       { text: "made by ", options: { color: WHITE_DIM } },
       {
-        text: "INFINITY SOLUTIONS",
+        text: BRAND.name.toUpperCase(),
         options: { color: WHITE, bold: true },
       },
     ],
@@ -1618,7 +1622,7 @@ function addServicesSlide(
 ) {
   const slide = navySlide(pptx);
 
-  slide.addText("INFINITY SOLUTIONS", {
+  slide.addText(BRAND.name.toUpperCase(), {
     x: 0.5,
     y: 0.5,
     w: 12.3,

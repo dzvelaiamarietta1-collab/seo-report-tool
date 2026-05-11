@@ -1,82 +1,87 @@
 @import "tailwindcss";
 
-/* === Cause: Latin font (English UI/technical terms) === */
-@font-face {
-  font-family: "Cause";
-  src: url("/fonts/Cause-Regular.woff2") format("woff2"),
-       url("/fonts/Cause-Regular.woff") format("woff"),
-       url("/fonts/Cause-Regular.ttf") format("truetype");
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-  unicode-range: U+0000-024F, U+0370-03FF, U+2000-206F, U+20A0-20CF, U+2200-22FF;
-}
-
-/* === GeoDumba: Georgian font (Mkhedruli, Mtavruli, Asomtavruli, Nuskhuri) === */
-@font-face {
-  font-family: "GeoDumba";
-  src: url("/fonts/GeoDumba-Regular.otf") format("opentype");
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-  unicode-range: U+10A0-10FF, U+1C90-1CBF, U+2D00-2D2F;
-}
-
-@font-face {
-  font-family: "GeoDumba";
-  src: url("/fonts/GeoDumba-Italic.otf") format("opentype");
-  font-weight: 400;
-  font-style: italic;
-  font-display: swap;
-  unicode-range: U+10A0-10FF, U+1C90-1CBF, U+2D00-2D2F;
-}
-
-@font-face {
-  font-family: "GeoDumba";
-  src: url("/fonts/GeoDumba-Bold.otf") format("opentype");
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-  unicode-range: U+10A0-10FF, U+1C90-1CBF, U+2D00-2D2F;
-}
-
-@font-face {
-  font-family: "GeoDumba";
-  src: url("/fonts/GeoDumba-BoldItalic.otf") format("opentype");
-  font-weight: 700;
-  font-style: italic;
-  font-display: swap;
-  unicode-range: U+10A0-10FF, U+1C90-1CBF, U+2D00-2D2F;
-}
-
+/* === Theme tokens (dark-first) ============================================
+ * Audita is a dark-only product. Light mode kicks in automatically for
+ * print/PDF/PPTX where contrast on paper matters. The accent is electric
+ * lime — same psychological "good = green" cue Lighthouse/PageSpeed use.
+ * ========================================================================= */
 :root {
-  --background: #ffffff;
-  --foreground: #18181b;
-  --font-brand: "GeoDumba", "Cause", "Sylfaen", system-ui, -apple-system,
-    "Segoe UI", "Inter", Arial, sans-serif;
+  --background: #0a0a0a;
+  --surface: #131313;
+  --surface-elevated: #1a1a1a;
+  --foreground: #fafafa;
+  --foreground-muted: #a1a1aa;
+  --foreground-subtle: #71717a;
+
+  --accent: #bfff00;
+  --accent-hover: #d2ff35;
+  --accent-soft: rgba(191, 255, 0, 0.12);
+  --accent-foreground: #0a0a0a;
+
+  --border: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.16);
+
+  --success: #bfff00;
+  --warning: #fcd34d;
+  --error: #f87171;
+  --info: #38bdf8;
+
+  --font-sans: var(--font-fira-sans), var(--font-noto-georgian), "Fira Sans",
+    "Noto Sans Georgian", "Sylfaen", system-ui, -apple-system, "Segoe UI",
+    sans-serif;
+  --font-mono: var(--font-jetbrains-mono), "JetBrains Mono", ui-monospace,
+    "SF Mono", Menlo, Consolas, monospace;
 }
 
 @theme inline {
   --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-elevated: var(--surface-elevated);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-brand);
+  --color-foreground-muted: var(--foreground-muted);
+  --color-foreground-subtle: var(--foreground-subtle);
+
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-foreground: var(--accent-foreground);
+
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-error: var(--error);
+  --color-info: var(--info);
+
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #000000;
-    --foreground: #fafafa;
-  }
+html {
+  color-scheme: dark;
+  background: var(--background);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-brand);
+  font-family: var(--font-sans);
+  font-feature-settings: "cv11", "ss01", "ss03";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
+/* Tabular figures by default for tabular-nums utility readability */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* === Print + presentation mode ==========================================
+ * Forces white background, dark text, and ignores dark-theme overrides
+ * so the printed PDF / opened presentation looks "paper" not "screen".
+ * ========================================================================= */
 @media print {
-  /* === Force light theme regardless of system preference === */
   :root,
   html,
   body {
@@ -85,6 +90,12 @@ body {
     color-scheme: light !important;
     --background: #ffffff !important;
     --foreground: #18181b !important;
+    --surface: #ffffff !important;
+    --surface-elevated: #fafafa !important;
+    --foreground-muted: #52525b !important;
+    --foreground-subtle: #71717a !important;
+    --border: #e4e4e7 !important;
+    --border-strong: #d4d4d8 !important;
   }
 
   body {
@@ -94,24 +105,20 @@ body {
     line-height: 1.4;
   }
 
-  /* === Page setup === */
   @page {
     size: A4;
     margin: 14mm 12mm;
   }
 
-  /* === Hide non-essential UI === */
   [data-print-hide] {
     display: none !important;
   }
 
-  /* === Override ALL dark: backgrounds — neutralize to white === */
+  /* Neutralize dark utility classes left in components */
   [class*="dark:bg-"] {
     background-color: #ffffff !important;
     background-image: none !important;
   }
-
-  /* === Override neutral dark: text to dark zinc (preserve colored text) === */
   [class*="dark:text-zinc-"],
   [class*="dark:text-neutral-"],
   [class*="dark:text-stone-"],
@@ -120,53 +127,40 @@ body {
   [class*="dark:text-white"] {
     color: #18181b !important;
   }
-
-  /* === Override dark: borders to light gray === */
   [class*="dark:border-"] {
     border-color: #e4e4e7 !important;
   }
-
-  /* === Override dark: SVG strokes === */
   [class*="dark:stroke-"] {
     stroke: #e4e4e7 !important;
   }
 
-  /* === Disable hover/transitions/animations === */
   *,
   *::before,
   *::after {
     transition: none !important;
     animation: none !important;
   }
-
   *:hover {
     background-color: inherit !important;
     border-color: inherit !important;
     transform: none !important;
   }
 
-  /* === Page break control === */
   section,
   article,
   header,
-  .print-keep-together {
-    break-inside: avoid;
-    page-break-inside: avoid;
-  }
-
+  .print-keep-together,
   .group {
     break-inside: avoid;
     page-break-inside: avoid;
   }
 
-  /* Allow break between top-level sections */
   main > section,
   .space-y-12 > section {
     page-break-before: auto;
     break-before: auto;
   }
 
-  /* === Long URLs/emails wrap === */
   h1,
   [class*="break-all"],
   code,
@@ -174,8 +168,6 @@ body {
     word-break: break-all;
     overflow-wrap: break-word;
   }
-
-  /* === Code blocks: wrap long lines instead of horizontal scroll === */
   pre,
   pre code {
     white-space: pre-wrap !important;
@@ -184,25 +176,20 @@ body {
     overflow-wrap: anywhere !important;
   }
 
-  /* === Hide horizontal scrollbars in cards/lists === */
   .overflow-x-auto,
   .overflow-y-auto {
     overflow: visible !important;
   }
-
-  /* === Constrain max-h elements (broken links list, etc.) === */
   [class*="max-h-"] {
     max-height: none !important;
   }
 
-  /* === Compact spacing === */
   .py-10,
   .py-14,
   .sm\:py-14 {
     padding-top: 0 !important;
     padding-bottom: 0 !important;
   }
-
   .mb-14 {
     margin-bottom: 14pt !important;
   }
@@ -212,68 +199,49 @@ body {
   .mt-20 {
     margin-top: 12pt !important;
   }
-
-  /* === Preview cards: 2 cols instead of 3 (better readability on A4) === */
   .lg\:grid-cols-3 {
     grid-template-columns: repeat(2, 1fr) !important;
   }
-
-  /* === Card grids: keep 2-col on print === */
   .md\:grid-cols-2 {
     grid-template-columns: repeat(2, 1fr) !important;
     gap: 8pt !important;
   }
-
-  /* === Card padding compact === */
   .p-5 {
     padding: 8pt !important;
   }
   .p-4 {
     padding: 7pt !important;
   }
-
-  /* === Hide score-ring placeholder during streaming (rare in print but cleanup) === */
   .border-dashed {
     display: none !important;
   }
-
-  /* === Clean shadow-heavy cards for print === */
   [class*="shadow-"] {
     box-shadow: none !important;
   }
-
-  /* === Make sure link text colors print === */
   a {
     color: inherit;
     text-decoration: none;
   }
-
-  /* === Force max-width content to fit print === */
   .max-w-5xl {
     max-width: 100% !important;
   }
 }
 
-/* === Presentation mode (separate page size for /presentation) === */
 @media print {
   body:has(.presentation-root) {
     background: #ffffff !important;
   }
-
   .presentation-root {
     background: white !important;
     padding: 0 !important;
   }
-
   .presentation-deck {
     padding: 0 !important;
     max-width: none !important;
   }
-
   .presentation-deck > * {
     margin: 0 !important;
   }
-
   .presentation-deck .slide {
     width: 100% !important;
     aspect-ratio: 16 / 9 !important;
@@ -286,7 +254,6 @@ body {
     break-inside: avoid !important;
     overflow: hidden !important;
   }
-
   .presentation-deck .slide:last-child {
     page-break-after: auto !important;
     break-after: auto !important;

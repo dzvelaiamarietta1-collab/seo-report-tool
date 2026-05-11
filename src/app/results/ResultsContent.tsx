@@ -52,6 +52,7 @@ import {
 } from "@/lib/checkMeta";
 import { storageKey } from "@/lib/presentation";
 import { calculateSummary } from "@/lib/summary";
+import { BRAND } from "@/lib/brand";
 
 const CATEGORY_ICONS: Record<string, LucideIcon> = {
   Wrench,
@@ -99,30 +100,30 @@ const ALL_STAGES: StageId[] = [
 const STATUS_META = {
   pass: {
     Icon: Check,
-    border: "border-zinc-200 dark:border-zinc-900",
+    border: "border-border",
     accent: "",
-    iconColor: "text-emerald-500",
+    iconColor: "text-success",
     label: "გავიდა",
   },
   warn: {
     Icon: AlertTriangle,
-    border: "border-zinc-200 dark:border-zinc-900",
-    accent: "border-l-2 border-l-amber-500",
-    iconColor: "text-amber-500",
+    border: "border-border",
+    accent: "border-l-2 border-l-warning",
+    iconColor: "text-warning",
     label: "გაფრთხილება",
   },
   fail: {
     Icon: X,
-    border: "border-zinc-200 dark:border-zinc-900",
-    accent: "border-l-2 border-l-red-500",
-    iconColor: "text-red-500",
+    border: "border-border",
+    accent: "border-l-2 border-l-error",
+    iconColor: "text-error",
     label: "ჩაიჭრა",
   },
   info: {
     Icon: Info,
-    border: "border-zinc-200 dark:border-zinc-900",
-    accent: "border-l-2 border-l-cyan-500",
-    iconColor: "text-cyan-500",
+    border: "border-border",
+    accent: "border-l-2 border-l-info",
+    iconColor: "text-info",
     label: "info",
   },
 };
@@ -137,7 +138,7 @@ function formatMessage(text: string): ReactNode[] {
       return (
         <code
           key={i}
-          className="inline-block px-1.5 py-0.5 mx-0.5 rounded bg-zinc-100 dark:bg-zinc-900 text-[0.85em] font-mono text-zinc-900 dark:text-zinc-200 align-baseline"
+          className="inline-block px-1.5 py-0.5 mx-0.5 rounded bg-surface text-[0.85em] font-mono text-foreground align-baseline"
         >
           {clean}
         </code>
@@ -161,18 +162,18 @@ function FixSnippet({ template }: { template: FixTemplate }) {
   };
 
   return (
-    <div className="rounded-md border border-zinc-200 dark:border-zinc-800 overflow-hidden bg-zinc-50/40 dark:bg-zinc-950">
-      <header className="flex items-center justify-between gap-2 px-3 py-2 border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/30">
+    <div className="rounded-md border border-border overflow-hidden bg-surface">
+      <header className="flex items-center justify-between gap-2 px-3 py-2 border-b border-border bg-surface">
         <div className="flex items-center gap-2 min-w-0 flex-1">
-          <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-400 dark:text-zinc-600 shrink-0">
+          <span className="text-[10px] font-mono uppercase tracking-wider text-foreground-subtle shrink-0">
             {template.language}
           </span>
           {template.filename && (
-            <span className="text-[11px] font-mono text-zinc-700 dark:text-zinc-300 truncate">
+            <span className="text-[11px] font-mono text-foreground truncate">
               {template.filename}
             </span>
           )}
-          <span className="text-[12px] text-zinc-600 dark:text-zinc-400 truncate">
+          <span className="text-[12px] text-foreground-muted truncate">
             {template.title}
           </span>
         </div>
@@ -180,11 +181,11 @@ function FixSnippet({ template }: { template: FixTemplate }) {
           type="button"
           onClick={handleCopy}
           data-print-hide
-          className="inline-flex items-center gap-1 px-2 py-1 rounded text-[11px] font-medium text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition shrink-0"
+          className="inline-flex items-center gap-1 px-2 py-1 rounded text-[11px] font-medium text-foreground hover:bg-surface transition shrink-0"
         >
           {copied ? (
             <>
-              <Check className="w-3 h-3 text-emerald-500" strokeWidth={2.5} />
+              <Check className="w-3 h-3 text-success" strokeWidth={2.5} />
               კოპირდა
             </>
           ) : (
@@ -195,11 +196,11 @@ function FixSnippet({ template }: { template: FixTemplate }) {
           )}
         </button>
       </header>
-      <pre className="overflow-x-auto px-3 py-3 text-[12px] font-mono text-zinc-800 dark:text-zinc-200 leading-relaxed whitespace-pre">
+      <pre className="overflow-x-auto px-3 py-3 text-[12px] font-mono text-foreground leading-relaxed whitespace-pre">
         <code>{template.code}</code>
       </pre>
       {template.note && (
-        <p className="px-3 py-2 text-[11px] text-zinc-500 dark:text-zinc-500 border-t border-zinc-200 dark:border-zinc-800 leading-relaxed">
+        <p className="px-3 py-2 text-[11px] text-foreground-muted border-t border-border leading-relaxed">
           {template.note}
         </p>
       )}
@@ -227,10 +228,10 @@ function CheckCard({
   return (
     <div
       id={anchorId}
-      className={`group scroll-mt-24 rounded-lg border ${meta.border} ${meta.accent} bg-white dark:bg-zinc-950 p-5 transition-colors hover:border-zinc-300 dark:hover:border-zinc-800`}
+      className={`group scroll-mt-24 rounded-lg border ${meta.border} ${meta.accent} bg-background p-5 transition-colors hover:border-border-strong`}
     >
       <div className="flex items-start justify-between gap-3 mb-2">
-        <h4 className="font-medium text-[15px] text-zinc-900 dark:text-zinc-100 leading-snug">
+        <h4 className="font-medium text-[15px] text-foreground leading-snug">
           {check.label}
         </h4>
         {check.status !== "pass" && (
@@ -242,21 +243,21 @@ function CheckCard({
         {check.status === "pass" && (
           <StatusIcon
             strokeWidth={2.5}
-            className="w-4 h-4 shrink-0 mt-0.5 text-zinc-300 dark:text-zinc-700 group-hover:text-emerald-500/70 transition-colors"
+            className="w-4 h-4 shrink-0 mt-0.5 text-foreground-subtle group-hover:text-success/70 transition-colors"
           />
         )}
       </div>
-      <p className="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed break-words">
+      <p className="text-sm text-foreground-muted leading-relaxed break-words">
         {formatMessage(check.message)}
       </p>
       {check.recommendation && (
-        <div className="mt-4 pt-4 border-t border-zinc-100 dark:border-zinc-900">
+        <div className="mt-4 pt-4 border-t border-border">
           <div className="flex items-start gap-2.5">
             <Lightbulb
               strokeWidth={1.75}
-              className="w-3.5 h-3.5 shrink-0 mt-0.5 text-zinc-400 dark:text-zinc-600"
+              className="w-3.5 h-3.5 shrink-0 mt-0.5 text-foreground-subtle"
             />
-            <p className="text-[13px] text-zinc-500 dark:text-zinc-500 leading-relaxed">
+            <p className="text-[13px] text-foreground-muted leading-relaxed">
               {formatMessage(check.recommendation)}
             </p>
           </div>
@@ -265,8 +266,8 @@ function CheckCard({
       {Array.isArray(check.value) &&
         check.value.length > 0 &&
         check.status !== "pass" && (
-          <div className="mt-3 pt-3 border-t border-zinc-100 dark:border-zinc-900">
-            <ul className="space-y-1 text-[12px] font-mono text-zinc-600 dark:text-zinc-400 max-h-48 overflow-y-auto pr-1">
+          <div className="mt-3 pt-3 border-t border-border">
+            <ul className="space-y-1 text-[12px] font-mono text-foreground-muted max-h-48 overflow-y-auto pr-1">
               {check.value.map((v, i) => (
                 <li key={i} className="break-all leading-snug" title={v}>
                   {v}
@@ -276,12 +277,12 @@ function CheckCard({
           </div>
         )}
       {impact && (
-        <p className="mt-3 text-[11px] font-mono uppercase tracking-wider text-zinc-400 dark:text-zinc-600">
+        <p className="mt-3 text-[11px] font-mono uppercase tracking-wider text-foreground-subtle">
           {impact}
         </p>
       )}
       {fixes.length > 0 && (
-        <div className="mt-4 pt-4 border-t border-zinc-100 dark:border-zinc-900 space-y-3">
+        <div className="mt-4 pt-4 border-t border-border space-y-3">
           {fixes.map((f, i) => (
             <FixSnippet key={`${f.title}-${i}`} template={f} />
           ))}
@@ -299,14 +300,14 @@ function PassedList({ checks }: { checks: CheckResult[] }) {
       <button
         type="button"
         onClick={() => setExpanded((v) => !v)}
-        className="flex items-center gap-2 text-xs text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 transition"
+        className="flex items-center gap-2 text-xs text-foreground-muted hover:text-foreground transition"
       >
         {expanded ? (
           <ChevronDown className="w-3.5 h-3.5" strokeWidth={2} />
         ) : (
           <ChevronRight className="w-3.5 h-3.5" strokeWidth={2} />
         )}
-        <Check className="w-3 h-3 text-emerald-500" strokeWidth={2.5} />
+        <Check className="w-3 h-3 text-success" strokeWidth={2.5} />
         წესრიგშია ({checks.length})
       </button>
       {expanded && (
@@ -317,15 +318,15 @@ function PassedList({ checks }: { checks: CheckResult[] }) {
               className="flex items-start gap-2 text-[13px] leading-snug"
             >
               <Check
-                className="w-3 h-3 text-emerald-500 mt-1 shrink-0"
+                className="w-3 h-3 text-success mt-1 shrink-0"
                 strokeWidth={2.5}
               />
               <span className="min-w-0">
-                <span className="text-zinc-700 dark:text-zinc-300 font-medium">
+                <span className="text-foreground font-medium">
                   {c.label}
                 </span>
-                <span className="text-zinc-500 dark:text-zinc-500"> · </span>
-                <span className="text-zinc-500 dark:text-zinc-500">
+                <span className="text-foreground-muted"> · </span>
+                <span className="text-foreground-muted">
                   {c.message}
                 </span>
               </span>
@@ -382,18 +383,18 @@ function CategorySection({
 
   return (
     <section>
-      <header className="flex items-end justify-between gap-4 mb-4 pb-3 border-b border-zinc-200 dark:border-zinc-900">
-        <h2 className="text-[15px] font-medium text-zinc-900 dark:text-zinc-100 inline-flex items-center gap-2.5">
+      <header className="flex items-end justify-between gap-4 mb-4 pb-3 border-b border-border">
+        <h2 className="text-[15px] font-medium text-foreground inline-flex items-center gap-2.5">
           <Icon
             strokeWidth={1.75}
-            className="w-4 h-4 text-zinc-400 dark:text-zinc-500"
+            className="w-4 h-4 text-foreground-subtle"
           />
           {category.name}
         </h2>
         <div className="flex items-center gap-3 text-xs font-mono tabular-nums">
           {scored > 0 && (
             <>
-              <div className="hidden sm:block w-24 h-1 rounded-full bg-zinc-100 dark:bg-zinc-900 overflow-hidden">
+              <div className="hidden sm:block w-24 h-1 rounded-full bg-surface overflow-hidden">
                 <div
                   className={`h-full transition-all ${
                     passRate >= 80
@@ -405,20 +406,20 @@ function CategorySection({
                   style={{ width: `${passRate}%` }}
                 />
               </div>
-              <span className="text-zinc-500 dark:text-zinc-500">
-                <span className="text-zinc-900 dark:text-zinc-100">
+              <span className="text-foreground-muted">
+                <span className="text-foreground">
                   {stats.pass}
                 </span>
                 <span className="mx-1">/</span>
                 <span>{scored}</span>
               </span>
               {stats.warn > 0 && (
-                <span className="text-amber-600 dark:text-amber-500">
+                <span className="text-warning">
                   {stats.warn}w
                 </span>
               )}
               {stats.fail > 0 && (
-                <span className="text-red-600 dark:text-red-500">
+                <span className="text-error">
                   {stats.fail}f
                 </span>
               )}
@@ -448,21 +449,21 @@ function CategoryPlaceholder({ categoryKey }: { categoryKey: CategoryKey }) {
   const Icon = CATEGORY_ICONS[meta.icon] ?? FileText;
   return (
     <section data-print-hide>
-      <header className="flex items-end justify-between gap-4 mb-4 pb-3 border-b border-zinc-200 dark:border-zinc-900">
-        <h2 className="text-[15px] font-medium text-zinc-400 dark:text-zinc-600 inline-flex items-center gap-2.5">
+      <header className="flex items-end justify-between gap-4 mb-4 pb-3 border-b border-border">
+        <h2 className="text-[15px] font-medium text-foreground-subtle inline-flex items-center gap-2.5">
           <Icon
             strokeWidth={1.75}
-            className="w-4 h-4 text-zinc-300 dark:text-zinc-700"
+            className="w-4 h-4 text-foreground-subtle"
           />
           {meta.name}
         </h2>
-        <Loader2 className="w-3.5 h-3.5 animate-spin text-zinc-400 dark:text-zinc-600" />
+        <Loader2 className="w-3.5 h-3.5 animate-spin text-foreground-subtle" />
       </header>
       <div className="grid gap-3 md:grid-cols-2">
         {[0, 1, 2, 3].map((i) => (
           <div
             key={i}
-            className="rounded-lg border border-zinc-200 dark:border-zinc-900 bg-zinc-50/50 dark:bg-zinc-950 h-24 animate-pulse"
+            className="rounded-lg border border-border bg-surface h-24 animate-pulse"
           />
         ))}
       </div>
@@ -487,15 +488,15 @@ function PreviewCard({
   children: ReactNode;
 }) {
   const statusMeta = {
-    full: { label: "სრული", color: "text-emerald-500", Icon: Check },
-    partial: { label: "ნაწილობრივი", color: "text-amber-500", Icon: AlertTriangle },
-    empty: { label: "ცარიელი", color: "text-red-500", Icon: X },
+    full: { label: "სრული", color: "text-success", Icon: Check },
+    partial: { label: "ნაწილობრივი", color: "text-warning", Icon: AlertTriangle },
+    empty: { label: "ცარიელი", color: "text-error", Icon: X },
   }[status];
   const StatusIcon = statusMeta.Icon;
   return (
     <div className="space-y-3 min-w-0">
       <div className="flex items-center justify-between gap-2">
-        <p className="text-[10px] font-mono uppercase tracking-[0.15em] text-zinc-500">
+        <p className="text-[10px] font-mono uppercase tracking-[0.15em] text-foreground-muted">
           {label}
         </p>
         <span
@@ -534,7 +535,7 @@ function GoogleSerpCard({ data }: { data: PreviewData }) {
 
   return (
     <PreviewCard label="Google ძიება" status={status}>
-      <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 p-4 bg-white dark:bg-zinc-950">
+      <div className="rounded-lg border border-border p-4 bg-background">
         <div className="flex items-center gap-2 mb-1.5 min-w-0">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
@@ -542,30 +543,30 @@ function GoogleSerpCard({ data }: { data: PreviewData }) {
             alt=""
             width={18}
             height={18}
-            className="w-[18px] h-[18px] rounded-full bg-zinc-100 dark:bg-zinc-900 shrink-0"
+            className="w-[18px] h-[18px] rounded-full bg-surface shrink-0"
             onError={(e) => {
               e.currentTarget.style.visibility = "hidden";
             }}
           />
           <div className="min-w-0">
-            <div className="text-[12px] text-zinc-700 dark:text-zinc-300 leading-tight truncate">
+            <div className="text-[12px] text-foreground leading-tight truncate">
               {displayHost}
             </div>
-            <div className="text-[11px] text-zinc-500 dark:text-zinc-500 leading-tight truncate">
+            <div className="text-[11px] text-foreground-muted leading-tight truncate">
               https://{displayHost}
               {segments.length > 0 && " › " + segments.join(" › ")}
             </div>
           </div>
         </div>
-        <h4 className="text-[18px] text-blue-700 dark:text-blue-400 leading-snug mb-1 break-words">
+        <h4 className="text-[18px] text-info leading-snug mb-1 break-words">
           {truncatedTitle}
         </h4>
         {description ? (
-          <p className="text-[13px] text-zinc-700 dark:text-zinc-400 leading-snug break-words">
+          <p className="text-[13px] text-foreground-muted leading-snug break-words">
             {truncatedDesc}
           </p>
         ) : (
-          <p className="text-[13px] text-red-500 dark:text-red-400 leading-snug italic">
+          <p className="text-[13px] text-error leading-snug italic">
             Description-ი არ არის — Google ავტომატურად შეარჩევს ტექსტს გვერდიდან.
           </p>
         )}
@@ -578,10 +579,10 @@ function ShareImageWarning({ check }: { check: ShareImageCheck }) {
   if (check.verdict === "good") return null;
   if (check.verdict === "missing") return null;
   const colorMap = {
-    fail: "border-red-500/40 bg-red-50 dark:bg-red-950/20 text-red-700 dark:text-red-400",
-    warn: "border-amber-500/40 bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-500",
+    fail: "border-error/30 bg-error/10 text-error",
+    warn: "border-warning/30 bg-warning/10 text-warning",
     unknown:
-      "border-zinc-300 bg-zinc-50 dark:bg-zinc-900/40 text-zinc-600 dark:text-zinc-400",
+      "border-border bg-surface text-foreground-muted",
   } as const;
   type Severity = keyof typeof colorMap;
   const severityKey: Severity = check.verdict === "fail" ? "fail" : check.verdict === "warn" ? "warn" : "unknown";
@@ -624,11 +625,11 @@ function ShareImageDisplay({
       <div
         className={`${
           layout === "large" ? "aspect-[1.91/1]" : "w-full h-full"
-        } bg-zinc-100 dark:bg-zinc-900 flex items-center justify-center`}
+        } bg-surface flex items-center justify-center`}
       >
         <div className="text-center px-4">
-          <X className="w-6 h-6 mx-auto mb-2 text-red-500" strokeWidth={1.5} />
-          <p className="text-[12px] text-zinc-600 dark:text-zinc-400">
+          <X className="w-6 h-6 mx-auto mb-2 text-error" strokeWidth={1.5} />
+          <p className="text-[12px] text-foreground-muted">
             სურათი არ არის
           </p>
         </div>
@@ -647,7 +648,7 @@ function ShareImageDisplay({
     <div
       className={`${
         layout === "large" ? "aspect-[1.91/1]" : "w-full h-full"
-      } relative bg-zinc-100 dark:bg-zinc-900`}
+      } relative bg-surface`}
       style={
         isProblematic
           ? {
@@ -697,25 +698,25 @@ function FacebookCard({ data }: { data: PreviewData }) {
 
   return (
     <PreviewCard label="Facebook / LinkedIn" status={status}>
-      <div className="rounded-md overflow-hidden border border-zinc-200 dark:border-zinc-800">
+      <div className="rounded-md overflow-hidden border border-border">
         <ShareImageDisplay
           imageUrl={image}
           check={imageCheck}
           layout="large"
         />
-        <div className="px-3 py-2.5 bg-zinc-50 dark:bg-zinc-900/40">
-          <p className="text-[10px] uppercase tracking-wider text-zinc-500 mb-1 truncate">
+        <div className="px-3 py-2.5 bg-surface">
+          <p className="text-[10px] uppercase tracking-wider text-foreground-muted mb-1 truncate">
             {displayHost}
           </p>
-          <p className="text-[14px] font-semibold text-zinc-900 dark:text-zinc-100 leading-snug mb-1 line-clamp-2 break-words">
+          <p className="text-[14px] font-semibold text-foreground leading-snug mb-1 line-clamp-2 break-words">
             {truncate(title || "(სათაური აკლია)", 90)}
           </p>
           {description ? (
-            <p className="text-[12px] text-zinc-500 dark:text-zinc-400 leading-snug line-clamp-2 break-words">
+            <p className="text-[12px] text-foreground-muted leading-snug line-clamp-2 break-words">
               {truncate(description, 200)}
             </p>
           ) : (
-            <p className="text-[12px] text-zinc-400 dark:text-zinc-600 italic">
+            <p className="text-[12px] text-foreground-subtle italic">
               აღწერა აკლია
             </p>
           )}
@@ -757,7 +758,7 @@ function TwitterCard({ data }: { data: PreviewData }) {
 
   return (
     <PreviewCard label="Twitter / X" status={status}>
-      <div className="rounded-2xl overflow-hidden border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950">
+      <div className="rounded-2xl overflow-hidden border border-border bg-background">
         {isLargeImage && (
           <ShareImageDisplay
             imageUrl={image}
@@ -766,7 +767,7 @@ function TwitterCard({ data }: { data: PreviewData }) {
           />
         )}
         {!isLargeImage && image && (
-          <div className="flex border-b border-zinc-200 dark:border-zinc-800">
+          <div className="flex border-b border-border">
             <div className="w-24 h-24 shrink-0">
               <ShareImageDisplay
                 imageUrl={image}
@@ -775,10 +776,10 @@ function TwitterCard({ data }: { data: PreviewData }) {
               />
             </div>
             <div className="flex-1 px-3 py-2 min-w-0">
-              <p className="text-[14px] font-semibold text-zinc-900 dark:text-zinc-100 line-clamp-2 leading-snug break-words">
+              <p className="text-[14px] font-semibold text-foreground line-clamp-2 leading-snug break-words">
                 {truncate(title || "(სათაური აკლია)", 70)}
               </p>
-              <p className="text-[11px] text-zinc-500 mt-0.5 truncate">
+              <p className="text-[11px] text-foreground-muted mt-0.5 truncate">
                 {displayHost}
               </p>
             </div>
@@ -793,15 +794,15 @@ function TwitterCard({ data }: { data: PreviewData }) {
         )}
         {(isLargeImage || !image) && (
           <div className="px-3 py-2.5">
-            <p className="text-[14px] font-semibold text-zinc-900 dark:text-zinc-100 leading-snug line-clamp-2 mb-0.5 break-words">
+            <p className="text-[14px] font-semibold text-foreground leading-snug line-clamp-2 mb-0.5 break-words">
               {truncate(title || "(სათაური აკლია)", 70)}
             </p>
             {description && (
-              <p className="text-[12px] text-zinc-500 dark:text-zinc-400 leading-snug line-clamp-2 mb-1 break-words">
+              <p className="text-[12px] text-foreground-muted leading-snug line-clamp-2 mb-1 break-words">
                 {truncate(description, 200)}
               </p>
             )}
-            <p className="text-[11px] text-zinc-500 truncate">{displayHost}</p>
+            <p className="text-[11px] text-foreground-muted truncate">{displayHost}</p>
           </div>
         )}
       </div>
@@ -813,11 +814,11 @@ function TwitterCard({ data }: { data: PreviewData }) {
 function PreviewSection({ data }: { data: PreviewData }) {
   return (
     <section className="mb-14">
-      <header className="flex items-end justify-between gap-4 mb-6 pb-3 border-b border-zinc-200 dark:border-zinc-900">
-        <h2 className="text-[15px] font-medium text-zinc-900 dark:text-zinc-100">
+      <header className="flex items-end justify-between gap-4 mb-6 pb-3 border-b border-border">
+        <h2 className="text-[15px] font-medium text-foreground">
           როგორ ჩანს გვერდი
         </h2>
-        <p className="text-[11px] font-mono uppercase tracking-wider text-zinc-500">
+        <p className="text-[11px] font-mono uppercase tracking-wider text-foreground-muted">
           Preview
         </p>
       </header>
@@ -840,25 +841,25 @@ function TopPrioritiesBanner({
     const el = document.getElementById(id);
     if (el) {
       el.scrollIntoView({ behavior: "smooth", block: "center" });
-      el.classList.add("ring-2", "ring-purple-500/50");
+      el.classList.add("ring-2", "ring-accent/50");
       window.setTimeout(() => {
-        el.classList.remove("ring-2", "ring-purple-500/50");
+        el.classList.remove("ring-2", "ring-accent/50");
       }, 1600);
     }
   };
   return (
     <section
-      className="mb-14 rounded-xl border border-purple-500/20 bg-gradient-to-br from-purple-500/[0.04] to-transparent p-5 sm:p-6"
+      className="mb-14 rounded-xl border border-accent/20 bg-gradient-to-br from-accent-soft to-transparent p-5 sm:p-6"
     >
       <header className="flex items-center gap-2.5 mb-4">
         <Target
-          className="w-4 h-4 text-purple-500 dark:text-purple-400"
+          className="w-4 h-4 text-accent"
           strokeWidth={2}
         />
-        <h2 className="text-[13px] font-medium text-zinc-900 dark:text-zinc-100">
+        <h2 className="text-[13px] font-medium text-foreground">
           პრიორიტეტული ცვლილებები
         </h2>
-        <span className="text-[11px] font-mono uppercase tracking-wider text-zinc-500">
+        <span className="text-[11px] font-mono uppercase tracking-wider text-foreground-muted">
           ({items.length})
         </span>
       </header>
@@ -873,20 +874,20 @@ function TopPrioritiesBanner({
               <span
                 className={`shrink-0 w-6 h-6 rounded-full inline-flex items-center justify-center text-[11px] font-mono font-medium ${
                   isFail
-                    ? "bg-red-500/10 text-red-600 dark:text-red-400"
-                    : "bg-amber-500/10 text-amber-600 dark:text-amber-500"
+                    ? "bg-error/10 text-error"
+                    : "bg-amber-500/10 text-warning"
                 }`}
               >
                 {i + 1}
               </span>
               <div className="flex-1 min-w-0">
-                <p className="text-[13px] font-medium text-zinc-900 dark:text-zinc-100 leading-snug truncate">
+                <p className="text-[13px] font-medium text-foreground leading-snug truncate">
                   {item.check.label}
-                  <span className="ml-2 text-[10px] font-mono uppercase tracking-wider text-zinc-400 dark:text-zinc-600">
+                  <span className="ml-2 text-[10px] font-mono uppercase tracking-wider text-foreground-subtle">
                     {item.categoryName}
                   </span>
                 </p>
-                <p className="text-[12px] text-zinc-500 dark:text-zinc-500 truncate leading-snug">
+                <p className="text-[12px] text-foreground-muted truncate leading-snug">
                   {item.check.message}
                 </p>
               </div>
@@ -898,7 +899,7 @@ function TopPrioritiesBanner({
                   )
                 }
                 data-print-hide
-                className="shrink-0 inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-medium bg-purple-500/10 hover:bg-purple-500/20 text-purple-700 dark:text-purple-400 transition"
+                className="shrink-0 inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-medium bg-accent-soft hover:bg-accent-soft text-accent transition"
               >
                 გასწორება
                 <ChevronRight className="w-3 h-3" strokeWidth={2.25} />
@@ -935,12 +936,12 @@ function FilterChip({
       disabled={disabled}
       className={`inline-flex items-baseline gap-1.5 px-2 py-1 rounded-md transition ${
         active
-          ? `bg-zinc-100 dark:bg-zinc-900 ring-1 ${activeRing}`
-          : "hover:bg-zinc-100 dark:hover:bg-zinc-900"
+          ? `bg-surface ring-1 ${activeRing}`
+          : "hover:bg-surface"
       } disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent`}
     >
       <span className={`font-medium ${colorClass}`}>{count}</span>
-      <span className="text-zinc-500 dark:text-zinc-500">{label}</span>
+      <span className="text-foreground-muted">{label}</span>
     </button>
   );
 }
@@ -963,7 +964,7 @@ function ScoreRing({ score }: { score: number }) {
           cx="80"
           cy="80"
           r={radius}
-          className="stroke-zinc-200 dark:stroke-zinc-900"
+          className="stroke-border"
           strokeWidth="3"
           fill="none"
         />
@@ -981,7 +982,7 @@ function ScoreRing({ score }: { score: number }) {
         />
       </svg>
       <div className="absolute inset-0 flex items-center justify-center">
-        <span className="text-5xl font-semibold text-zinc-900 dark:text-zinc-50 tabular-nums leading-none">
+        <span className="text-5xl font-semibold text-foreground tabular-nums leading-none">
           {score}
         </span>
       </div>
@@ -1000,7 +1001,7 @@ function RunningTimer() {
     return () => clearInterval(interval);
   }, []);
   return (
-    <span className="text-xs font-mono tabular-nums text-zinc-400 dark:text-zinc-600">
+    <span className="text-xs font-mono tabular-nums text-foreground-subtle">
       {elapsed}წ
     </span>
   );
@@ -1021,26 +1022,26 @@ function ProgressTimeline({ stages }: { stages: StageState[] }) {
         <li key={s.id} className="flex items-center gap-3 text-sm">
           <span className="w-4 h-4 shrink-0 inline-flex items-center justify-center">
             {s.status === "pending" && (
-              <span className="w-2.5 h-2.5 rounded-full border border-zinc-300 dark:border-zinc-700" />
+              <span className="w-2.5 h-2.5 rounded-full border border-border-strong" />
             )}
             {s.status === "running" && (
-              <Loader2 className="w-4 h-4 animate-spin text-zinc-500 dark:text-zinc-400" />
+              <Loader2 className="w-4 h-4 animate-spin text-foreground-muted" />
             )}
             {s.status === "done" && (
               <Check
                 strokeWidth={2.5}
-                className="w-4 h-4 text-emerald-500"
+                className="w-4 h-4 text-success"
               />
             )}
             {s.status === "error" && (
-              <X strokeWidth={2.5} className="w-4 h-4 text-red-500" />
+              <X strokeWidth={2.5} className="w-4 h-4 text-error" />
             )}
           </span>
           <span
             className={`flex-1 ${
               s.status === "pending"
-                ? "text-zinc-400 dark:text-zinc-600"
-                : "text-zinc-700 dark:text-zinc-300"
+                ? "text-foreground-subtle"
+                : "text-foreground"
             }`}
           >
             {s.label}
@@ -1048,7 +1049,7 @@ function ProgressTimeline({ stages }: { stages: StageState[] }) {
           {s.status === "running" && <RunningTimer />}
           {(s.status === "done" || s.status === "error") &&
             s.durationMs !== undefined && (
-              <span className="text-xs font-mono tabular-nums text-zinc-400 dark:text-zinc-600">
+              <span className="text-xs font-mono tabular-nums text-foreground-subtle">
                 {(s.durationMs / 1000).toFixed(1)}წ
               </span>
             )}
@@ -1485,9 +1486,9 @@ export default function ResultsContent() {
       // ignore
     }
     const date = new Date(state.meta.fetchedAt).toISOString().slice(0, 10);
-    document.title = `SEO Report — ${host} — ${date}`;
+    document.title = `${BRAND.name} — ${host} — ${date}`;
     return () => {
-      document.title = "ანალიზის შედეგები · SEO Report Tool";
+      document.title = `ანალიზის შედეგები · ${BRAND.name}`;
     };
   }, [state.meta]);
 
@@ -1565,11 +1566,11 @@ export default function ResultsContent() {
     return (
       <div className="flex flex-1 items-center justify-center min-h-[60vh] px-4">
         <div className="text-center max-w-sm w-full">
-          <Loader2 className="w-6 h-6 animate-spin text-zinc-400 dark:text-zinc-600 mx-auto mb-4" />
-          <p className="text-sm text-zinc-500 dark:text-zinc-500 mb-2">
+          <Loader2 className="w-6 h-6 animate-spin text-foreground-subtle mx-auto mb-4" />
+          <p className="text-sm text-foreground-muted mb-2">
             მიმდინარეობს ანალიზი...
           </p>
-          <p className="text-xs text-zinc-400 dark:text-zinc-600 break-all font-mono mb-8">
+          <p className="text-xs text-foreground-subtle break-all font-mono mb-8">
             {url}
           </p>
           <div className="text-left">
@@ -1584,15 +1585,15 @@ export default function ResultsContent() {
     return (
       <div className="flex flex-1 items-center justify-center min-h-[60vh] px-4">
         <div className="text-center max-w-sm">
-          <p className="text-sm font-medium text-red-500 mb-2">
+          <p className="text-sm font-medium text-error mb-2">
             ანალიზი ვერ მოხერხდა
           </p>
-          <p className="text-sm text-zinc-500 dark:text-zinc-500 mb-6">
+          <p className="text-sm text-foreground-muted mb-6">
             {state.error}
           </p>
           <Link
             href="/"
-            className="inline-flex items-center gap-1.5 text-sm text-zinc-900 dark:text-zinc-100 hover:text-zinc-600 dark:hover:text-zinc-400 transition"
+            className="inline-flex items-center gap-1.5 text-sm text-foreground hover:text-foreground-muted transition"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             უკან დაბრუნება
@@ -1615,10 +1616,10 @@ export default function ResultsContent() {
   const statusColor = !summary
     ? ""
     : summary.score >= 80
-    ? "text-emerald-500"
+    ? "text-success"
     : summary.score >= 50
-    ? "text-amber-500"
-    : "text-red-500";
+    ? "text-warning"
+    : "text-error";
 
   return (
     <div className="flex-1 px-4 py-10 sm:py-14">
@@ -1626,7 +1627,7 @@ export default function ResultsContent() {
         {presentationError && (
           <div
             data-print-hide
-            className="mb-4 rounded-md border-l-2 border-red-500 bg-red-50 dark:bg-red-950/20 px-4 py-2.5 text-sm text-red-700 dark:text-red-400"
+            className="mb-4 rounded-md border-l-2 border-error bg-error/10 px-4 py-2.5 text-sm text-error"
           >
             {presentationError}
           </div>
@@ -1637,7 +1638,7 @@ export default function ResultsContent() {
         >
           <Link
             href="/"
-            className="inline-flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 transition"
+            className="inline-flex items-center gap-1.5 text-xs text-foreground-muted hover:text-foreground transition"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             ახალი ანალიზი
@@ -1647,7 +1648,7 @@ export default function ResultsContent() {
               type="button"
               onClick={handlePresentation}
               disabled={!fullyDone}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 text-xs text-zinc-700 dark:text-zinc-300 hover:border-purple-500/40 hover:text-purple-700 dark:hover:text-purple-400 hover:bg-purple-500/5 transition disabled:opacity-40 disabled:cursor-not-allowed"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-xs text-foreground hover:border-accent/40 hover:text-accent hover:bg-accent-soft transition disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <Presentation className="w-3.5 h-3.5" />
               პრეზენტაცია
@@ -1656,7 +1657,7 @@ export default function ResultsContent() {
               type="button"
               onClick={handlePrint}
               disabled={!fullyDone}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 text-xs text-zinc-700 dark:text-zinc-300 hover:border-purple-500/40 hover:text-purple-700 dark:hover:text-purple-400 hover:bg-purple-500/5 transition disabled:opacity-40 disabled:cursor-not-allowed"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-xs text-foreground hover:border-accent/40 hover:text-accent hover:bg-accent-soft transition disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <Download className="w-3.5 h-3.5" />
               PDF
@@ -1667,29 +1668,29 @@ export default function ResultsContent() {
         {blocked && (
           <div className="mb-10 border-l-2 border-amber-500 pl-5 py-2">
             <div className="flex items-center gap-2 mb-1.5">
-              <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+              <p className="text-sm font-medium text-foreground">
                 ბოტ-დაცვა აღმოჩენილია
               </p>
-              <span className="px-1.5 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider bg-zinc-100 dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400">
+              <span className="px-1.5 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider bg-surface text-foreground-muted">
                 {meta.botProtection.provider}
               </span>
             </div>
-            <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-2 leading-relaxed">
+            <p className="text-sm text-foreground-muted mb-2 leading-relaxed">
               საიტი არ გვაძლევს რეალურ HTML-ს — Title, H1, Schema და სხვა
               გვერდულივი შემოწმებები გამოვტოვეთ, რადგან მათი შედეგი ცრუ იქნებოდა.
               ქვემოთ მხოლოდ HTTP/header-დონის რეალური სიგნალებია.
             </p>
-            <p className="text-xs font-mono text-zinc-400 dark:text-zinc-600 break-all">
+            <p className="text-xs font-mono text-foreground-subtle break-all">
               {meta.botProtection.reason}
             </p>
           </div>
         )}
 
         <header className="mb-14">
-          <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-500 mb-2">
+          <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-foreground-muted mb-2">
             ანალიზის შედეგი
           </p>
-          <h1 className="text-2xl sm:text-3xl font-semibold text-zinc-900 dark:text-zinc-50 break-all leading-tight mb-8">
+          <h1 className="text-2xl sm:text-3xl font-semibold text-foreground break-all leading-tight mb-8">
             {meta.finalUrl ?? meta.url}
           </h1>
 
@@ -1699,9 +1700,9 @@ export default function ResultsContent() {
             ) : (
               <div
                 data-print-hide
-                className="w-40 h-40 shrink-0 rounded-full border border-dashed border-zinc-200 dark:border-zinc-900 flex items-center justify-center"
+                className="w-40 h-40 shrink-0 rounded-full border border-dashed border-border flex items-center justify-center"
               >
-                <Loader2 className="w-6 h-6 animate-spin text-zinc-400 dark:text-zinc-600" />
+                <Loader2 className="w-6 h-6 animate-spin text-foreground-subtle" />
               </div>
             )}
             <div className="flex-1 min-w-0">
@@ -1718,11 +1719,11 @@ export default function ResultsContent() {
                       }
                       count={summary.passed}
                       label="გავიდა"
-                      colorClass="text-zinc-900 dark:text-zinc-100"
+                      colorClass="text-foreground"
                       activeRing="ring-emerald-500/40"
                       disabled={summary.passed === 0}
                     />
-                    <span className="text-zinc-300 dark:text-zinc-700 px-1">·</span>
+                    <span className="text-foreground-subtle px-1">·</span>
                     <FilterChip
                       active={filter === "warn"}
                       onClick={() =>
@@ -1730,11 +1731,11 @@ export default function ResultsContent() {
                       }
                       count={summary.warnings}
                       label="გაფრთხილება"
-                      colorClass="text-amber-600 dark:text-amber-500"
+                      colorClass="text-warning"
                       activeRing="ring-amber-500/40"
                       disabled={summary.warnings === 0}
                     />
-                    <span className="text-zinc-300 dark:text-zinc-700 px-1">·</span>
+                    <span className="text-foreground-subtle px-1">·</span>
                     <FilterChip
                       active={filter === "fail"}
                       onClick={() =>
@@ -1742,7 +1743,7 @@ export default function ResultsContent() {
                       }
                       count={summary.failed}
                       label="ჩაიჭრა"
-                      colorClass="text-red-600 dark:text-red-500"
+                      colorClass="text-error"
                       activeRing="ring-red-500/40"
                       disabled={summary.failed === 0}
                     />
@@ -1751,7 +1752,7 @@ export default function ResultsContent() {
                         type="button"
                         onClick={() => setFilter(null)}
                         data-print-hide
-                        className="ml-3 inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-900 transition"
+                        className="ml-3 inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] text-foreground-muted hover:text-foreground hover:bg-surface transition"
                       >
                         <X className="w-3 h-3" strokeWidth={2} />
                         ფილტრის გასუფთავება
@@ -1761,7 +1762,7 @@ export default function ResultsContent() {
                 </>
               ) : (
                 <div className="mb-6" data-print-hide>
-                  <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-4">
+                  <p className="text-sm font-medium text-foreground mb-4">
                     ანალიზდება...
                   </p>
                   <ProgressTimeline stages={state.stages} />
@@ -1770,10 +1771,10 @@ export default function ResultsContent() {
 
               <dl className="grid grid-cols-3 gap-x-8 gap-y-2 text-xs">
                 <div>
-                  <dt className="font-mono uppercase tracking-wider text-zinc-400 dark:text-zinc-600 mb-1">
+                  <dt className="font-mono uppercase tracking-wider text-foreground-subtle mb-1">
                     თარიღი
                   </dt>
-                  <dd className="text-zinc-900 dark:text-zinc-100 tabular-nums">
+                  <dd className="text-foreground tabular-nums">
                     {new Date(meta.fetchedAt).toLocaleString("ka-GE", {
                       dateStyle: "short",
                       timeStyle: "short",
@@ -1781,24 +1782,24 @@ export default function ResultsContent() {
                   </dd>
                 </div>
                 <div>
-                  <dt className="font-mono uppercase tracking-wider text-zinc-400 dark:text-zinc-600 mb-1">
+                  <dt className="font-mono uppercase tracking-wider text-foreground-subtle mb-1">
                     პასუხი
                   </dt>
-                  <dd className="text-zinc-900 dark:text-zinc-100 tabular-nums">
+                  <dd className="text-foreground tabular-nums">
                     {meta.responseTimeMs}ms
                   </dd>
                 </div>
                 <div>
-                  <dt className="font-mono uppercase tracking-wider text-zinc-400 dark:text-zinc-600 mb-1">
+                  <dt className="font-mono uppercase tracking-wider text-foreground-subtle mb-1">
                     HTTP
                   </dt>
                   <dd
                     className={`tabular-nums font-medium ${
                       meta.httpStatus >= 200 && meta.httpStatus < 300
-                        ? "text-emerald-600 dark:text-emerald-500"
+                        ? "text-success"
                         : meta.httpStatus >= 300 && meta.httpStatus < 400
-                        ? "text-amber-600 dark:text-amber-500"
-                        : "text-red-600 dark:text-red-500"
+                        ? "text-warning"
+                        : "text-error"
                     }`}
                   >
                     {meta.httpStatus}
@@ -1819,10 +1820,10 @@ export default function ResultsContent() {
 
         {state.error && (
           <div className="mb-10 border-l-2 border-red-500 pl-5 py-2">
-            <p className="text-sm font-medium text-red-600 dark:text-red-500 mb-1">
+            <p className="text-sm font-medium text-error mb-1">
               ანალიზი შეფერხდა
             </p>
-            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+            <p className="text-sm text-foreground-muted">
               {state.error}
             </p>
           </div>
@@ -1859,11 +1860,11 @@ export default function ResultsContent() {
 
         {depth > 1 && subPagesTotal > 0 && (
           <section className="mt-16">
-            <header className="flex items-end justify-between mb-4 pb-3 border-b border-zinc-200 dark:border-zinc-900">
-              <h2 className="text-[15px] font-medium text-zinc-900 dark:text-zinc-100">
+            <header className="flex items-end justify-between mb-4 pb-3 border-b border-border">
+              <h2 className="text-[15px] font-medium text-foreground">
                 ქვე-გვერდები
               </h2>
-              <p className="text-[11px] font-mono uppercase tracking-wider text-zinc-500 tabular-nums">
+              <p className="text-[11px] font-mono uppercase tracking-wider text-foreground-muted tabular-nums">
                 {subPages.length} / {subPagesTotal}
               </p>
             </header>
@@ -1872,41 +1873,41 @@ export default function ResultsContent() {
                 const score = p.summary?.score ?? null;
                 const scoreColor =
                   score === null
-                    ? "text-zinc-400"
+                    ? "text-foreground-subtle"
                     : score >= 80
-                    ? "text-emerald-500"
+                    ? "text-success"
                     : score >= 50
-                    ? "text-amber-500"
-                    : "text-red-500";
+                    ? "text-warning"
+                    : "text-error";
                 return (
                   <li
                     key={`${p.url}-${i}`}
-                    className="flex items-center gap-3 px-4 py-2 rounded-lg border border-zinc-200 dark:border-zinc-900"
+                    className="flex items-center gap-3 px-4 py-2 rounded-lg border border-border"
                   >
-                    <span className="font-mono text-[11px] text-zinc-400 dark:text-zinc-600 tabular-nums w-5">
+                    <span className="font-mono text-[11px] text-foreground-subtle tabular-nums w-5">
                       {i + 1}
                     </span>
                     <a
                       href={p.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex-1 truncate text-[13px] text-zinc-700 dark:text-zinc-300 hover:text-purple-600 dark:hover:text-purple-400 transition"
+                      className="flex-1 truncate text-[13px] text-foreground hover:text-accent transition"
                       title={p.url}
                     >
                       {p.url}
                     </a>
                     {p.error ? (
-                      <span className="text-[11px] text-red-500 truncate max-w-[200px]">
+                      <span className="text-[11px] text-error truncate max-w-[200px]">
                         {p.error}
                       </span>
                     ) : p.summary ? (
                       <>
-                        <span className="text-[11px] text-zinc-500 tabular-nums">
-                          <span className="text-amber-600 dark:text-amber-500">
+                        <span className="text-[11px] text-foreground-muted tabular-nums">
+                          <span className="text-warning">
                             {p.summary.warnings}w
                           </span>
                           <span className="mx-1">·</span>
-                          <span className="text-red-600 dark:text-red-500">
+                          <span className="text-error">
                             {p.summary.failed}f
                           </span>
                         </span>
@@ -1917,7 +1918,7 @@ export default function ResultsContent() {
                         </span>
                       </>
                     ) : (
-                      <Loader2 className="w-3.5 h-3.5 animate-spin text-zinc-400" />
+                      <Loader2 className="w-3.5 h-3.5 animate-spin text-foreground-subtle" />
                     )}
                   </li>
                 );
@@ -1927,10 +1928,10 @@ export default function ResultsContent() {
               }).map((_, i) => (
                 <li
                   key={`pending-${i}`}
-                  className="flex items-center gap-3 px-4 py-2 rounded-lg border border-dashed border-zinc-200 dark:border-zinc-900 opacity-50"
+                  className="flex items-center gap-3 px-4 py-2 rounded-lg border border-dashed border-border opacity-50"
                 >
-                  <Loader2 className="w-3.5 h-3.5 animate-spin text-zinc-400" />
-                  <span className="text-[13px] text-zinc-500">
+                  <Loader2 className="w-3.5 h-3.5 animate-spin text-foreground-subtle" />
+                  <span className="text-[13px] text-foreground-muted">
                     გვერდი {subPages.length + i + 1} ანალიზდება...
                   </span>
                 </li>
@@ -1939,8 +1940,8 @@ export default function ResultsContent() {
           </section>
         )}
 
-        <p className="text-center text-[10px] font-mono uppercase tracking-wider text-zinc-400 dark:text-zinc-600 mt-20">
-          SEO Report Tool · v0.1 MVP
+        <p className="text-center text-[10px] font-mono uppercase tracking-wider text-foreground-subtle mt-20">
+          {BRAND.name} · v0.1 MVP
         </p>
       </div>
     </div>

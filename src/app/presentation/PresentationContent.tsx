@@ -29,13 +29,17 @@ import {
   type ServiceBlock,
   GROUP_LABEL,
 } from "@/lib/presentation";
+import { BRAND } from "@/lib/brand";
 
-const NAVY_BG = "#0a0a3e";
+// Audita slide background — near-black with a faint lime grid overlay
+// (was navy gradient). Matches the web app's monochrome + lime theme so
+// the deck reads as part of the same product, not a template.
+const NAVY_BG = "#0a0a0a";
 
 const SLIDE_BG = `
-  linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px) 0 0 / 80px 80px,
-  linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px) 0 0 / 80px 80px,
-  linear-gradient(180deg, #0a0a3e 0%, #14143a 100%)
+  linear-gradient(rgba(191,255,0,0.03) 1px, transparent 1px) 0 0 / 80px 80px,
+  linear-gradient(90deg, rgba(191,255,0,0.03) 1px, transparent 1px) 0 0 / 80px 80px,
+  linear-gradient(180deg, #0a0a0a 0%, #131313 100%)
 `;
 
 interface StoredAnalysis {
@@ -89,15 +93,15 @@ export default function PresentationContent() {
     return (
       <div className="flex flex-1 items-center justify-center min-h-[60vh] px-4">
         <div className="text-center max-w-sm">
-          <p className="text-sm font-medium text-red-500 mb-2">
+          <p className="text-sm font-medium text-error mb-2">
             პრეზენტაცია ვერ შეიქმნა
           </p>
-          <p className="text-sm text-zinc-500 dark:text-zinc-500 mb-6">
+          <p className="text-sm text-foreground-muted mb-6">
             {error}
           </p>
           <Link
             href="/"
-            className="inline-flex items-center gap-1.5 text-sm text-zinc-900 dark:text-zinc-100 hover:text-zinc-600 dark:hover:text-zinc-400 transition"
+            className="inline-flex items-center gap-1.5 text-sm text-foreground hover:text-foreground-muted transition"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             მთავარ გვერდზე
@@ -110,13 +114,13 @@ export default function PresentationContent() {
   if (!stored) {
     return (
       <div className="flex flex-1 items-center justify-center min-h-[60vh]">
-        <p className="text-sm text-zinc-500">იტვირთება...</p>
+        <p className="text-sm text-foreground-muted">იტვირთება...</p>
       </div>
     );
   }
 
   return (
-    <div className="presentation-root bg-zinc-100 dark:bg-zinc-950 min-h-screen">
+    <div className="presentation-root bg-background min-h-screen">
       <Toolbar slideCount={slides.length} slides={slides} stored={stored} />
       <div className="presentation-deck mx-auto max-w-[1280px] py-8 px-4 sm:px-8 space-y-8">
         {slides.map((slide, i) => (
@@ -167,25 +171,25 @@ function Toolbar({
   return (
     <div
       data-print-hide
-      className="sticky top-0 z-10 backdrop-blur bg-white/80 dark:bg-zinc-950/80 border-b border-zinc-200 dark:border-zinc-900"
+      className="sticky top-0 z-10 backdrop-blur bg-background/80 border-b border-border"
     >
       <div className="max-w-[1280px] mx-auto px-4 sm:px-8 py-3 flex items-center justify-between">
         <Link
           href="/"
-          className="inline-flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 transition"
+          className="inline-flex items-center gap-1.5 text-xs text-foreground-muted hover:text-foreground transition"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
           ანალიზიდან გასვლა
         </Link>
         <div className="flex items-center gap-3">
-          <span className="text-[11px] font-mono uppercase tracking-wider text-zinc-500">
+          <span className="text-[11px] font-mono uppercase tracking-wider text-foreground-muted">
             {slideCount} სლაიდი
           </span>
           <button
             type="button"
             onClick={handleExportPptx}
             disabled={exporting}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-cyan-500/40 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-700 dark:text-cyan-300 text-xs font-medium transition disabled:opacity-50 disabled:cursor-not-allowed"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-info/40 bg-info/10 hover:bg-info/20 text-info text-xs font-medium transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {exporting ? (
               <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -197,7 +201,7 @@ function Toolbar({
           <button
             type="button"
             onClick={handlePrint}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-500 text-white text-xs font-medium transition shadow-sm shadow-purple-500/20"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-accent hover:bg-accent-hover text-accent-foreground text-xs font-medium transition shadow-sm shadow-accent/20"
           >
             <Download className="w-3.5 h-3.5" />
             PDF
@@ -284,7 +288,7 @@ function ProblemPagesSlide({
   total: number;
 }) {
   const scoreColor = (score: number, error?: string): string => {
-    if (error) return "text-zinc-500";
+    if (error) return "text-foreground-muted";
     if (score >= 80) return "text-emerald-400";
     if (score >= 50) return "text-amber-400";
     return "text-red-400";
@@ -299,7 +303,7 @@ function ProblemPagesSlide({
     >
       <header className="flex items-end justify-between gap-4 mb-6">
         <div>
-          <p className="text-[10px] font-mono uppercase tracking-[0.3em] text-cyan-400 mb-2">
+          <p className="text-[10px] font-mono uppercase tracking-[0.3em] text-accent mb-2">
             მთლიანი საიტი
           </p>
           <h2 className="text-5xl font-semibold tracking-tight">
@@ -337,7 +341,7 @@ function ProblemPagesSlide({
                 <p className="text-[12px] text-white/90 truncate">
                   {p.url.replace(/^https?:\/\//, "")}
                   {p.isHome && (
-                    <span className="ml-2 text-[9px] font-mono uppercase tracking-wider text-cyan-400">
+                    <span className="ml-2 text-[9px] font-mono uppercase tracking-wider text-accent">
                       მთავარი
                     </span>
                   )}
@@ -345,7 +349,7 @@ function ProblemPagesSlide({
               </div>
               <div className="text-right text-[11px] font-mono tabular-nums whitespace-nowrap">
                 {p.error ? (
-                  <span className="text-zinc-500">—</span>
+                  <span className="text-foreground-muted">—</span>
                 ) : (
                   <>
                     <span className="text-amber-400">{p.warnings}w</span>
@@ -431,7 +435,7 @@ function SlideFooter({
 }) {
   return (
     <footer className="absolute bottom-6 left-10 right-10 flex items-center justify-between text-[11px] font-mono uppercase tracking-[0.2em] text-white/40">
-      <span>INFINITY SOLUTIONS</span>
+      <span>{BRAND.name.toUpperCase()}</span>
       {label && <span className="text-white/50">{label}</span>}
       <span>
         {slideNumber} / {total}
@@ -518,7 +522,7 @@ function CoverSlide({
       <footer className="absolute bottom-8 left-0 right-0 text-center">
         <p className="text-[11px] font-mono uppercase tracking-[0.4em] text-white/50">
           made by{" "}
-          <span className="text-white font-medium">INFINITY SOLUTIONS</span>
+          <span className="text-white font-medium">{BRAND.name.toUpperCase()}</span>
         </p>
       </footer>
     </div>
@@ -611,7 +615,7 @@ function SummaryColumn({
               className="flex items-start gap-1.5 text-[12px] leading-snug text-white/85"
             >
               <Check
-                className="w-3 h-3 text-cyan-400 mt-0.5 shrink-0"
+                className="w-3 h-3 text-accent mt-0.5 shrink-0"
                 strokeWidth={2.5}
               />
               <span>{item.check.label}</span>
@@ -730,7 +734,7 @@ function ProblemSlide({
 
   const Solution = problem.check.recommendation ? (
     <section className="mt-auto pt-5 border-t border-white/10">
-      <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-cyan-400 mb-2 flex items-center gap-1.5">
+      <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-accent mb-2 flex items-center gap-1.5">
         <Sparkles className="w-3 h-3" strokeWidth={2} />
         გადაწყვეტა
       </p>
@@ -805,7 +809,7 @@ function RecommendationsSlide({
       style={{ background: SLIDE_BG }}
     >
       <header className="mb-7">
-        <p className="text-[10px] font-mono uppercase tracking-[0.3em] text-cyan-400 mb-2">
+        <p className="text-[10px] font-mono uppercase tracking-[0.3em] text-accent mb-2">
           {slide.siteUrl} · ვებსაიტის SEO აუდიტი
         </p>
         <h2 className="text-5xl font-semibold tracking-tight">
@@ -816,7 +820,7 @@ function RecommendationsSlide({
       <ul className="flex-1 space-y-4 overflow-hidden">
         {slide.items.slice(0, 5).map((item, i) => (
           <li key={i} className="flex gap-4 items-start">
-            <span className="shrink-0 w-2 h-2 mt-2 rounded-full bg-cyan-400" />
+            <span className="shrink-0 w-2 h-2 mt-2 rounded-full bg-accent" />
             <div className="flex-1 min-w-0">
               <p className="text-[15px] font-semibold text-white mb-1.5 leading-snug">
                 {item.title}
@@ -853,8 +857,8 @@ function ServicesSlide({
       style={{ background: SLIDE_BG }}
     >
       <header className="mb-6">
-        <p className="text-[10px] font-mono uppercase tracking-[0.3em] text-cyan-400 mb-2">
-          INFINITY SOLUTIONS
+        <p className="text-[10px] font-mono uppercase tracking-[0.3em] text-accent mb-2">
+          {BRAND.name.toUpperCase()}
         </p>
         <h2 className="text-4xl font-semibold tracking-tight text-white">
           რას მოიცავს SEO სერვისი?
@@ -900,7 +904,7 @@ function ServiceBlockCard({
             className="flex items-start gap-1.5 text-[10.5px] leading-snug text-white/85"
           >
             <Check
-              className="w-2.5 h-2.5 text-cyan-400 mt-0.5 shrink-0"
+              className="w-2.5 h-2.5 text-accent mt-0.5 shrink-0"
               strokeWidth={3}
             />
             <span>{item}</span>
@@ -968,7 +972,7 @@ function SerpVisual({
   return (
     <VisualCard>
       <div className="flex items-center gap-2 mb-1.5">
-        <Globe className="w-[18px] h-[18px] text-zinc-400" strokeWidth={1.5} />
+        <Globe className="w-[18px] h-[18px] text-foreground-subtle" strokeWidth={1.5} />
         <span className="text-[12px] text-zinc-700">თქვენი საიტი</span>
       </div>
       <h4 className="text-blue-700 text-[18px] leading-snug mb-1.5 break-words">
@@ -977,7 +981,7 @@ function SerpVisual({
           : "გვერდის სათაური"}
       </h4>
       {isDescCheck && !value ? (
-        <p className="text-sm text-red-500 italic leading-snug">
+        <p className="text-sm text-error italic leading-snug">
           Description-ი არ არის — Google ავტომატურად აიღებს შემთხვევით ტექსტს.
         </p>
       ) : (
@@ -987,7 +991,7 @@ function SerpVisual({
             : "გვერდის აღწერა გამოჩნდება ძიების შედეგებში."}
         </p>
       )}
-      <p className="mt-3 text-[10px] font-mono uppercase tracking-wider text-zinc-400">
+      <p className="mt-3 text-[10px] font-mono uppercase tracking-wider text-foreground-subtle">
         Google ძიების შედეგი
       </p>
     </VisualCard>
@@ -1001,7 +1005,7 @@ function FacebookVisual({ check }: { check: { label: string } }) {
         <div className="aspect-[1.91/1] bg-zinc-100 flex items-center justify-center">
           <div className="text-center px-4">
             <X
-              className="w-8 h-8 mx-auto mb-2 text-red-500"
+              className="w-8 h-8 mx-auto mb-2 text-error"
               strokeWidth={1.5}
             />
             <p className="text-xs text-zinc-600">
@@ -1012,15 +1016,15 @@ function FacebookVisual({ check }: { check: { label: string } }) {
           </div>
         </div>
         <div className="px-3 py-2.5 bg-zinc-50">
-          <p className="text-[10px] uppercase tracking-wider text-zinc-500 mb-1">
+          <p className="text-[10px] uppercase tracking-wider text-foreground-muted mb-1">
             yoursite.com
           </p>
-          <p className="text-sm font-semibold text-zinc-400 italic">
+          <p className="text-sm font-semibold text-foreground-subtle italic">
             (სათაური არ არის)
           </p>
         </div>
       </div>
-      <p className="mt-3 text-[10px] font-mono uppercase tracking-wider text-zinc-400">
+      <p className="mt-3 text-[10px] font-mono uppercase tracking-wider text-foreground-subtle">
         Facebook გაზიარება
       </p>
     </VisualCard>
@@ -1034,7 +1038,7 @@ function TwitterVisual({ check }: { check: { label: string } }) {
         <div className="aspect-[1.91/1] bg-zinc-100 flex items-center justify-center">
           <div className="text-center px-4">
             <X
-              className="w-8 h-8 mx-auto mb-2 text-red-500"
+              className="w-8 h-8 mx-auto mb-2 text-error"
               strokeWidth={1.5}
             />
             <p className="text-xs text-zinc-600">
@@ -1045,12 +1049,12 @@ function TwitterVisual({ check }: { check: { label: string } }) {
           </div>
         </div>
         <div className="px-3 py-3">
-          <p className="text-sm font-semibold text-zinc-400 italic">
+          <p className="text-sm font-semibold text-foreground-subtle italic">
             (Twitter Card არ არის)
           </p>
         </div>
       </div>
-      <p className="mt-3 text-[10px] font-mono uppercase tracking-wider text-zinc-400">
+      <p className="mt-3 text-[10px] font-mono uppercase tracking-wider text-foreground-subtle">
         Twitter / X გაზიარება
       </p>
     </VisualCard>
@@ -1065,18 +1069,18 @@ function CodeEmptyVisual({ check }: { check: { label: string } }) {
           <span className="w-2 h-2 rounded-full bg-red-500" />
           <span className="w-2 h-2 rounded-full bg-amber-500" />
           <span className="w-2 h-2 rounded-full bg-emerald-500" />
-          <span className="ml-2 text-[10px] uppercase tracking-wider text-zinc-500">
+          <span className="ml-2 text-[10px] uppercase tracking-wider text-foreground-muted">
             JSON-LD
           </span>
         </div>
         <div className="p-4 space-y-1 leading-relaxed">
-          <div className="text-zinc-500">{`<!-- ${check.label} -->`}</div>
+          <div className="text-foreground-muted">{`<!-- ${check.label} -->`}</div>
           <div className="opacity-40 text-zinc-600">{`<script type="application/ld+json">`}</div>
           <div className="ml-4 text-red-400/70">{`// ❌ schema არ არის გენერირებული`}</div>
           <div className="opacity-40 text-zinc-600">{`</script>`}</div>
         </div>
       </div>
-      <p className="mt-3 text-[10px] font-mono uppercase tracking-wider text-zinc-400">
+      <p className="mt-3 text-[10px] font-mono uppercase tracking-wider text-foreground-subtle">
         HTML &lt;head&gt;
       </p>
     </VisualCard>
@@ -1087,17 +1091,17 @@ function FileMissingVisual({ check }: { check: { label: string } }) {
   return (
     <VisualCard>
       <div className="px-4 py-3 bg-zinc-100 border border-zinc-200 rounded-t-md font-mono text-[13px]">
-        <span className="text-zinc-500">GET</span>{" "}
+        <span className="text-foreground-muted">GET</span>{" "}
         <span className="text-zinc-900">/{check.label.toLowerCase()}</span>
       </div>
       <div className="border border-t-0 border-zinc-200 rounded-b-md p-6 text-center">
         <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-500/10 mb-3">
-          <X className="w-8 h-8 text-red-500" strokeWidth={2} />
+          <X className="w-8 h-8 text-error" strokeWidth={2} />
         </div>
-        <p className="text-2xl font-mono font-semibold text-red-500 mb-1">404</p>
-        <p className="text-sm text-zinc-500">ფაილი ვერ მოიძებნა</p>
+        <p className="text-2xl font-mono font-semibold text-error mb-1">404</p>
+        <p className="text-sm text-foreground-muted">ფაილი ვერ მოიძებნა</p>
       </div>
-      <p className="mt-3 text-[10px] font-mono uppercase tracking-wider text-zinc-400">
+      <p className="mt-3 text-[10px] font-mono uppercase tracking-wider text-foreground-subtle">
         HTTP REQUEST
       </p>
     </VisualCard>
@@ -1112,7 +1116,7 @@ function BrokenLinksVisual({ check }: { check: { value?: unknown } }) {
     <VisualCard>
       <ul className="divide-y divide-zinc-100 border border-zinc-200 rounded-md overflow-hidden">
         {items.length === 0 && (
-          <li className="px-4 py-4 text-xs text-zinc-500 italic">
+          <li className="px-4 py-4 text-xs text-foreground-muted italic">
             ბმულები ვერ ვნახე
           </li>
         )}
@@ -1122,14 +1126,14 @@ function BrokenLinksVisual({ check }: { check: { value?: unknown } }) {
             className="px-4 py-3 flex items-start gap-2 font-mono text-[11px]"
           >
             <X
-              className="w-3.5 h-3.5 text-red-500 mt-0.5 shrink-0"
+              className="w-3.5 h-3.5 text-error mt-0.5 shrink-0"
               strokeWidth={2.5}
             />
             <span className="break-all text-zinc-700">{item}</span>
           </li>
         ))}
       </ul>
-      <p className="mt-3 text-[10px] font-mono uppercase tracking-wider text-zinc-400">
+      <p className="mt-3 text-[10px] font-mono uppercase tracking-wider text-foreground-subtle">
         გატეხილი ბმულები
       </p>
     </VisualCard>
@@ -1146,10 +1150,10 @@ function ImageBadVisual() {
         />
       </div>
       <div className="flex items-center justify-between text-[11px] font-mono">
-        <span className="text-zinc-500">image.jpg</span>
-        <span className="text-red-500">2.4 MB · JPG</span>
+        <span className="text-foreground-muted">image.jpg</span>
+        <span className="text-error">2.4 MB · JPG</span>
       </div>
-      <p className="mt-3 text-[10px] font-mono uppercase tracking-wider text-zinc-400">
+      <p className="mt-3 text-[10px] font-mono uppercase tracking-wider text-foreground-subtle">
         სურათების ოპტიმიზაცია
       </p>
     </VisualCard>
@@ -1188,9 +1192,9 @@ function StatsVisual({ check }: { check: { value?: unknown; label: string } }) {
             {current}
           </span>
           <span className="text-2xl text-zinc-300">/</span>
-          <span className="text-2xl text-zinc-500 tabular-nums">{total}</span>
+          <span className="text-2xl text-foreground-muted tabular-nums">{total}</span>
         </div>
-        <p className="text-[11px] text-zinc-500 uppercase tracking-wider mt-2">
+        <p className="text-[11px] text-foreground-muted uppercase tracking-wider mt-2">
           {subtext}
         </p>
       </div>
@@ -1208,7 +1212,7 @@ function StatsVisual({ check }: { check: { value?: unknown; label: string } }) {
         </div>
       )}
 
-      <p className="text-center text-[10px] font-mono uppercase tracking-wider text-zinc-400">
+      <p className="text-center text-[10px] font-mono uppercase tracking-wider text-foreground-subtle">
         {percentage}%{" "}
         {percentage >= 70
           ? "ოპტიმიზებული"
@@ -1225,7 +1229,7 @@ function SitemapMissingVisual() {
     <VisualCard>
       <div className="rounded-md overflow-hidden border border-zinc-200 font-mono text-[11px] relative bg-white">
         <div className="px-3 py-2 border-b border-zinc-200 bg-zinc-50 flex items-center gap-2">
-          <span className="text-zinc-500">sitemap.xml</span>
+          <span className="text-foreground-muted">sitemap.xml</span>
         </div>
         <div className="p-4 space-y-1 leading-relaxed text-zinc-700 opacity-30 select-none">
           <div>{`<?xml version="1.0" encoding="UTF-8"?>`}</div>
@@ -1242,16 +1246,16 @@ function SitemapMissingVisual() {
         <div className="absolute inset-0 flex items-center justify-center bg-white/70 backdrop-blur-[1px]">
           <div className="text-center">
             <X
-              className="w-12 h-12 mx-auto mb-2 text-red-500"
+              className="w-12 h-12 mx-auto mb-2 text-error"
               strokeWidth={2}
             />
-            <p className="text-base font-semibold text-red-500">
+            <p className="text-base font-semibold text-error">
               Sitemap არ არსებობს
             </p>
           </div>
         </div>
       </div>
-      <p className="mt-3 text-[10px] font-mono uppercase tracking-wider text-zinc-400">
+      <p className="mt-3 text-[10px] font-mono uppercase tracking-wider text-foreground-subtle">
         XML SITEMAP
       </p>
     </VisualCard>
@@ -1270,9 +1274,9 @@ function AltMissingVisual() {
           no alt
         </span>
       </div>
-      <pre className="text-[11px] font-mono leading-relaxed text-zinc-500 whitespace-pre-wrap">{`<img src="..." />`}</pre>
-      <p className="mt-2 text-[11px] text-red-500">alt ატრიბუტი არ არის</p>
-      <p className="mt-3 text-[10px] font-mono uppercase tracking-wider text-zinc-400">
+      <pre className="text-[11px] font-mono leading-relaxed text-foreground-muted whitespace-pre-wrap">{`<img src="..." />`}</pre>
+      <p className="mt-2 text-[11px] text-error">alt ატრიბუტი არ არის</p>
+      <p className="mt-3 text-[10px] font-mono uppercase tracking-wider text-foreground-subtle">
         ALT ტექსტი
       </p>
     </VisualCard>
@@ -1283,20 +1287,20 @@ function HttpsWarningVisual({ check }: { check: { label: string } }) {
   return (
     <VisualCard>
       <div className="flex items-center gap-2 px-3 py-2 rounded bg-zinc-100 font-mono text-[12px]">
-        <Lock className="w-3.5 h-3.5 text-red-500" strokeWidth={2} />
-        <span className="text-red-500 font-medium">{check.label}</span>
-        <span className="ml-auto text-zinc-400 truncate">
+        <Lock className="w-3.5 h-3.5 text-error" strokeWidth={2} />
+        <span className="text-error font-medium">{check.label}</span>
+        <span className="ml-auto text-foreground-subtle truncate">
           {check.label === "HTTPS"
             ? "http://yoursite.com"
             : "yoursite.com"}
         </span>
       </div>
-      <p className="mt-3 text-[11px] text-zinc-500 leading-relaxed">
+      <p className="mt-3 text-[11px] text-foreground-muted leading-relaxed">
         {check.label === "HTTPS"
           ? "ბრაუზერი მომხმარებელს აფრთხილებს ცუდი დაცვის შესახებ."
           : "კონფიგურაცია არ აკმაყოფილებს თანამედროვე SEO სტანდარტებს."}
       </p>
-      <p className="mt-3 text-[10px] font-mono uppercase tracking-wider text-zinc-400">
+      <p className="mt-3 text-[10px] font-mono uppercase tracking-wider text-foreground-subtle">
         ბრაუზერის მისამართი
       </p>
     </VisualCard>
@@ -1310,13 +1314,13 @@ function HeadingsVisual({ check }: { check: { value?: unknown } }) {
     <VisualCard>
       <div className="font-mono text-[12px] leading-relaxed">
         <div className="text-zinc-700">H1 — გვერდის სათაური</div>
-        <div className="ml-4 text-zinc-400">(H2 აკლია)</div>
+        <div className="ml-4 text-foreground-subtle">(H2 აკლია)</div>
         <div className="ml-8 text-amber-600">⚠ H4 პირდაპირ H1-ის ქვეშ</div>
       </div>
-      <p className="mt-4 text-[10px] uppercase tracking-wider text-zinc-400">
+      <p className="mt-4 text-[10px] uppercase tracking-wider text-foreground-subtle">
         გვერდზე: {display}
       </p>
-      <p className="mt-3 text-[10px] font-mono uppercase tracking-wider text-zinc-400">
+      <p className="mt-3 text-[10px] font-mono uppercase tracking-wider text-foreground-subtle">
         სათაურების იერარქია
       </p>
     </VisualCard>
@@ -1338,16 +1342,16 @@ function GenericVisual({
           }`}
         >
           {isFail ? (
-            <X className="w-10 h-10 text-red-500" strokeWidth={2} />
+            <X className="w-10 h-10 text-error" strokeWidth={2} />
           ) : (
             <AlertTriangle
-              className="w-10 h-10 text-amber-500"
+              className="w-10 h-10 text-warning"
               strokeWidth={2}
             />
           )}
         </div>
         <p className="text-base font-medium text-zinc-900">{check.label}</p>
-        <p className="mt-2 text-[11px] uppercase tracking-wider font-mono text-zinc-500">
+        <p className="mt-2 text-[11px] uppercase tracking-wider font-mono text-foreground-muted">
           {isFail ? "კრიტიკული პრობლემა" : "გაფრთხილება"}
         </p>
       </div>

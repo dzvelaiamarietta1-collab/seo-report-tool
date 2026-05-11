@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight, ArrowUpRight, Loader2 } from "lucide-react";
+import { BRAND } from "@/lib/brand";
 
 const RESOURCES: { label: string; href: string; description: string }[] = [
   {
@@ -91,13 +92,13 @@ export default function Home() {
     <div className="flex flex-col flex-1 items-center justify-center px-4 py-16">
       <div className="w-full max-w-xl">
         <div className="mb-12">
-          <p className="text-xs font-mono uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-500 mb-4">
-            SEO Report Tool · 2026
+          <p className="text-xs font-mono uppercase tracking-[0.2em] text-foreground-muted mb-4">
+            {BRAND.name} · 2026
           </p>
-          <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50 mb-4 leading-tight">
-            ვებგვერდის SEO ანალიზი
+          <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight text-foreground mb-4 leading-tight">
+            {BRAND.tagline}
           </h1>
-          <p className="text-base text-zinc-500 dark:text-zinc-400 leading-relaxed">
+          <p className="text-base text-foreground-muted leading-relaxed">
             ტექნიკური, On-Page, Performance და AI-ეპოქის სრული აუდიტი.
           </p>
         </div>
@@ -117,29 +118,29 @@ export default function Home() {
               autoComplete="off"
               autoCapitalize="none"
               spellCheck={false}
-              className="flex-1 px-4 py-3 rounded-lg border border-zinc-300 dark:border-zinc-800 bg-transparent text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:border-purple-500 dark:focus:border-purple-400 focus:ring-2 focus:ring-purple-500/20 transition disabled:opacity-50"
+              className="flex-1 px-4 py-3 rounded-lg border border-border-strong bg-transparent text-foreground placeholder:text-foreground-subtle focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 transition disabled:opacity-50"
             />
             <button
               type="submit"
               disabled={loading}
-              className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-lg bg-purple-600 hover:bg-purple-500 text-white font-medium active:scale-[0.98] transition shadow-sm shadow-purple-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-lg bg-accent hover:bg-accent-hover text-accent-foreground font-semibold active:scale-[0.98] transition shadow-sm shadow-accent/20 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
                 <>
                   ანალიზი
-                  <ArrowRight className="w-4 h-4" />
+                  <ArrowRight className="w-4 h-4" strokeWidth={2.25} />
                 </>
               )}
             </button>
           </div>
           {error && (
-            <p className="text-sm text-red-500 mb-3">{error}</p>
+            <p className="text-sm text-error mb-3">{error}</p>
           )}
 
           <div className="mt-1">
-            <p className="text-[11px] font-mono uppercase tracking-wider text-zinc-500 mb-2">
+            <p className="text-[11px] font-mono uppercase tracking-wider text-foreground-muted mb-2">
               ანალიზის სიღრმე
             </p>
             <div className="grid grid-cols-3 gap-2">
@@ -151,20 +152,18 @@ export default function Home() {
                   disabled={loading}
                   className={`text-left rounded-lg border px-3 py-2 transition disabled:opacity-50 disabled:cursor-not-allowed ${
                     depth === opt.value
-                      ? "border-purple-500 bg-purple-500/[0.06] dark:bg-purple-500/[0.08]"
-                      : "border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700"
+                      ? "border-accent bg-accent-soft"
+                      : "border-border hover:border-border-strong"
                   }`}
                 >
                   <div
                     className={`text-sm font-medium ${
-                      depth === opt.value
-                        ? "text-purple-700 dark:text-purple-400"
-                        : "text-zinc-900 dark:text-zinc-100"
+                      depth === opt.value ? "text-accent" : "text-foreground"
                     }`}
                   >
                     {opt.label}
                   </div>
-                  <div className="text-[11px] text-zinc-500 dark:text-zinc-500 leading-snug mt-0.5">
+                  <div className="text-[11px] text-foreground-muted leading-snug mt-0.5">
                     {opt.hint}
                   </div>
                 </button>
@@ -173,12 +172,12 @@ export default function Home() {
           </div>
         </form>
 
-        <div className="mt-12 pt-8 border-t border-zinc-200 dark:border-zinc-900">
+        <div className="mt-12 pt-8 border-t border-border">
           <div className="flex items-baseline justify-between mb-4">
-            <p className="text-xs font-mono uppercase tracking-wider text-zinc-500">
+            <p className="text-xs font-mono uppercase tracking-wider text-foreground-muted">
               რას ვამოწმებთ
             </p>
-            <p className="text-[10px] font-mono uppercase tracking-wider text-zinc-400 dark:text-zinc-600">
+            <p className="text-[10px] font-mono uppercase tracking-wider text-foreground-subtle">
               წყარო: ahrefs.com
             </p>
           </div>
@@ -189,17 +188,17 @@ export default function Home() {
                   href={r.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group flex items-start gap-2 px-3 py-2 -mx-3 rounded-md hover:bg-zinc-100/60 dark:hover:bg-zinc-900/60 transition"
+                  className="group flex items-start gap-2 px-3 py-2 -mx-3 rounded-md hover:bg-surface transition"
                 >
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-1 text-sm text-zinc-900 dark:text-zinc-100">
+                    <div className="flex items-center gap-1 text-sm text-foreground">
                       <span className="font-medium truncate">{r.label}</span>
                       <ArrowUpRight
-                        className="w-3 h-3 text-zinc-400 dark:text-zinc-600 group-hover:text-purple-500 dark:group-hover:text-purple-400 transition shrink-0"
+                        className="w-3 h-3 text-foreground-subtle group-hover:text-accent transition shrink-0"
                         strokeWidth={2}
                       />
                     </div>
-                    <p className="text-[12px] text-zinc-500 dark:text-zinc-500 leading-snug truncate">
+                    <p className="text-[12px] text-foreground-muted leading-snug truncate">
                       {r.description}
                     </p>
                   </div>
@@ -209,7 +208,7 @@ export default function Home() {
           </ul>
         </div>
 
-        <p className="text-xs text-zinc-400 dark:text-zinc-600 mt-12">
+        <p className="text-xs text-foreground-subtle mt-12">
           v0.1 MVP · მხოლოდ საჯარო ვებგვერდები
         </p>
       </div>
