@@ -1287,6 +1287,11 @@ export default function ResultsContent() {
           case "error": {
             return { ...prev, error: event.message, done: true };
           }
+          case "internalUrls": {
+            // Handled as a side effect outside applyEvent (kicks off
+            // sub-page crawls); no state mutation here.
+            return prev;
+          }
         }
       });
     };
