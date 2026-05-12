@@ -521,7 +521,11 @@ function CoverSlide({
             className="px-6 py-2.5 rounded font-medium text-base"
             style={{
               background: "white",
-              color: NAVY_BG,
+              // Hardcoded deep navy — NAVY_BG used to be navy but after
+              // the editorial palette flip it became cream, which made
+              // the date invisible on a white pill. Pin to the navy text
+              // colour so the pill always reads cleanly.
+              color: "#0F1B3D",
               fontFamily: serifFamily,
             }}
           >

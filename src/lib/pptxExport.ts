@@ -166,13 +166,16 @@ function addCoverSlide(
     fontFace: FONT_MONO,
   });
 
+  // Date pill — pinned to literal white bg + deep navy text so the
+  // editorial-palette shuffle (WHITE / NAVY constants flipped meaning)
+  // doesn't render the date invisible on the cover.
   slide.addShape("roundRect", {
     x: 5.5,
     y: 5,
     w: 2.4,
     h: 0.55,
-    fill: { color: WHITE },
-    line: { color: WHITE, width: 0 },
+    fill: { color: "FFFFFF" },
+    line: { color: "FFFFFF", width: 0 },
     rectRadius: 0.06,
   });
   slide.addText(data.date, {
@@ -181,7 +184,7 @@ function addCoverSlide(
     w: 2.4,
     h: 0.55,
     fontSize: 13,
-    color: NAVY,
+    color: "0F1B3D",
     fontFace: FONT,
     bold: true,
     align: "center",
