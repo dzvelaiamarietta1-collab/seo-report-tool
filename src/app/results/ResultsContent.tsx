@@ -398,10 +398,10 @@ function CategorySection({
                 <div
                   className={`h-full transition-all ${
                     passRate >= 80
-                      ? "bg-emerald-500/70"
+                      ? "bg-success/70"
                       : passRate >= 50
-                      ? "bg-amber-500/70"
-                      : "bg-red-500/70"
+                      ? "bg-warning/70"
+                      : "bg-error/70"
                   }`}
                   style={{ width: `${passRate}%` }}
                 />
@@ -875,7 +875,7 @@ function TopPrioritiesBanner({
                 className={`shrink-0 w-6 h-6 rounded-full inline-flex items-center justify-center text-[11px] font-mono font-medium ${
                   isFail
                     ? "bg-error/10 text-error"
-                    : "bg-amber-500/10 text-warning"
+                    : "bg-warning/10 text-warning"
                 }`}
               >
                 {i + 1}
@@ -949,10 +949,10 @@ function FilterChip({
 function ScoreRing({ score }: { score: number }) {
   const colorClass =
     score >= 80
-      ? "stroke-emerald-500"
+      ? "stroke-success"
       : score >= 50
-      ? "stroke-amber-500"
-      : "stroke-red-500";
+      ? "stroke-warning"
+      : "stroke-error";
   const radius = 70;
   const circumference = 2 * Math.PI * radius;
   const offset = circumference - (score / 100) * circumference;
@@ -1671,7 +1671,7 @@ export default function ResultsContent() {
         </div>
 
         {blocked && (
-          <div className="mb-10 border-l-2 border-amber-500 pl-5 py-2">
+          <div className="mb-10 border-l-2 border-warning pl-5 py-2">
             <div className="flex items-center gap-2 mb-1.5">
               <p className="text-sm font-medium text-foreground">
                 ბოტ-დაცვა აღმოჩენილია
@@ -1725,7 +1725,7 @@ export default function ResultsContent() {
                       count={summary.passed}
                       label="გავიდა"
                       colorClass="text-foreground"
-                      activeRing="ring-emerald-500/40"
+                      activeRing="ring-success/40"
                       disabled={summary.passed === 0}
                     />
                     <span className="text-foreground-subtle px-1">·</span>
@@ -1737,7 +1737,7 @@ export default function ResultsContent() {
                       count={summary.warnings}
                       label="გაფრთხილება"
                       colorClass="text-warning"
-                      activeRing="ring-amber-500/40"
+                      activeRing="ring-warning/40"
                       disabled={summary.warnings === 0}
                     />
                     <span className="text-foreground-subtle px-1">·</span>
@@ -1749,7 +1749,7 @@ export default function ResultsContent() {
                       count={summary.failed}
                       label="ჩაიჭრა"
                       colorClass="text-error"
-                      activeRing="ring-red-500/40"
+                      activeRing="ring-error/40"
                       disabled={summary.failed === 0}
                     />
                     {filter && (
@@ -1824,7 +1824,7 @@ export default function ResultsContent() {
         {state.preview && <PreviewSection data={state.preview} />}
 
         {state.error && (
-          <div className="mb-10 border-l-2 border-red-500 pl-5 py-2">
+          <div className="mb-10 border-l-2 border-error pl-5 py-2">
             <p className="text-sm font-medium text-error mb-1">
               ანალიზი შეფერხდა
             </p>

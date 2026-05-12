@@ -452,6 +452,18 @@ function CoverSlide({
 }) {
   const serifFamily = 'Georgia, "Times New Roman", "Playfair Display", serif';
 
+  // Try logoUrl first (og:image or twitter:image), fall back to favicon
+  // if that fails to load, finally hide if both fail. Sites like
+  // infinity.ge sometimes have og:image set to a CDN that blocks our
+  // fetch — without this fallback the cover would have no mark at all.
+  const candidates = [slide.logoUrl, slide.faviconUrl].filter(
+    (u, i, arr): u is string =>
+      typeof u === "string" && u.length > 0 && arr.indexOf(u) === i
+  );
+  const [attemptIndex, setAttemptIndex] = useState(0);
+  const currentSrc = candidates[attemptIndex];
+  const exhausted = !currentSrc;
+
   return (
     <div
       className="w-full h-full relative overflow-hidden flex"
@@ -459,7 +471,7 @@ function CoverSlide({
     >
       <div className="w-2/5 relative">
         <GeometricSquares className="absolute inset-0 w-full h-full" />
-        {slide.logoUrl && (
+        {!exhausted && (
           <div
             className="absolute bg-white rounded-md overflow-hidden flex items-center justify-center"
             style={{
@@ -472,13 +484,11 @@ function CoverSlide({
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={slide.logoUrl}
+              key={currentSrc}
+              src={currentSrc}
               alt={slide.siteName}
               className="w-full h-full object-contain p-3"
-              onError={(e) => {
-                const parent = e.currentTarget.parentElement;
-                if (parent) parent.style.display = "none";
-              }}
+              onError={() => setAttemptIndex((i) => i + 1)}
             />
           </div>
         )}
@@ -495,7 +505,7 @@ function CoverSlide({
         >
           SEO Report
         </h1>
-        {!slide.logoUrl && (
+        {exhausted && (
           <p
             className="text-2xl text-[#4A5A7C] mb-3"
             style={{ fontFamily: serifFamily }}

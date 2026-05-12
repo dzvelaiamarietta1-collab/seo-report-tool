@@ -214,7 +214,11 @@ export type PresentationSlide =
       siteName: string;
       siteUrl: string;
       date: string;
+      // Preferred logo (og:image → twitter:image). May be missing or 404.
       logoUrl?: string;
+      // Site favicon — used as a fallback in the cover slide when logoUrl
+      // fails to load (e.g. og:image points to a CDN that blocks us).
+      faviconUrl?: string;
     }
   | {
       kind: "summary";
@@ -421,11 +425,12 @@ export function buildSlides(
   const siteUrl = analysis.finalUrl ?? analysis.url;
   const siteName = hostFromUrl(siteUrl);
 
+  // Primary logo: og:image > twitter:image. The favicon is passed
+  // separately so the cover slide can swap to it if the primary image
+  // 404s or is CORS-blocked at render time.
   const logoUrl =
-    preview?.og?.image ||
-    preview?.twitter?.image ||
-    preview?.favicon ||
-    undefined;
+    preview?.og?.image || preview?.twitter?.image || undefined;
+  const faviconUrl = preview?.favicon || undefined;
 
   slides.push({
     kind: "cover",
@@ -436,7 +441,8 @@ export function buildSlides(
       month: "long",
       day: "numeric",
     }),
-    logoUrl,
+    logoUrl: logoUrl ?? faviconUrl,
+    faviconUrl,
   });
 
   const passes = collectPasses(analysis.categories);

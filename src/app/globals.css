@@ -1,30 +1,30 @@
 @import "tailwindcss";
 
-/* === Theme tokens (dark-first) ============================================
- * Audita is a dark-only product. Light mode kicks in automatically for
- * print/PDF/PPTX where contrast on paper matters. The accent is electric
- * lime — same psychological "good = green" cue Lighthouse/PageSpeed use.
+/* === Theme tokens — editorial light palette =============================
+ * Cream background + deep navy text + antique gold accent. Same family as
+ * the presentation slides; the web app and the client deliverable feel
+ * like one product. Print/PDF still falls back to plain white paper.
  * ========================================================================= */
 :root {
-  --background: #0a0a0a;
-  --surface: #131313;
-  --surface-elevated: #1a1a1a;
-  --foreground: #fafafa;
-  --foreground-muted: #a1a1aa;
-  --foreground-subtle: #71717a;
+  --background: #f1ebdd;
+  --surface: #faf6ed;
+  --surface-elevated: #ffffff;
+  --foreground: #0f1b3d;
+  --foreground-muted: #4a5a7c;
+  --foreground-subtle: #8b95a8;
 
-  --accent: #bfff00;
-  --accent-hover: #d2ff35;
-  --accent-soft: rgba(191, 255, 0, 0.12);
-  --accent-foreground: #0a0a0a;
+  --accent: #c9a961;
+  --accent-hover: #d4b670;
+  --accent-soft: rgba(201, 169, 97, 0.14);
+  --accent-foreground: #0f1b3d;
 
-  --border: rgba(255, 255, 255, 0.08);
-  --border-strong: rgba(255, 255, 255, 0.16);
+  --border: #d9d0bc;
+  --border-strong: #c9bfa8;
 
-  --success: #bfff00;
-  --warning: #fcd34d;
-  --error: #f87171;
-  --info: #38bdf8;
+  --success: #1f6f4a;
+  --warning: #b8843e;
+  --error: #a03a3a;
+  --info: #1e3a8a;
 
   --font-sans: var(--font-fira-sans), var(--font-noto-georgian), "Fira Sans",
     "Noto Sans Georgian", "Sylfaen", system-ui, -apple-system, "Segoe UI",
@@ -59,7 +59,7 @@
 }
 
 html {
-  color-scheme: dark;
+  color-scheme: light;
   background: var(--background);
 }
 
@@ -72,30 +72,30 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Tabular figures by default for tabular-nums utility readability */
 .tabular-nums {
   font-variant-numeric: tabular-nums;
 }
 
 /* === Print + presentation mode ==========================================
- * Forces white background, dark text, and ignores dark-theme overrides
- * so the printed PDF / opened presentation looks "paper" not "screen".
+ * Plain white paper, dark text. Slides keep their cream gradient via inline
+ * styles (they sit on white pages as cards). Dark-mode utility classes that
+ * may still exist in components are neutralised for legibility.
  * ========================================================================= */
 @media print {
   :root,
   html,
   body {
     background: #ffffff !important;
-    color: #18181b !important;
+    color: #0f1b3d !important;
     color-scheme: light !important;
     --background: #ffffff !important;
-    --foreground: #18181b !important;
+    --foreground: #0f1b3d !important;
     --surface: #ffffff !important;
     --surface-elevated: #fafafa !important;
-    --foreground-muted: #52525b !important;
-    --foreground-subtle: #71717a !important;
-    --border: #e4e4e7 !important;
-    --border-strong: #d4d4d8 !important;
+    --foreground-muted: #4a5a7c !important;
+    --foreground-subtle: #8b95a8 !important;
+    --border: #d9d0bc !important;
+    --border-strong: #c9bfa8 !important;
   }
 
   body {
@@ -114,7 +114,6 @@ body {
     display: none !important;
   }
 
-  /* Neutralize dark utility classes left in components */
   [class*="dark:bg-"] {
     background-color: #ffffff !important;
     background-image: none !important;
@@ -125,13 +124,13 @@ body {
   [class*="dark:text-gray-"],
   [class*="dark:text-slate-"],
   [class*="dark:text-white"] {
-    color: #18181b !important;
+    color: #0f1b3d !important;
   }
   [class*="dark:border-"] {
-    border-color: #e4e4e7 !important;
+    border-color: #d9d0bc !important;
   }
   [class*="dark:stroke-"] {
-    stroke: #e4e4e7 !important;
+    stroke: #d9d0bc !important;
   }
 
   *,
