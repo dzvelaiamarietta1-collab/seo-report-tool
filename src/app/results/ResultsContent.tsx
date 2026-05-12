@@ -849,17 +849,16 @@ function TopPrioritiesBanner({
   };
   return (
     <section
-      className="mb-14 rounded-xl border border-accent/20 bg-gradient-to-br from-accent-soft to-transparent p-5 sm:p-6"
+      // Inverted callout: deep-navy panel with gold typography so the
+      // priorities band pops against the cream page.
+      className="mb-14 rounded-xl border border-accent/40 bg-foreground p-5 sm:p-6"
     >
       <header className="flex items-center gap-2.5 mb-4">
-        <Target
-          className="w-4 h-4 text-accent"
-          strokeWidth={2}
-        />
-        <h2 className="text-[13px] font-medium text-foreground">
+        <Target className="w-4 h-4 text-accent" strokeWidth={2} />
+        <h2 className="text-[13px] font-medium text-accent">
           პრიორიტეტული ცვლილებები
         </h2>
-        <span className="text-[11px] font-mono uppercase tracking-wider text-foreground-muted">
+        <span className="text-[11px] font-mono uppercase tracking-wider text-accent/60">
           ({items.length})
         </span>
       </header>
@@ -874,20 +873,20 @@ function TopPrioritiesBanner({
               <span
                 className={`shrink-0 w-6 h-6 rounded-full inline-flex items-center justify-center text-[11px] font-mono font-medium ${
                   isFail
-                    ? "bg-error/10 text-error"
-                    : "bg-warning/10 text-warning"
+                    ? "bg-error/20 text-error"
+                    : "bg-warning/20 text-warning"
                 }`}
               >
                 {i + 1}
               </span>
               <div className="flex-1 min-w-0">
-                <p className="text-[13px] font-medium text-foreground leading-snug truncate">
+                <p className="text-[13px] font-medium text-accent leading-snug truncate">
                   {item.check.label}
-                  <span className="ml-2 text-[10px] font-mono uppercase tracking-wider text-foreground-subtle">
+                  <span className="ml-2 text-[10px] font-mono uppercase tracking-wider text-accent/55">
                     {item.categoryName}
                   </span>
                 </p>
-                <p className="text-[12px] text-foreground-muted truncate leading-snug">
+                <p className="text-[12px] text-[#C9CDD9] truncate leading-snug">
                   {item.check.message}
                 </p>
               </div>
@@ -899,7 +898,7 @@ function TopPrioritiesBanner({
                   )
                 }
                 data-print-hide
-                className="shrink-0 inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-medium bg-accent-soft hover:bg-accent-soft text-accent transition"
+                className="shrink-0 inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-medium bg-accent text-foreground hover:bg-accent-hover transition"
               >
                 გასწორება
                 <ChevronRight className="w-3 h-3" strokeWidth={2.25} />
