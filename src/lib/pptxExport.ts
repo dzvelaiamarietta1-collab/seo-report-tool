@@ -14,21 +14,26 @@ type Pptx = PptxGenJS;
 type Slide = PptxGenJS.Slide;
 type TextRun = PptxGenJS.TextProps;
 
-// Audita brand palette — monochrome + electric lime accent.
-// Constant names kept (NAVY, CYAN) to avoid rewriting every call site;
-// values now reflect the dark theme used on web so the PPTX matches.
-const NAVY = "0A0A0A"; // page background (was navy)
-const CYAN = "BFFF00"; // brand accent (was cyan) — electric lime
-const WHITE = "FFFFFF";
-const WHITE_BRIGHT = "FAFAFA";
-const WHITE_MUTED = "C4C4C4";
-const WHITE_DIM = "9CA3AF";
-const WHITE_FAINT = "6B7280";
-const RED = "EF4444";
-const RED_TEXT = "F87171";
-const AMBER = "FCD34D";
+// Editorial / financial-report palette — cream + deep navy + restrained
+// status colours. Reads as a McKinsey / FT report rather than a dashboard.
+// Constant names (NAVY, CYAN, WHITE, …) kept for legacy call sites; their
+// meanings have inverted: NAVY is now the cream page bg, CYAN the navy
+// accent, WHITE the navy primary text.
+const NAVY = "F1EBDD"; // page background — warm cream (was dark)
+const CYAN = "1E3A8A"; // brand accent — deep royal navy (was lime/cyan)
+const WHITE = "0F1B3D"; // primary text — deep navy on cream
+const WHITE_BRIGHT = "0F1B3D"; // alias for primary text
+const WHITE_MUTED = "4A5A7C"; // secondary text — muted navy-gray
+const WHITE_DIM = "8B95A8"; // dim — labels, footer
+const WHITE_FAINT = "8B95A8"; // faintest — page numbers
+const RED = "A03A3A"; // muted brick (was bright red)
+const RED_TEXT = "A03A3A";
+const AMBER = "B8843E"; // muted amber (was bright)
 const AMBER_DARK = "78350F";
-const BLUE_LINK = "60A5FA";
+const BLUE_LINK = "1E3A8A";
+const SURFACE = "FAF6ED"; // lighter cream — card fills (new)
+const BORDER = "D9D0BC"; // soft cream border (new)
+const SUCCESS = "1F6F4A"; // forest green — score-good (new)
 
 const FONT = "FiraGO";
 const FONT_MONO = "JetBrains Mono";
@@ -350,7 +355,7 @@ function addSummaryColumn(
   visible.forEach((item, i) => {
     runs.push({
       text: "✓ ",
-      options: { color: CYAN, bold: true },
+      options: { color: SUCCESS, bold: true },
     });
     runs.push({
       text: item.check.label,
@@ -1718,7 +1723,7 @@ function addServiceBlock(
   // Items
   const runs: TextRun[] = [];
   block.items.forEach((item, i) => {
-    runs.push({ text: "✓ ", options: { color: CYAN, bold: true } });
+    runs.push({ text: "✓ ", options: { color: SUCCESS, bold: true } });
     runs.push({
       text: item,
       options: {
@@ -1793,7 +1798,7 @@ function addProblemPagesSlide(
 
   // Average score on the right
   const avgColor =
-    data.averageScore >= 80 ? CYAN : data.averageScore >= 50 ? AMBER : RED_TEXT;
+    data.averageScore >= 80 ? SUCCESS : data.averageScore >= 50 ? AMBER : RED_TEXT;
 
   slide.addText("საშუალო ქულა", {
     x: 9,
@@ -1966,7 +1971,7 @@ function addProblemPagesSlide(
     const scoreColor = row.error
       ? WHITE_FAINT
       : row.score >= 80
-      ? CYAN
+      ? SUCCESS
       : row.score >= 50
       ? AMBER
       : RED_TEXT;

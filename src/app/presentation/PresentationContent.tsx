@@ -31,15 +31,16 @@ import {
 } from "@/lib/presentation";
 import { BRAND } from "@/lib/brand";
 
-// Audita slide background — near-black with a faint lime grid overlay
-// (was navy gradient). Matches the web app's monochrome + lime theme so
-// the deck reads as part of the same product, not a template.
-const NAVY_BG = "#0a0a0a";
+// Editorial / financial-report palette for slides — McKinsey / FT vibe.
+// Cream page + deep-navy text + restrained status colours read as a
+// professional client deliverable rather than a dashboard screenshot.
+// (NAVY_BG name kept for legacy references in slide code.)
+const NAVY_BG = "#F1EBDD";
 
 const SLIDE_BG = `
-  linear-gradient(rgba(191,255,0,0.03) 1px, transparent 1px) 0 0 / 80px 80px,
-  linear-gradient(90deg, rgba(191,255,0,0.03) 1px, transparent 1px) 0 0 / 80px 80px,
-  linear-gradient(180deg, #0a0a0a 0%, #131313 100%)
+  linear-gradient(rgba(15,27,61,0.04) 1px, transparent 1px) 0 0 / 80px 80px,
+  linear-gradient(90deg, rgba(15,27,61,0.04) 1px, transparent 1px) 0 0 / 80px 80px,
+  linear-gradient(180deg, #F1EBDD 0%, #ECE5D2 100%)
 `;
 
 interface StoredAnalysis {
@@ -288,22 +289,22 @@ function ProblemPagesSlide({
   total: number;
 }) {
   const scoreColor = (score: number, error?: string): string => {
-    if (error) return "text-foreground-muted";
-    if (score >= 80) return "text-emerald-400";
-    if (score >= 50) return "text-amber-400";
-    return "text-red-400";
+    if (error) return "text-[#8B95A8]";
+    if (score >= 80) return "text-[#1F6F4A]";
+    if (score >= 50) return "text-[#B8843E]";
+    return "text-[#A03A3A]";
   };
 
   const avgColor = scoreColor(slide.averageScore);
 
   return (
     <div
-      className="w-full h-full relative px-12 pt-10 pb-14 text-white flex flex-col"
+      className="w-full h-full relative px-12 pt-10 pb-14 text-[#0F1B3D] flex flex-col"
       style={{ background: SLIDE_BG }}
     >
       <header className="flex items-end justify-between gap-4 mb-6">
         <div>
-          <p className="text-[10px] font-mono uppercase tracking-[0.3em] text-accent mb-2">
+          <p className="text-[10px] font-mono uppercase tracking-[0.3em] text-[#1E3A8A] mb-2">
             მთლიანი საიტი
           </p>
           <h2 className="text-5xl font-semibold tracking-tight">
@@ -311,7 +312,7 @@ function ProblemPagesSlide({
           </h2>
         </div>
         <div className="text-right shrink-0">
-          <p className="text-[10px] font-mono uppercase tracking-wider text-white/50 mb-1">
+          <p className="text-[10px] font-mono uppercase tracking-wider text-[#8B95A8] mb-1">
             საშუალო ქულა
           </p>
           <p className={`text-5xl font-semibold tabular-nums ${avgColor}`}>
@@ -320,28 +321,28 @@ function ProblemPagesSlide({
         </div>
       </header>
 
-      <div className="flex-1 min-h-0 overflow-hidden rounded-lg border border-white/10 bg-white/[0.03]">
-        <div className="grid grid-cols-[2.5rem_1fr_auto_auto_auto] gap-x-4 px-5 py-2.5 border-b border-white/10 text-[10px] font-mono uppercase tracking-wider text-white/50">
+      <div className="flex-1 min-h-0 overflow-hidden rounded-lg border border-[#D9D0BC] bg-[#FAF6ED]">
+        <div className="grid grid-cols-[2.5rem_1fr_auto_auto_auto] gap-x-4 px-5 py-2.5 border-b border-[#D9D0BC] text-[10px] font-mono uppercase tracking-wider text-[#8B95A8]">
           <span>#</span>
           <span>გვერდი</span>
           <span className="text-right">პრობლემები</span>
           <span>მთავარი ხარვეზი</span>
           <span className="text-right">ქულა</span>
         </div>
-        <ul className="divide-y divide-white/5">
+        <ul className="divide-y divide-[#D9D0BC]">
           {slide.pages.slice(0, 12).map((p, i) => (
             <li
               key={`${p.url}-${i}`}
               className="grid grid-cols-[2.5rem_1fr_auto_auto_auto] gap-x-4 px-5 py-3 items-center"
             >
-              <span className="text-[11px] font-mono text-white/40 tabular-nums">
+              <span className="text-[11px] font-mono text-[#8B95A8] tabular-nums">
                 {i + 1}
               </span>
               <div className="min-w-0">
-                <p className="text-[12px] text-white/90 truncate">
+                <p className="text-[12px] text-[#0F1B3D] truncate">
                   {p.url.replace(/^https?:\/\//, "")}
                   {p.isHome && (
-                    <span className="ml-2 text-[9px] font-mono uppercase tracking-wider text-accent">
+                    <span className="ml-2 text-[9px] font-mono uppercase tracking-wider text-[#1E3A8A]">
                       მთავარი
                     </span>
                   )}
@@ -352,14 +353,14 @@ function ProblemPagesSlide({
                   <span className="text-foreground-muted">—</span>
                 ) : (
                   <>
-                    <span className="text-amber-400">{p.warnings}w</span>
-                    <span className="mx-1.5 text-white/20">·</span>
-                    <span className="text-red-400">{p.failed}f</span>
+                    <span className="text-[#B8843E]">{p.warnings}w</span>
+                    <span className="mx-1.5 text-[#C9CDD9]">·</span>
+                    <span className="text-[#A03A3A]">{p.failed}f</span>
                   </>
                 )}
               </div>
               <div className="min-w-0 max-w-[14rem]">
-                <p className="text-[11px] text-white/70 truncate">
+                <p className="text-[11px] text-[#4A5A7C] truncate">
                   {p.topIssue}
                 </p>
               </div>
@@ -377,7 +378,7 @@ function ProblemPagesSlide({
           ))}
         </ul>
         {slide.pages.length > 12 && (
-          <p className="px-5 py-2 text-[10px] font-mono uppercase tracking-wider text-white/40 border-t border-white/10">
+          <p className="px-5 py-2 text-[10px] font-mono uppercase tracking-wider text-[#8B95A8] border-t border-[#D9D0BC]">
             + {slide.pages.length - 12} დამატებითი გვერდი
           </p>
         )}
@@ -434,9 +435,9 @@ function SlideFooter({
   label?: string;
 }) {
   return (
-    <footer className="absolute bottom-6 left-10 right-10 flex items-center justify-between text-[11px] font-mono uppercase tracking-[0.2em] text-white/40">
+    <footer className="absolute bottom-6 left-10 right-10 flex items-center justify-between text-[11px] font-mono uppercase tracking-[0.2em] text-[#8B95A8]">
       <span>{BRAND.agency.toUpperCase()}</span>
-      {label && <span className="text-white/50">{label}</span>}
+      {label && <span className="text-[#8B95A8]">{label}</span>}
       <span>
         {slideNumber} / {total}
       </span>
@@ -483,7 +484,7 @@ function CoverSlide({
         )}
       </div>
 
-      <div className="flex-1 flex flex-col justify-center px-12 py-10 text-white">
+      <div className="flex-1 flex flex-col justify-center px-12 py-10 text-[#0F1B3D]">
         <h1
           className="font-semibold tracking-tight leading-[1.05] mb-3"
           style={{
@@ -496,13 +497,13 @@ function CoverSlide({
         </h1>
         {!slide.logoUrl && (
           <p
-            className="text-2xl text-white/70 mb-3"
+            className="text-2xl text-[#4A5A7C] mb-3"
             style={{ fontFamily: serifFamily }}
           >
             {slide.siteName}
           </p>
         )}
-        <p className="text-sm font-mono text-white/45 mb-7 break-all">
+        <p className="text-sm font-mono text-[#8B95A8] mb-7 break-all">
           {slide.siteUrl}
         </p>
         <div className="inline-flex">
@@ -520,9 +521,9 @@ function CoverSlide({
       </div>
 
       <footer className="absolute bottom-8 left-0 right-0 text-center">
-        <p className="text-[11px] font-mono uppercase tracking-[0.4em] text-white/50">
+        <p className="text-[11px] font-mono uppercase tracking-[0.4em] text-[#8B95A8]">
           made by{" "}
-          <span className="text-white font-medium">{BRAND.agency.toUpperCase()}</span>
+          <span className="text-[#0F1B3D] font-medium">{BRAND.agency.toUpperCase()}</span>
         </p>
       </footer>
     </div>
@@ -546,19 +547,19 @@ function SummarySlide({
 
   return (
     <div
-      className="w-full h-full relative px-12 pt-12 pb-14 text-white"
+      className="w-full h-full relative px-12 pt-12 pb-14 text-[#0F1B3D]"
       style={{ background: SLIDE_BG }}
     >
       <header className="mb-8">
-        <p className="text-[10px] font-mono uppercase tracking-[0.3em] text-white/50 mb-2">
+        <p className="text-[10px] font-mono uppercase tracking-[0.3em] text-[#8B95A8] mb-2">
           რა მუშაობს კარგად
         </p>
         <h2 className="text-5xl font-semibold tracking-tight mb-3">
           ძლიერი მხარეები
         </h2>
-        <p className="text-sm text-white/60 max-w-2xl">
+        <p className="text-sm text-[#8B95A8] max-w-2xl">
           ამ{" "}
-          <span className="text-white font-medium">{totalPasses} პუნქტში</span>{" "}
+          <span className="text-[#0F1B3D] font-medium">{totalPasses} პუნქტში</span>{" "}
           თქვენი საიტი უკვე SEO-სტანდარტს აკმაყოფილებს.
         </p>
       </header>
@@ -591,20 +592,20 @@ function SummaryColumn({
   items: PassEntry[];
 }) {
   return (
-    <div className="rounded-lg bg-white/[0.05] border border-white/10 p-5">
+    <div className="rounded-lg bg-[#FAF6ED] border border-[#D9D0BC] p-5">
       <header className="flex items-center gap-3 mb-4">
-        <span className="text-3xl font-semibold text-white/30 tabular-nums leading-none">
+        <span className="text-3xl font-semibold text-[#A8B0C0] tabular-nums leading-none">
           {String(index + 1).padStart(2, "0")}
         </span>
         <div className="flex-1 min-w-0">
-          <h3 className="text-[13px] font-medium text-white">{label}</h3>
-          <p className="text-[10px] font-mono uppercase tracking-wider text-white/40">
+          <h3 className="text-[13px] font-medium text-[#0F1B3D]">{label}</h3>
+          <p className="text-[10px] font-mono uppercase tracking-wider text-[#8B95A8]">
             {items.length} პუნქტი
           </p>
         </div>
       </header>
       {items.length === 0 ? (
-        <p className="text-xs text-white/40 italic">
+        <p className="text-xs text-[#8B95A8] italic">
           ჯერ-ჯერობით კარგი არაფერია.
         </p>
       ) : (
@@ -612,17 +613,17 @@ function SummaryColumn({
           {items.slice(0, 12).map((item, i) => (
             <li
               key={i}
-              className="flex items-start gap-1.5 text-[12px] leading-snug text-white/85"
+              className="flex items-start gap-1.5 text-[12px] leading-snug text-[#0F1B3D]"
             >
               <Check
-                className="w-3 h-3 text-accent mt-0.5 shrink-0"
+                className="w-3 h-3 text-[#1E3A8A] mt-0.5 shrink-0"
                 strokeWidth={2.5}
               />
               <span>{item.check.label}</span>
             </li>
           ))}
           {items.length > 12 && (
-            <li className="text-[11px] text-white/40 italic mt-1">
+            <li className="text-[11px] text-[#8B95A8] italic mt-1">
               + {items.length - 12} მეტი
             </li>
           )}
@@ -636,13 +637,13 @@ const STATUS_DISPLAY = {
   fail: {
     Icon: X,
     label: "კრიტიკული",
-    chipBg: "bg-red-500",
+    chipBg: "bg-[#A03A3A]",
     chipText: "text-white",
   },
   warn: {
     Icon: AlertTriangle,
     label: "გაფრთხილება",
-    chipBg: "bg-amber-400",
+    chipBg: "bg-[#B8843E]",
     chipText: "text-amber-950",
   },
 } as const;
@@ -670,13 +671,13 @@ function ProblemSlide({
           className={`${
             noVisual ? "text-7xl" : "text-5xl"
           } font-semibold tabular-nums leading-none ${
-            isFail ? "text-red-400/50" : "text-amber-300/50"
+            isFail ? "text-[#A03A3A]/50" : "text-[#B8843E]/50"
           }`}
         >
           {number}
         </span>
         <div className="flex flex-col gap-1.5 min-w-0">
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider bg-white/10 text-white/80 self-start">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider bg-[#EBE3D0] text-[#4A5A7C] self-start">
             {problem.categoryName}
           </span>
           <span
@@ -695,7 +696,7 @@ function ProblemSlide({
         {problem.check.label}
       </h2>
       {problem.impact && (
-        <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-white/40">
+        <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-[#8B95A8]">
           {problem.impact}
         </p>
       )}
@@ -704,13 +705,13 @@ function ProblemSlide({
 
   const Description = (
     <section className="mb-4">
-      <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-white/40 mb-2">
+      <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-[#8B95A8] mb-2">
         პრობლემის აღწერა
       </p>
       <p
         className={`${
           noVisual ? "text-[16px]" : "text-[15px]"
-        } text-white/90 leading-relaxed`}
+        } text-[#0F1B3D] leading-relaxed`}
       >
         {problem.check.message}
       </p>
@@ -719,13 +720,13 @@ function ProblemSlide({
 
   const SeoImpact = problem.seoImpact ? (
     <section className="mb-4">
-      <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-amber-300 mb-2">
+      <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-[#B8843E] mb-2">
         გავლენა SEO-ზე
       </p>
       <p
         className={`${
           noVisual ? "text-[14px]" : "text-[13px]"
-        } text-white/75 leading-relaxed`}
+        } text-[#4A5A7C] leading-relaxed`}
       >
         {problem.seoImpact}
       </p>
@@ -733,15 +734,15 @@ function ProblemSlide({
   ) : null;
 
   const Solution = problem.check.recommendation ? (
-    <section className="mt-auto pt-5 border-t border-white/10">
-      <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-accent mb-2 flex items-center gap-1.5">
+    <section className="mt-auto pt-5 border-t border-[#D9D0BC]">
+      <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-[#1E3A8A] mb-2 flex items-center gap-1.5">
         <Sparkles className="w-3 h-3" strokeWidth={2} />
         გადაწყვეტა
       </p>
       <p
         className={`${
           noVisual ? "text-[14px]" : "text-[13px]"
-        } text-white/80 leading-relaxed`}
+        } text-[#4A5A7C] leading-relaxed`}
       >
         {problem.check.recommendation}
       </p>
@@ -751,7 +752,7 @@ function ProblemSlide({
   if (noVisual) {
     return (
       <div
-        className="w-full h-full relative px-16 py-12 text-white flex flex-col"
+        className="w-full h-full relative px-16 py-12 text-[#0F1B3D] flex flex-col"
         style={{ background: SLIDE_BG }}
       >
         <div className="max-w-3xl flex flex-col flex-1">
@@ -778,7 +779,7 @@ function ProblemSlide({
         <ProblemVisual problem={problem} />
       </div>
 
-      <div className="text-white p-10 pb-16 flex flex-col">
+      <div className="text-[#0F1B3D] p-10 pb-16 flex flex-col">
         {Header}
         {Description}
         {SeoImpact}
@@ -805,11 +806,11 @@ function RecommendationsSlide({
 }) {
   return (
     <div
-      className="w-full h-full relative px-12 pt-10 pb-14 text-white flex flex-col"
+      className="w-full h-full relative px-12 pt-10 pb-14 text-[#0F1B3D] flex flex-col"
       style={{ background: SLIDE_BG }}
     >
       <header className="mb-7">
-        <p className="text-[10px] font-mono uppercase tracking-[0.3em] text-accent mb-2">
+        <p className="text-[10px] font-mono uppercase tracking-[0.3em] text-[#1E3A8A] mb-2">
           {slide.siteUrl} · ვებსაიტის SEO აუდიტი
         </p>
         <h2 className="text-5xl font-semibold tracking-tight">
@@ -820,12 +821,12 @@ function RecommendationsSlide({
       <ul className="flex-1 space-y-4 overflow-hidden">
         {slide.items.slice(0, 5).map((item, i) => (
           <li key={i} className="flex gap-4 items-start">
-            <span className="shrink-0 w-2 h-2 mt-2 rounded-full bg-accent" />
+            <span className="shrink-0 w-2 h-2 mt-2 rounded-full bg-[#1E3A8A]" />
             <div className="flex-1 min-w-0">
-              <p className="text-[15px] font-semibold text-white mb-1.5 leading-snug">
+              <p className="text-[15px] font-semibold text-[#0F1B3D] mb-1.5 leading-snug">
                 {item.title}
               </p>
-              <p className="text-[12.5px] text-white/70 leading-relaxed">
+              <p className="text-[12.5px] text-[#4A5A7C] leading-relaxed">
                 {item.text}
               </p>
             </div>
@@ -853,14 +854,14 @@ function ServicesSlide({
 }) {
   return (
     <div
-      className="w-full h-full relative px-12 pt-10 pb-14 text-white flex flex-col"
+      className="w-full h-full relative px-12 pt-10 pb-14 text-[#0F1B3D] flex flex-col"
       style={{ background: SLIDE_BG }}
     >
       <header className="mb-6">
-        <p className="text-[10px] font-mono uppercase tracking-[0.3em] text-accent mb-2">
+        <p className="text-[10px] font-mono uppercase tracking-[0.3em] text-[#1E3A8A] mb-2">
           {BRAND.agency.toUpperCase()}
         </p>
-        <h2 className="text-4xl font-semibold tracking-tight text-white">
+        <h2 className="text-4xl font-semibold tracking-tight text-[#0F1B3D]">
           რას მოიცავს SEO სერვისი?
         </h2>
       </header>
@@ -888,12 +889,12 @@ function ServiceBlockCard({
   index: number;
 }) {
   return (
-    <div className="rounded-lg bg-white/[0.05] border border-white/10 p-4 flex flex-col min-h-0">
-      <header className="flex items-center gap-2.5 mb-3 pb-2 border-b border-white/10">
-        <span className="text-xl font-semibold text-white/30 tabular-nums leading-none shrink-0">
+    <div className="rounded-lg bg-[#FAF6ED] border border-[#D9D0BC] p-4 flex flex-col min-h-0">
+      <header className="flex items-center gap-2.5 mb-3 pb-2 border-b border-[#D9D0BC]">
+        <span className="text-xl font-semibold text-[#A8B0C0] tabular-nums leading-none shrink-0">
           {String(index + 1).padStart(2, "0")}
         </span>
-        <h3 className="text-[14px] font-semibold text-white leading-tight">
+        <h3 className="text-[14px] font-semibold text-[#0F1B3D] leading-tight">
           {block.title}
         </h3>
       </header>
@@ -901,10 +902,10 @@ function ServiceBlockCard({
         {block.items.map((item, i) => (
           <li
             key={i}
-            className="flex items-start gap-1.5 text-[10.5px] leading-snug text-white/85"
+            className="flex items-start gap-1.5 text-[10.5px] leading-snug text-[#0F1B3D]"
           >
             <Check
-              className="w-2.5 h-2.5 text-accent mt-0.5 shrink-0"
+              className="w-2.5 h-2.5 text-[#1E3A8A] mt-0.5 shrink-0"
               strokeWidth={3}
             />
             <span>{item}</span>
