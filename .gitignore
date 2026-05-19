@@ -39,3 +39,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+.vercel
+
+# unused brand assets kept locally for future use
+/public/bg-hero.mp4
+/public/bg-hero-poster.jpg

@@ -436,7 +436,15 @@ function SlideFooter({
 }) {
   return (
     <footer className="absolute bottom-6 left-10 right-10 flex items-center justify-between text-[11px] font-mono uppercase tracking-[0.2em] text-[#8B95A8]">
-      <span>{BRAND.agency.toUpperCase()}</span>
+      <span className="inline-flex items-center gap-1.5">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/infinity-logo.png"
+          alt=""
+          className="w-3.5 h-3.5 object-contain opacity-70"
+        />
+        {BRAND.agency.toUpperCase()}
+      </span>
       {label && <span className="text-[#8B95A8]">{label}</span>}
       <span>
         {slideNumber} / {total}
@@ -452,14 +460,25 @@ function CoverSlide({
 }) {
   const serifFamily = 'Georgia, "Times New Roman", "Playfair Display", serif';
 
-  // Try logoUrl first (og:image or twitter:image), fall back to favicon
-  // if that fails to load, finally hide if both fail. Sites like
-  // infinity.ge sometimes have og:image set to a CDN that blocks our
-  // fetch — without this fallback the cover would have no mark at all.
-  const candidates = [slide.logoUrl, slide.faviconUrl].filter(
-    (u, i, arr): u is string =>
-      typeof u === "string" && u.length > 0 && arr.indexOf(u) === i
-  );
+  // Try logoUrl (og:image / twitter:image) first, then siteLogoUrl
+  // (apple-touch-icon, Organization schema, body <img class="logo">),
+  // then favicon, and finally hide if everything fails. Each URL is
+  // routed through /api/image — that proxy strips the Referer (some
+  // sites like infinity.ge hotlink-block when Referer is foreign,
+  // returning 403) and normalises content-type. Local /logo paths from
+  // our own public/ folder skip the proxy.
+  const proxy = (u: string) =>
+    u.startsWith("/") ? u : `/api/image?url=${encodeURIComponent(u)}`;
+  const candidates = [
+    slide.logoUrl,
+    slide.siteLogoUrl,
+    slide.faviconUrl,
+  ]
+    .filter(
+      (u, i, arr): u is string =>
+        typeof u === "string" && u.length > 0 && arr.indexOf(u) === i
+    )
+    .map(proxy);
   const [attemptIndex, setAttemptIndex] = useState(0);
   const currentSrc = candidates[attemptIndex];
   const exhausted = !currentSrc;
@@ -534,7 +553,13 @@ function CoverSlide({
         </div>
       </div>
 
-      <footer className="absolute bottom-8 left-0 right-0 text-center">
+      <footer className="absolute bottom-8 left-0 right-0 flex items-center justify-center gap-2.5">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/infinity-logo.png"
+          alt=""
+          className="w-6 h-6 object-contain"
+        />
         <p className="text-[11px] font-mono uppercase tracking-[0.4em] text-[#8B95A8]">
           made by{" "}
           <span className="text-[#0F1B3D] font-medium">{BRAND.agency.toUpperCase()}</span>
