@@ -286,6 +286,117 @@ function classifyShareImage(
   };
 }
 
+// Parses a `sizes` attribute like "180x180" or "16x16 32x32 192x192" and
+// returns the largest declared width. Returns 0 if nothing parseable.
+function parseSizesAttr(sizes: string | undefined | null): number {
+  if (!sizes) return 0;
+  let max = 0;
+  for (const match of sizes.matchAll(/(\d+)\s*[xX]\s*(\d+)/g)) {
+    const w = parseInt(match[1], 10);
+    if (w > max) max = w;
+  }
+  return max;
+}
+
+// Ranked search for the best high-res logo source. Used by the
+// presentation cover slide, which scales whatever we return up to
+// ~290px wide — so a 32×32 favicon looks blurry there. Order matters:
+//   1. apple-touch-icon (typically 180×180, sometimes larger)
+//   2. <link rel="icon"> with a usable sizes attribute, biggest first
+//   3. JSON-LD Organization.logo
+//   4. body <img> with "logo" in src/alt/class — last-resort heuristic
+//      that catches sites like agroit.ge which have no head icon tags
+//      at all but render their brand mark as a regular <img>.
+// SVG icons are treated as effectively infinite resolution.
+function findBestLogo(
+  $: CheerioAPI,
+  resolve: (raw: string) => string
+): string | undefined {
+  type Candidate = { href: string; size: number };
+  const candidates: Candidate[] = [];
+
+  $(
+    'link[rel="apple-touch-icon"], link[rel="apple-touch-icon-precomposed"]'
+  ).each((_, el) => {
+    const href = $(el).attr("href");
+    if (!href) return;
+    const size = parseSizesAttr($(el).attr("sizes")) || 180;
+    candidates.push({ href: resolve(href), size });
+  });
+
+  $('link[rel="icon"], link[rel="shortcut icon"]').each((_, el) => {
+    const href = $(el).attr("href");
+    if (!href) return;
+    const sizesAttr = $(el).attr("sizes");
+    let size = parseSizesAttr(sizesAttr);
+    if (!size) {
+      const isSvg =
+        /\.svg(\?|$)/i.test(href) ||
+        sizesAttr === "any" ||
+        $(el).attr("type") === "image/svg+xml";
+      size = isSvg ? 1024 : 0;
+    }
+    if (size >= 96) candidates.push({ href: resolve(href), size });
+  });
+
+  $('script[type="application/ld+json"]').each((_, el) => {
+    try {
+      const parsed: unknown = JSON.parse($(el).text() || "null");
+      const list: unknown[] = Array.isArray(parsed) ? parsed : [parsed];
+      for (const raw of list) {
+        if (!raw || typeof raw !== "object") continue;
+        const item = raw as Record<string, unknown>;
+        const type = item["@type"];
+        const types: unknown[] = Array.isArray(type) ? type : [type];
+        const isOrg = types.some(
+          (t) =>
+            typeof t === "string" && /Organization|LocalBusiness/i.test(t)
+        );
+        if (!isOrg) continue;
+        const logo = item.logo;
+        let url: string | undefined;
+        if (typeof logo === "string") {
+          url = logo;
+        } else if (logo && typeof logo === "object") {
+          const inner = (logo as Record<string, unknown>).url;
+          if (typeof inner === "string") url = inner;
+        }
+        if (url) candidates.push({ href: resolve(url), size: 512 });
+      }
+    } catch {
+      // ignore malformed JSON-LD
+    }
+  });
+
+  $("img").each((_, el) => {
+    const $img = $(el);
+    const src = $img.attr("src") || $img.attr("data-src") || "";
+    if (!src) return;
+    const alt = ($img.attr("alt") || "").toLowerCase();
+    const cls = ($img.attr("class") || "").toLowerCase();
+    const lowerSrc = src.toLowerCase();
+    const looksLikeLogo =
+      /\blogo\b/.test(lowerSrc) ||
+      /\blogo\b/.test(alt) ||
+      /\blogo\b/.test(cls);
+    if (!looksLikeLogo) return;
+    // Body images don't expose dimensions reliably from HTML alone; assume
+    // a modest 200px so we still prefer apple-touch-icon (180) when both
+    // are present but beat a bare 32px favicon.
+    candidates.push({ href: resolve(src), size: 200 });
+  });
+
+  if (candidates.length === 0) return undefined;
+
+  const byHref = new Map<string, number>();
+  for (const c of candidates) {
+    const prev = byHref.get(c.href) ?? 0;
+    if (c.size > prev) byHref.set(c.href, c.size);
+  }
+  const sorted = [...byHref.entries()].sort((a, b) => b[1] - a[1]);
+  return sorted[0][0];
+}
+
 export async function extractPreview(
   $: CheerioAPI,
   baseUrl: string
@@ -322,6 +433,7 @@ export async function extractPreview(
     $('link[rel="apple-touch-icon"]').attr("href") ??
     "";
   const favicon = linkIcon ? resolve(linkIcon) : `${origin}/favicon.ico`;
+  const siteLogo = findBestLogo($, resolve);
 
   const ogImage = resolve(meta("og:image", "property"));
   const twitterImage = resolve(meta("twitter:image"));
@@ -359,6 +471,7 @@ export async function extractPreview(
     description: meta("description"),
     canonical: $('link[rel="canonical"]').attr("href")?.trim() ?? baseUrl,
     favicon,
+    siteLogo,
     hostname,
     pathname,
     og: {

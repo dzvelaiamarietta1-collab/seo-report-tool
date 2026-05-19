@@ -207,7 +207,7 @@ export function isFAQPageType(typeValue: unknown): boolean {
 // Walk a parsed JSON-LD payload and yield every node that has a @type,
 // flattening @graph nesting. Returns the original `unknown` items so
 // callers can inspect other fields too.
-function* walkNodes(payload: unknown): Generator<Record<string, unknown>> {
+export function* walkNodes(payload: unknown): Generator<Record<string, unknown>> {
   if (!payload || typeof payload !== "object") return;
   const items = Array.isArray(payload) ? payload : [payload];
   for (const item of items) {
@@ -272,6 +272,172 @@ export function validateOrganizationFields(
   }
 
   return { missingRequired, missingRecommended };
+}
+
+// ── Deep field validation ──────────────────────────────────────────────
+// Beyond "does Organization have name+url", validate that the actual
+// field VALUES are well-formed. Catches a common class of bug: a phone
+// like "(+1) (555) 1234" that fails Google's E.164-ish parsing, or an
+// "image" pointing to a relative path that Google's crawler can't fetch.
+// We walk every JSON-LD node, not just Organization, because Product,
+// LocalBusiness, Person etc. all share these field semantics.
+
+export interface SchemaFieldIssue {
+  field: string;
+  type: string; // @type of the parent node (joined if array)
+  value: string;
+  reason: string;
+}
+
+export interface SchemaFieldIssues {
+  invalidPhones: SchemaFieldIssue[];
+  invalidEmails: SchemaFieldIssue[];
+  invalidUrls: SchemaFieldIssue[];
+  invalidCurrencies: SchemaFieldIssue[];
+}
+
+// Loose E.164-ish: optional +, then 7–15 digits with allowed separators.
+// We don't enforce full E.164 because Google itself accepts national
+// formats — we just reject obviously malformed entries like "555-CALL".
+const PHONE_OK = /^[+]?[\s\d\-().  ]{7,30}$/;
+const PHONE_DIGIT_COUNT = /(?:\d.*){7,15}/;
+const EMAIL_OK = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+const ISO_4217 = /^[A-Z]{3}$/;
+
+function isUrlOk(v: string): boolean {
+  // mailto:/tel: aren't really URLs in the http sense — Schema accepts
+  // them in some contexts but they belong in their own fields.
+  if (/^(mailto:|tel:)/i.test(v)) return false;
+  try {
+    const u = new URL(v);
+    return u.protocol === "http:" || u.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
+function nodeTypeLabel(node: Record<string, unknown>): string {
+  const t = node["@type"];
+  if (typeof t === "string") return t;
+  if (Array.isArray(t)) {
+    return t.filter((x) => typeof x === "string").join("/") || "?";
+  }
+  return "?";
+}
+
+// Recursively collect all string values reachable from `node` whose key
+// matches `targetKeys`. `node.contactPoint.telephone` should be found
+// when walking from an Organization node looking for "telephone".
+function* collectFieldStrings(
+  node: unknown,
+  targetKeys: Set<string>,
+  depth = 0
+): Generator<{ key: string; value: string; parent: Record<string, unknown> }> {
+  if (depth > 6 || !node || typeof node !== "object") return;
+  if (Array.isArray(node)) {
+    for (const item of node) yield* collectFieldStrings(item, targetKeys, depth + 1);
+    return;
+  }
+  const obj = node as Record<string, unknown>;
+  for (const [key, val] of Object.entries(obj)) {
+    if (targetKeys.has(key)) {
+      if (typeof val === "string") {
+        yield { key, value: val, parent: obj };
+      } else if (Array.isArray(val)) {
+        for (const item of val) {
+          if (typeof item === "string") yield { key, value: item, parent: obj };
+        }
+      }
+    }
+    if (val && typeof val === "object") {
+      yield* collectFieldStrings(val, targetKeys, depth + 1);
+    }
+  }
+}
+
+export function validateSchemaFields(
+  $: CheerioAPI
+): SchemaFieldIssues {
+  const out: SchemaFieldIssues = {
+    invalidPhones: [],
+    invalidEmails: [],
+    invalidUrls: [],
+    invalidCurrencies: [],
+  };
+
+  const PHONE_KEYS = new Set(["telephone", "faxNumber"]);
+  const EMAIL_KEYS = new Set(["email"]);
+  const URL_KEYS = new Set(["url", "image", "logo", "sameAs"]);
+  const CURRENCY_KEYS = new Set(["priceCurrency", "currency"]);
+
+  $('script[type="application/ld+json"]').each((_, el) => {
+    const raw = $(el).html();
+    if (!raw) return;
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(raw);
+    } catch {
+      return;
+    }
+    for (const node of walkNodes(parsed)) {
+      const typeLabel = nodeTypeLabel(node);
+      for (const hit of collectFieldStrings(node, PHONE_KEYS)) {
+        const trimmed = hit.value.trim();
+        if (!trimmed) continue;
+        if (!PHONE_OK.test(trimmed) || !PHONE_DIGIT_COUNT.test(trimmed)) {
+          out.invalidPhones.push({
+            field: hit.key,
+            type: typeLabel,
+            value: trimmed,
+            reason:
+              "ფორმატი არ ჯდება — Google იღებს E.164 ან ეროვნულ ფორმატებს. შემოწმე ციფრების რაოდენობა (7-15) და სიმბოლოები.",
+          });
+        }
+      }
+      for (const hit of collectFieldStrings(node, EMAIL_KEYS)) {
+        const trimmed = hit.value.trim();
+        if (!trimmed) continue;
+        // schema spec lets email be "mailto:foo@bar.com" — strip prefix.
+        const value = trimmed.replace(/^mailto:/i, "");
+        if (!EMAIL_OK.test(value)) {
+          out.invalidEmails.push({
+            field: hit.key,
+            type: typeLabel,
+            value: trimmed,
+            reason: "ემეილის ფორმატი არასწორია (RFC 5322).",
+          });
+        }
+      }
+      for (const hit of collectFieldStrings(node, URL_KEYS)) {
+        const trimmed = hit.value.trim();
+        if (!trimmed) continue;
+        if (!isUrlOk(trimmed)) {
+          out.invalidUrls.push({
+            field: hit.key,
+            type: typeLabel,
+            value: trimmed,
+            reason:
+              "URL უნდა იყოს სრული http:// ან https:// — relative path ან tel:/mailto: Google-ისთვის არ ეთვლება valid.",
+          });
+        }
+      }
+      for (const hit of collectFieldStrings(node, CURRENCY_KEYS)) {
+        const trimmed = hit.value.trim();
+        if (!trimmed) continue;
+        if (!ISO_4217.test(trimmed)) {
+          out.invalidCurrencies.push({
+            field: hit.key,
+            type: typeLabel,
+            value: trimmed,
+            reason:
+              "priceCurrency უნდა იყოს 3-ასოიანი ISO 4217 კოდი (USD, EUR, GEL). სიმბოლოები (₾, $) ან სრული სახელი არ მუშაობს.",
+          });
+        }
+      }
+    }
+  });
+
+  return out;
 }
 
 const SCHEMA_ORG_HOST_RE = /(?:https?:)?\/\/schema\.org\/([A-Z][A-Za-z0-9]*)/;

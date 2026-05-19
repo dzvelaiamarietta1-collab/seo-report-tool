@@ -108,6 +108,12 @@ export interface PreviewData {
   description: string;
   canonical: string;
   favicon: string;
+  // Best high-res logo discovered (apple-touch-icon, sized icons, JSON-LD
+  // Organization logo, or a body <img class="logo">). Separate from
+  // `favicon` because the Google search tile needs the small square icon,
+  // while the presentation cover wants the largest available source so it
+  // doesn't blur when scaled up. May be missing for poorly-tagged sites.
+  siteLogo?: string;
   hostname: string;
   pathname: string;
   og: {

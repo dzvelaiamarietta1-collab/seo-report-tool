@@ -2,7 +2,11 @@ import * as cheerio from "cheerio";
 import axios, { AxiosResponse } from "axios";
 import type { CheckResult, CategoryResult, BotProtection } from "./types";
 import { fetchPageWithBrowser } from "./browser";
-import { inventorySchema, validateOrganizationFields } from "./schemaTypes";
+import {
+  inventorySchema,
+  validateOrganizationFields,
+  validateSchemaFields,
+} from "./schemaTypes";
 import type { ShareImageCheck } from "./types";
 
 const UA =
@@ -254,6 +258,77 @@ export function analyzeTechnical(
     checks.push(check("fail", "HTTP სტატუსი", `მთავარი გვერდი აბრუნებს ${status}`, "გვერდი არ არის ხელმისაწვდომი — Google ვერ ინდექსაციას უკეთებს.", status));
   }
 
+  // Soft 404 — page returns 200 but content screams "not found". Google
+  // demotes these because they masquerade as real pages. We look at title
+  // and visible body text; very short content combined with a "not found"
+  // string is the strongest signal. Skip when bot-protected (challenge
+  // pages would false-positive).
+  if (!skipHtml && status >= 200 && status < 300) {
+    const title = $("title").first().text().trim();
+    // Strip script/style before measuring body to avoid counting JS bundles.
+    const bodyClone = $("body").clone();
+    bodyClone.find("script, style, noscript").remove();
+    const bodyText = bodyClone.text().replace(/\s+/g, " ").trim();
+    const notFoundPattern =
+      /\b(?:404|page not found|not\s+found|page\s+doesn'?t\s+exist|page\s+unavailable|nothing\s+found)\b|გვერდი\s+ვერ\s+მოიძებნა|გვერდი\s+არ\s+არსებობს|გვერდი\s+აღარ\s+არსებობს|გვერდი\s+წაშლილია|შეცდომა\s*404/iu;
+    const titleHits = notFoundPattern.test(title);
+    const bodyHits = notFoundPattern.test(bodyText);
+    const shortBody = bodyText.length < 600;
+    if (titleHits && (bodyHits || shortBody)) {
+      checks.push(
+        check(
+          "fail",
+          "Soft 404",
+          `გვერდი აბრუნებს 200 OK-ს, მაგრამ შინაარსი "ვერ მოიძებნა" ტიპისაა${title ? `: "${title}"` : ""}`,
+          "Google ამას low-quality signal-ად აღიქვამს — გვერდმა უნდა დააბრუნოს რეალური 404/410 სტატუსი ან გასწორდეს content-ი.",
+          title
+        )
+      );
+    } else if (bodyHits && shortBody && bodyText.length < 200) {
+      checks.push(
+        check(
+          "warn",
+          "Soft 404",
+          'შინაარსი ძალიან მცირეა და "ვერ მოიძებნა" pattern-ი ჩანს — შეიძლება soft 404 იყოს.',
+          "გადახედე — თუ მართლა 404 გვერდია, აბრუნე HTTP 404 statusi."
+        )
+      );
+    }
+  }
+
+  // Cache-Control — Google's crawler benefits from sane HTML caching.
+  // "no-store" / "private" on the main HTML costs crawl budget because
+  // every revisit re-fetches the full page even if nothing changed.
+  // Common WordPress / Cloudflare misconfiguration.
+  const cacheCtl = (headers["cache-control"] ?? "").toLowerCase();
+  if (cacheCtl) {
+    if (/\bno-store\b/.test(cacheCtl)) {
+      checks.push(
+        check(
+          "warn",
+          "Cache-Control",
+          `Cache-Control: ${cacheCtl} — HTML არ ქეშირდება`,
+          "no-store გადახედე — HTML გვერდისთვის თუ ნამდვილად დინამიკურია, ოკ; თუ სტატიკურია, შეცვალე public, max-age=300 (5 წუთი) ან მეტ. crawl budget-ისთვის მნიშვნელოვანია.",
+          cacheCtl
+        )
+      );
+    } else if (/\bprivate\b/.test(cacheCtl) && !/\bno-cache\b/.test(cacheCtl)) {
+      checks.push(
+        check(
+          "info",
+          "Cache-Control",
+          `Cache-Control: ${cacheCtl} — proxy-ები ვერ ქეშირებენ`,
+          undefined,
+          cacheCtl
+        )
+      );
+    } else {
+      checks.push(
+        check("pass", "Cache-Control", `Cache-Control: ${cacheCtl}`, undefined, cacheCtl)
+      );
+    }
+  }
+
   checks.push(
     extras.robotsTxt
       ? check("pass", "robots.txt", "robots.txt ფაილი არსებობს ✓")
@@ -332,6 +407,37 @@ export function analyzeTechnical(
       checks.push(
         check("pass", "HTML lang", `<html lang="${htmlLang}">`, undefined, htmlLang)
       );
+    }
+
+    // URL/lang mismatch — if the URL path declares a locale (/en, /ru,
+    // /de etc.) the <html lang> should match. Common WordPress/Webflow
+    // bug: the English version of a Georgian site keeps lang="ka" because
+    // the template wasn't customised per-locale. Google then sends the
+    // wrong audience or demotes the page.
+    if (htmlLang) {
+      let pathLocale: string | null = null;
+      try {
+        const u = new URL(url);
+        // Match the first segment if it looks like an ISO 639-1 locale.
+        const m = u.pathname.match(
+          /^\/(en|ka|ru|de|fr|es|it|pt|nl|pl|tr|ar|ja|zh|ko|uk|az|hy|cs|sv|fi|no|da|el|he|hi|id|th|vi)(?:\/|$)/i
+        );
+        if (m) pathLocale = m[1].toLowerCase();
+      } catch {
+        // ignore
+      }
+      const htmlLangBase = htmlLang.split("-")[0].toLowerCase();
+      if (pathLocale && pathLocale !== htmlLangBase) {
+        checks.push(
+          check(
+            "warn",
+            "URL/lang mismatch",
+            `URL მიუთითებს /${pathLocale}/, მაგრამ <html lang="${htmlLang}">`,
+            "ცალკეული ენის ვერსიის lang ატრიბუტი უნდა შეესაბამებოდეს URL-ის ენას — Google იყენებს ამას audience targeting-ისთვის. შესწორე template-ი რომ თითო ენაზე ცალკე lang დააყენო.",
+            `${pathLocale} ↔ ${htmlLang}`
+          )
+        );
+      }
     }
 
     // Mixed content — only meaningful on HTTPS pages. <a href> excluded
@@ -801,6 +907,61 @@ export function analyzeSchema(
     checks.push(check("pass", "Twitter Card", `Twitter Card: ${twitterCard}`, undefined, twitterCard));
   } else {
     checks.push(check("info", "Twitter Card", "Twitter Card არ არის", "დაამატეთ თუ Twitter/X-ზე ვიზიტორებს ელოდებით."));
+  }
+
+  // Deep field validation — catches malformed values inside otherwise-
+  // well-formed schemas (telephone "555-CALL", relative-URL images,
+  // currency symbols instead of ISO codes). Google Rich Results Test
+  // flags these as warnings, so surfacing them early saves a round-trip.
+  if (inventory.jsonLdBlocks > 0) {
+    const fieldIssues = validateSchemaFields($);
+    const totalIssues =
+      fieldIssues.invalidPhones.length +
+      fieldIssues.invalidEmails.length +
+      fieldIssues.invalidUrls.length +
+      fieldIssues.invalidCurrencies.length;
+
+    if (totalIssues === 0) {
+      checks.push(
+        check(
+          "pass",
+          "JSON-LD Field Validation",
+          "ცალკეული ველების ფორმატი ვალიდურია (telephone, email, URL, currency) ✓"
+        )
+      );
+    } else {
+      const examples: string[] = [];
+      const fmt = (issue: { type: string; field: string; value: string }) =>
+        `${issue.type}.${issue.field}: "${
+          issue.value.length > 50
+            ? issue.value.slice(0, 50) + "…"
+            : issue.value
+        }"`;
+      for (const i of fieldIssues.invalidPhones.slice(0, 2)) examples.push(`☎ ${fmt(i)}`);
+      for (const i of fieldIssues.invalidEmails.slice(0, 2)) examples.push(`✉ ${fmt(i)}`);
+      for (const i of fieldIssues.invalidUrls.slice(0, 2)) examples.push(`🔗 ${fmt(i)}`);
+      for (const i of fieldIssues.invalidCurrencies.slice(0, 2)) examples.push(`💱 ${fmt(i)}`);
+
+      const buckets: string[] = [];
+      if (fieldIssues.invalidPhones.length > 0)
+        buckets.push(`${fieldIssues.invalidPhones.length} telephone`);
+      if (fieldIssues.invalidEmails.length > 0)
+        buckets.push(`${fieldIssues.invalidEmails.length} email`);
+      if (fieldIssues.invalidUrls.length > 0)
+        buckets.push(`${fieldIssues.invalidUrls.length} URL`);
+      if (fieldIssues.invalidCurrencies.length > 0)
+        buckets.push(`${fieldIssues.invalidCurrencies.length} currency`);
+
+      checks.push(
+        check(
+          totalIssues >= 3 ? "fail" : "warn",
+          "JSON-LD Field Validation",
+          `${totalIssues} ცალკეული ველი არასწორი ფორმატითაა (${buckets.join(", ")})`,
+          "Google Rich Results Test-ი ამ ველებზე გადააქცევს warning-ს. გადახედე — telephone უნდა იყოს E.164/ეროვნული ფორმატით, URL სრული http(s)://-ით, priceCurrency 3-ასოიანი ISO 4217 კოდი (USD/EUR/GEL).",
+          examples
+        )
+      );
+    }
   }
 
   return { name: "Schema & სოც.მედია", icon: "Tag", checks };

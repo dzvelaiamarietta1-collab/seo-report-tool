@@ -27,15 +27,23 @@ import type {
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 // PageSpeed lives in its own /api/pagespeed route now — this route only
-// covers fast HTML-based analysis (5-15s typical). 30s gives safe margin
-// on Vercel Hobby (60s ceiling with Fluid Compute).
-export const maxDuration = 30;
+// covers fast HTML-based analysis. Slow WordPress/LiteSpeed origins
+// (tabatea.ge measured 6-8s per HEAD) push the link stage close to its
+// 22s hard cap, so bumping the function ceiling to 45s leaves room. The
+// Vercel Hobby plan permits up to 60s with Fluid Compute.
+export const maxDuration = 45;
 
 export async function GET(req: NextRequest) {
   const urlParam = req.nextUrl.searchParams.get("url");
   if (!urlParam) {
     return Response.json({ error: "url parameter is required" }, { status: 400 });
   }
+
+  // Sub-page crawls pass skipLinks=1 to skip the slow link-health stage.
+  // Link health is reported from the main page only — checking links on
+  // every sub-page roughly doubled depth=10 analysis time without adding
+  // useful info (many internal links repeat across pages).
+  const skipLinks = req.nextUrl.searchParams.get("skipLinks") === "1";
 
   let normalized: string;
   try {
@@ -182,15 +190,17 @@ export async function GET(req: NextRequest) {
           // Cap at 30 to keep the payload small.
           send({ type: "internalUrls", urls: internalLinks.slice(0, 30) });
 
-          const linkLabel =
-            internalLinks.length === 0
-              ? "შიდა ბმულების შემოწმება"
-              : `შიდა ბმულების შემოწმება (${Math.min(internalLinks.length, 30)})`;
-          const linkHealth = await stage("links", linkLabel, () =>
-            checkLinkHealth(internalLinks)
-          );
-          if (linkHealth) {
-            sendCategory("linkHealth", buildLinkHealthCategory(linkHealth));
+          if (!skipLinks) {
+            const linkLabel =
+              internalLinks.length === 0
+                ? "შიდა ბმულების შემოწმება"
+                : `შიდა ბმულების შემოწმება (${Math.min(internalLinks.length, 20)})`;
+            const linkHealth = await stage("links", linkLabel, () =>
+              checkLinkHealth(internalLinks)
+            );
+            if (linkHealth) {
+              sendCategory("linkHealth", buildLinkHealthCategory(linkHealth));
+            }
           }
 
           // Performance / PageSpeed runs in /api/pagespeed in parallel from

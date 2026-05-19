@@ -35,8 +35,12 @@ const SURFACE = "FAF6ED"; // lighter cream — card fills (new)
 const BORDER = "D9D0BC"; // soft cream border (new)
 const SUCCESS = "1F6F4A"; // forest green — score-good (new)
 
-const FONT = "FiraGO";
-const FONT_MONO = "JetBrains Mono";
+// Sylfaen ships with Windows by default and has full Georgian + Latin
+// glyph coverage. FiraGO/JetBrains Mono are our web fonts but they don't
+// ship with PowerPoint — Georgian text fell back to a font without the
+// glyphs and rendered as empty boxes for clients viewing the .pptx.
+const FONT = "Sylfaen";
+const FONT_MONO = "Sylfaen";
 
 const SLIDE_W = 13.333;
 
@@ -191,6 +195,21 @@ function addCoverSlide(
     valign: "middle",
   });
 
+  // Logo + "made by INFINITY SOLUTIONS" group, visually centered. pptxgenjs
+  // has no flex layout, so we approximate the text width and offset the
+  // logo to the left of it so the pair reads as one centered unit. Width
+  // estimate is loose — tweak `textWidth` if the agency name length changes.
+  const logoSize = 0.32;
+  const gap = 0.15;
+  const textWidth = 3.5;
+  const groupStart = (SLIDE_W - (logoSize + gap + textWidth)) / 2;
+  slide.addImage({
+    path: "/infinity-logo.png",
+    x: groupStart,
+    y: 6.96,
+    w: logoSize,
+    h: logoSize,
+  });
   slide.addText(
     [
       { text: "made by ", options: { color: WHITE_DIM } },
@@ -200,13 +219,14 @@ function addCoverSlide(
       },
     ],
     {
-      x: 0,
+      x: groupStart + logoSize + gap,
       y: 6.95,
-      w: SLIDE_W,
+      w: textWidth,
       h: 0.4,
       fontSize: 11,
       fontFace: FONT,
-      align: "center",
+      align: "left",
+      valign: "middle",
       charSpacing: 8,
     }
   );

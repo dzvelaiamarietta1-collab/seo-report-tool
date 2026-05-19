@@ -2,11 +2,24 @@ import * as cheerio from "cheerio";
 import axios from "axios";
 import type { CategoryResult, CheckResult } from "./types";
 
+// Real browser UA — earlier "SEOReportToolBot" UA tripped WordPress/
+// WooCommerce/LiteSpeed throttling on slow shared hosts (tabatea.ge
+// took 6-8s per HEAD because of this). Matching a current Chrome UA
+// gets us the cached fast path most origins use for browsers.
 const UA =
-  "Mozilla/5.0 (compatible; SEOReportToolBot/0.1; +https://seo-report-tool.local)";
-const LINK_TIMEOUT = 8000;
-const MAX_LINKS_TO_CHECK = 30;
-const CONCURRENCY = 8;
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
+// Tightened from 8s/30/8: with maxDuration=30s on Vercel Hobby, a single
+// slow site could max out the function on link checking alone. 5s is
+// still generous (most CDNs answer in <1s; only truly broken sites take
+// longer) and the sample of 20 links is large enough to spot patterns.
+const LINK_TIMEOUT = 5000;
+const MAX_LINKS_TO_CHECK = 20;
+// 5 parallel beats 10 on slow shared hosts. tabatea.ge serves a single
+// GET in 1.5s but queues 10 parallel GETs to 7-10s each because the WP
+// process pool can't keep up — backing off to 5 keeps per-request time
+// healthy, which actually finishes the stage faster overall. Fast sites
+// (Cloudfront, Vercel-hosted etc.) feel a ~2s extra at 20 links — fair.
+const CONCURRENCY = 5;
 
 export interface LinkCheckResult {
   url: string;
@@ -23,8 +36,13 @@ export interface LinkHealthSummary {
   ok: number;
   redirects: number;
   broken: number;
+  // Links the stage hard-cap aborted before we could verify. Reported
+  // separately from `broken` so a slow site doesn't get accused of
+  // having broken links it doesn't have.
+  unchecked: number;
   brokenLinks: LinkCheckResult[];
   redirectLinks: LinkCheckResult[];
+  uncheckedLinks: LinkCheckResult[];
 }
 
 export function extractInternalLinks(
@@ -63,54 +81,92 @@ export function extractInternalLinks(
   return Array.from(links);
 }
 
-async function checkSingleLink(url: string): Promise<LinkCheckResult> {
-  const baseConfig = {
-    timeout: LINK_TIMEOUT,
-    maxRedirects: 5,
-    headers: { "User-Agent": UA, Accept: "*/*" },
-    validateStatus: () => true,
-  } as const;
+// Per-link timing: try HEAD fast first, then GET as a fallback.
+// Many WordPress/LiteSpeed/WooCommerce origins (e.g. tabatea.ge) cache
+// GET responses but generate the full page on HEAD, which makes HEAD
+// requests time out while the same URL loads instantly in a browser.
+// Reporting these as "broken" was a false positive — the GET fallback
+// fixes it without making the check meaningfully slower (3s HEAD + 5s
+// GET = 8s worst case per link, still inside the 18s stage cap).
+const HEAD_TIMEOUT = 3000;
+const GET_FALLBACK_TIMEOUT = 10000;
 
+async function tryGet(
+  url: string,
+  signal: AbortSignal | undefined
+): Promise<LinkCheckResult | null> {
   try {
-    const headRes = await axios({
-      ...baseConfig,
+    const res = await axios({
       url,
-      method: "HEAD",
+      method: "GET",
+      timeout: GET_FALLBACK_TIMEOUT,
+      maxRedirects: 5,
+      headers: { "User-Agent": UA, Accept: "*/*", Range: "bytes=0-0" },
+      validateStatus: () => true,
+      signal,
+      responseType: "arraybuffer",
+      maxContentLength: 1024,
     });
-
-    let status = headRes.status;
-    let response = headRes;
-
-    if (status === 405 || status === 501 || status === 0) {
-      const getRes = await axios({
-        ...baseConfig,
-        url,
-        method: "GET",
-        headers: { ...baseConfig.headers, Range: "bytes=0-0" },
-        responseType: "arraybuffer",
-        maxContentLength: 1024,
-      });
-      status = getRes.status;
-      response = getRes;
-    }
-
-    const finalUrl: string = response.request?.res?.responseUrl ?? url;
-    const redirected = finalUrl !== url;
-
+    const finalUrl: string = res.request?.res?.responseUrl ?? url;
     return {
       url,
-      status,
-      ok: status >= 200 && status < 400,
-      redirected,
-      finalUrl: redirected ? finalUrl : undefined,
+      status: res.status,
+      ok: res.status >= 200 && res.status < 400,
+      redirected: finalUrl !== url,
+      finalUrl: finalUrl !== url ? finalUrl : undefined,
     };
-  } catch (e) {
+  } catch {
+    return null;
+  }
+}
+
+async function checkSingleLink(
+  url: string,
+  signal?: AbortSignal
+): Promise<LinkCheckResult> {
+  try {
+    const headRes = await axios({
+      url,
+      method: "HEAD",
+      timeout: HEAD_TIMEOUT,
+      maxRedirects: 5,
+      headers: { "User-Agent": UA, Accept: "*/*" },
+      validateStatus: () => true,
+      signal,
+    });
+
+    // HEAD worked — but if the server claimed it doesn't support HEAD
+    // (405/501) or returned 0, fall back to GET. The same fallback path
+    // also covers HEAD-blocking proxies.
+    if (
+      headRes.status === 405 ||
+      headRes.status === 501 ||
+      headRes.status === 0
+    ) {
+      const getResult = await tryGet(url, signal);
+      if (getResult) return getResult;
+    }
+
+    const finalUrl: string = headRes.request?.res?.responseUrl ?? url;
+    return {
+      url,
+      status: headRes.status,
+      ok: headRes.status >= 200 && headRes.status < 400,
+      redirected: finalUrl !== url,
+      finalUrl: finalUrl !== url ? finalUrl : undefined,
+    };
+  } catch (headErr) {
+    // HEAD failed (timeout / connection error). Retry as GET — origins
+    // like tabatea.ge time out on HEAD but serve GET from cache.
+    const getResult = await tryGet(url, signal);
+    if (getResult) return getResult;
+
     return {
       url,
       status: 0,
       ok: false,
       redirected: false,
-      error: e instanceof Error ? e.message : "ქსელის შეცდომა",
+      error: headErr instanceof Error ? headErr.message : "ქსელის შეცდომა",
     };
   }
 }
@@ -135,14 +191,68 @@ async function pMap<T, R>(
   return results;
 }
 
+// Hard cap on the whole link-check stage. Per-link axios timeout alone
+// has proven unreliable on bot-protected / LiteSpeed origins where a
+// stalled TLS handshake can keep the request alive long past the timeout.
+// The AbortController guarantees we ship results within this window
+// regardless. 18s leaves room under the 30s function maxDuration.
+const LINK_STAGE_HARD_CAP_MS = 30_000;
+
 export async function checkLinkHealth(
   links: string[]
 ): Promise<LinkHealthSummary> {
   const total = links.length;
   const toCheck = links.slice(0, MAX_LINKS_TO_CHECK);
-  const results = await pMap(toCheck, CONCURRENCY, checkSingleLink);
 
-  const broken = results.filter((r) => !r.ok);
+  const ac = new AbortController();
+  const hardTimer = setTimeout(() => ac.abort(), LINK_STAGE_HARD_CAP_MS);
+
+  // Mutate a shared array as workers progress so we can ship partials if
+  // the hard cap trips before pMap finishes.
+  const partial: (LinkCheckResult | undefined)[] = new Array(toCheck.length);
+  let cursor = 0;
+  const workers = Array.from(
+    { length: Math.min(CONCURRENCY, toCheck.length) },
+    async () => {
+      while (cursor < toCheck.length && !ac.signal.aborted) {
+        const idx = cursor++;
+        partial[idx] = await checkSingleLink(toCheck[idx], ac.signal);
+      }
+    }
+  );
+
+  // Race the worker pool against the hard cap. If the cap wins we still
+  // return whatever partial slots were populated; un-checked links are
+  // marked as ERR ("stage timed out") so the user sees coverage.
+  await Promise.race([
+    Promise.all(workers),
+    new Promise<void>((resolve) => {
+      ac.signal.addEventListener("abort", () => resolve(), { once: true });
+    }),
+  ]);
+  clearTimeout(hardTimer);
+
+  const results: LinkCheckResult[] = toCheck.map((url, i) =>
+    partial[i] ?? {
+      url,
+      status: 0,
+      ok: false,
+      redirected: false,
+      error: "stage timed out",
+    }
+  );
+
+  // Split "stage timed out" off from "broken". A timeout is "we couldn't
+  // tell"; a broken link is "the server actively said no". Lumping them
+  // together produced false positives on slow shared hosts (tabatea.ge:
+  // every link reported as broken when the site is actually live, just
+  // slow). The UI surfaces these as a separate `unchecked` bucket.
+  const unchecked = results.filter(
+    (r) => !r.ok && (r.error === "stage timed out" || r.status === 0)
+  );
+  const broken = results.filter(
+    (r) => !r.ok && !unchecked.includes(r)
+  );
   const redirects = results.filter((r) => r.ok && r.redirected);
   const ok = results.filter((r) => r.ok && !r.redirected).length;
 
@@ -152,8 +262,10 @@ export async function checkLinkHealth(
     ok,
     redirects: redirects.length,
     broken: broken.length,
+    unchecked: unchecked.length,
     brokenLinks: broken,
     redirectLinks: redirects,
+    uncheckedLinks: unchecked,
   };
 }
 
@@ -200,11 +312,25 @@ export function buildLinkHealthCategory(
     });
   }
 
+  // Slow-host bucket: links that we couldn't verify because the link
+  // stage ran out of time. Surfacing this honestly is better than
+  // calling them broken — the user can rerun on a faster connection.
+  if (summary.unchecked > 0) {
+    checks.push({
+      status: "info",
+      label: "ვერ შემოწმდა",
+      message: `${summary.unchecked} ბმული — სერვერი ძალიან ნელია, link stage timed out.`,
+      recommendation:
+        "ეს ბმულები არ ნიშნავს რომ გატეხილია — სავარაუდოდ საიტი slow hosting-ზეა. ხელახლა გაუშვი ანალიზი ან ხელით შეამოწმე.",
+      value: summary.uncheckedLinks.slice(0, 5).map(brokenLine),
+    });
+  }
+
   if (summary.broken === 0) {
     checks.push({
       status: "pass",
       label: "გატეხილი ბმულები",
-      message: `გატეხილი ბმული არ არის — ყველა ${summary.checked} ბმული ცოცხალია ✓`,
+      message: `გატეხილი ბმული არ არის — ყველა ${summary.ok + summary.redirects} შემოწმებული ბმული ცოცხალია ✓`,
     });
   } else if (summary.broken <= 2) {
     checks.push({
