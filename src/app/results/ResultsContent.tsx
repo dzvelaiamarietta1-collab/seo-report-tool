@@ -23,6 +23,7 @@ import {
   ChevronRight,
   Target,
   Presentation,
+  Sparkles,
   type LucideIcon,
 } from "lucide-react";
 import type {
@@ -615,12 +616,38 @@ function ShareImageDisplay({
   imageUrl,
   check,
   layout,
+  fallback,
 }: {
   imageUrl: string;
   check: ShareImageCheck;
   layout: "large" | "small";
+  // Optional logo to render when imageUrl is missing or fails to load.
+  // Falls back to siteLogo (apple-touch-icon / discovered logo) so the
+  // preview card has visual content instead of an empty rectangle.
+  // Rendered with a "ლოგო" badge so the user understands this is what
+  // our tool discovered, not what Facebook/Twitter actually display.
+  fallback?: string;
 }) {
-  if (!imageUrl) {
+  const [primaryFailed, setPrimaryFailed] = useState(false);
+  // Server-side probe couldn't fetch the image (e.g. agroit.ge's
+  // og:image points at /og-home.jpg which actually returns text/html,
+  // not an image). Skip the broken-image flash and jump straight to
+  // the discovered logo. "missing" and "unknown" are the two verdicts
+  // classifyShareImage emits when no probe data was obtained.
+  const probeUnreachable =
+    check.verdict === "missing" || check.verdict === "unknown";
+  const usingFallback =
+    (!imageUrl || primaryFailed || probeUnreachable) && !!fallback;
+  const rawUrl = usingFallback ? fallback : imageUrl;
+  // Route all external image URLs through /api/image to dodge hotlink
+  // protection and CORS edge cases (see /api/image/route.ts comments).
+  const effectiveUrl = rawUrl
+    ? rawUrl.startsWith("/")
+      ? rawUrl
+      : `/api/image?url=${encodeURIComponent(rawUrl)}`
+    : undefined;
+
+  if (!effectiveUrl) {
     return (
       <div
         className={`${
@@ -638,9 +665,15 @@ function ShareImageDisplay({
   }
 
   const isProblematic =
-    check.verdict === "fail" || check.verdict === "warn";
+    !usingFallback &&
+    (check.verdict === "fail" || check.verdict === "warn");
+  // Logos are typically square/portrait, so always contain them. Otherwise
+  // use the existing aspect-ratio heuristic for real share images.
   const objectFit =
-    isProblematic || (check.probe && (check.probe.aspectRatio < 1.5 || check.probe.aspectRatio > 2.5))
+    usingFallback ||
+    isProblematic ||
+    (check.probe &&
+      (check.probe.aspectRatio < 1.5 || check.probe.aspectRatio > 2.5))
       ? "object-contain"
       : "object-cover";
 
@@ -660,18 +693,33 @@ function ShareImageDisplay({
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src={imageUrl}
+        key={effectiveUrl}
+        src={effectiveUrl}
         alt=""
-        className={`w-full h-full ${objectFit}`}
+        className={`w-full h-full ${objectFit} ${
+          usingFallback ? "p-6" : ""
+        }`}
         onError={(e) => {
-          e.currentTarget.style.display = "none";
+          if (!usingFallback && fallback) {
+            // Primary failed but we have a logo fallback — re-render with it.
+            setPrimaryFailed(true);
+          } else {
+            e.currentTarget.style.display = "none";
+          }
         }}
       />
-      {check.probe && (check.probe.width > 0 || check.probe.height > 0) && (
-        <span className="absolute bottom-1 right-1 text-[10px] font-mono px-1.5 py-0.5 rounded bg-black/60 text-white">
-          {check.probe.width}×{check.probe.height}
+      {usingFallback && (
+        <span className="absolute top-1.5 left-1.5 text-[10px] font-mono uppercase tracking-wider px-1.5 py-0.5 rounded bg-foreground/80 text-background">
+          ლოგო
         </span>
       )}
+      {!usingFallback &&
+        check.probe &&
+        (check.probe.width > 0 || check.probe.height > 0) && (
+          <span className="absolute bottom-1 right-1 text-[10px] font-mono px-1.5 py-0.5 rounded bg-black/60 text-white">
+            {check.probe.width}×{check.probe.height}
+          </span>
+        )}
     </div>
   );
 }
@@ -703,6 +751,7 @@ function FacebookCard({ data }: { data: PreviewData }) {
           imageUrl={image}
           check={imageCheck}
           layout="large"
+          fallback={data.siteLogo}
         />
         <div className="px-3 py-2.5 bg-surface">
           <p className="text-[10px] uppercase tracking-wider text-foreground-muted mb-1 truncate">
@@ -764,6 +813,7 @@ function TwitterCard({ data }: { data: PreviewData }) {
             imageUrl={image}
             check={imageCheck}
             layout="large"
+            fallback={data.siteLogo}
           />
         )}
         {!isLargeImage && image && (
@@ -773,6 +823,7 @@ function TwitterCard({ data }: { data: PreviewData }) {
                 imageUrl={image}
                 check={imageCheck}
                 layout="small"
+                fallback={data.siteLogo}
               />
             </div>
             <div className="flex-1 px-3 py-2 min-w-0">
@@ -790,6 +841,7 @@ function TwitterCard({ data }: { data: PreviewData }) {
             imageUrl=""
             check={imageCheck}
             layout="large"
+            fallback={data.siteLogo}
           />
         )}
         {(isLargeImage || !image) && (
@@ -1087,10 +1139,25 @@ const initialStages = (): StageState[] =>
 // Consume a single /api/analyze stream and aggregate it into a PageReport.
 // Used for sub-page crawls in deep mode — we don't show their per-event
 // progress, just collect the final shape.
+//
+// Per-page timeout 90s — without this, a single hanging sub-page (slow
+// server, hostile origin) blocks the entire multi-page analysis
+// indefinitely. 90s is generous (Vercel function caps at 30s + buffer).
+const SUB_PAGE_TIMEOUT_MS = 90_000;
+
 async function fetchPageReport(
   targetUrl: string,
-  signal: AbortSignal
+  parentSignal: AbortSignal
 ): Promise<PageReport> {
+  // Combine parent's abort signal with our local timeout so either cause
+  // (user navigation OR slow site) cancels the in-flight stream cleanly.
+  const localAc = new AbortController();
+  const timeoutId = setTimeout(() => localAc.abort(), SUB_PAGE_TIMEOUT_MS);
+  const onParentAbort = () => localAc.abort();
+  if (parentSignal.aborted) localAc.abort();
+  else parentSignal.addEventListener("abort", onParentAbort, { once: true });
+  const signal = localAc.signal;
+
   const report: PageReport = {
     url: targetUrl,
     finalUrl: targetUrl,
@@ -1102,18 +1169,32 @@ async function fetchPageReport(
     preview: null,
   };
 
+  // Helper kept in scope of the function so early returns can still
+  // clean up the timeout/listener pair without repeating the call.
+  const cleanup = () => {
+    clearTimeout(timeoutId);
+    parentSignal.removeEventListener("abort", onParentAbort);
+  };
+
   let response: Response;
   try {
-    response = await fetch(`/api/analyze?url=${encodeURIComponent(targetUrl)}`, {
-      signal,
-    });
+    // skipLinks=1 — link health is reported from the main page only.
+    // Without this, depth=10 fired 10 link-check stages and roughly
+    // doubled total time; the extra signal was low value because many
+    // internal links repeat across pages.
+    response = await fetch(
+      `/api/analyze?url=${encodeURIComponent(targetUrl)}&skipLinks=1`,
+      { signal }
+    );
   } catch (e) {
     report.error = e instanceof Error ? e.message : "ქსელის შეცდომა";
+    cleanup();
     return report;
   }
 
   if (!response.ok || !response.body) {
     report.error = `HTTP ${response.status}`;
+    cleanup();
     return report;
   }
 
@@ -1163,8 +1244,18 @@ async function fetchPageReport(
       }
     }
   } catch (e) {
-    if (signal.aborted) return report;
-    report.error = e instanceof Error ? e.message : "სტრიმის შეცდომა";
+    if (signal.aborted) {
+      // Distinguish "user navigated away" from "we timed out". The error
+      // message only matters for the latter — parent-abort means the
+      // result is ignored anyway.
+      if (!parentSignal.aborted) {
+        report.error = `Sub-page timeout (>${SUB_PAGE_TIMEOUT_MS / 1000}s) — სერვერი ძალიან ნელია`;
+      }
+    } else {
+      report.error = e instanceof Error ? e.message : "სტრიმის შეცდომა";
+    }
+  } finally {
+    cleanup();
   }
 
   // Recompute summary across all categories we got, since server's
@@ -1195,6 +1286,13 @@ export default function ResultsContent() {
   const depth = depthRaw === 5 || depthRaw === 10 ? depthRaw : 1;
   const [state, setState] = useState<AnalysisState>(initialState);
   const [filter, setFilter] = useState<CheckStatus | null>(null);
+  const [seoOfferError, setSeoOfferError] = useState<string | null>(null);
+  // AI Executive Summary — generated once per audit and cached in
+  // component state. Failure to fetch is non-fatal; the rest of the
+  // results page works without it. Refresh = new summary.
+  const [aiSummary, setAiSummary] = useState<string | null>(null);
+  const [aiSummaryLoading, setAiSummaryLoading] = useState(false);
+  const [aiSummaryError, setAiSummaryError] = useState<string | null>(null);
   const [presentationError, setPresentationError] = useState<string | null>(
     null
   );
@@ -1218,6 +1316,66 @@ export default function ResultsContent() {
     state.done &&
     (state.pagespeedSkipped || state.pagespeedFetched) &&
     subPagesDone;
+
+  // Kick off AI summary once the audit is complete. We fire EXACTLY once
+  // per audit using a ref — the previous useEffect-cleanup pattern with
+  // `aiSummaryLoading` in deps was self-aborting: setAiSummaryLoading(true)
+  // triggered a re-render → React ran the cleanup → ac.abort() → the
+  // in-flight fetch died before Gemini responded, leaving the UI stuck
+  // in the loading state forever.
+  const aiFiredRef = useRef(false);
+  useEffect(() => {
+    if (!fullyDone || !state.meta || !summary) return;
+    if (state.meta.botProtection.detected) return;
+    if (aiFiredRef.current) return;
+    aiFiredRef.current = true;
+
+    let cancelled = false;
+    setAiSummaryLoading(true);
+    setAiSummaryError(null);
+    (async () => {
+      try {
+        const fullAnalysis = {
+          url: state.meta!.url,
+          finalUrl: state.meta!.finalUrl,
+          fetchedAt: state.meta!.fetchedAt,
+          status: state.error ? "partial" : "success",
+          httpStatus: state.meta!.httpStatus,
+          responseTimeMs: state.meta!.responseTimeMs,
+          botProtection: state.meta!.botProtection,
+          categories: state.categories,
+          summary,
+        };
+        const res = await fetch("/api/summarize", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ analysis: fullAnalysis }),
+        });
+        if (cancelled) return;
+        const data = (await res.json()) as { text?: string; error?: string };
+        if (cancelled) return;
+        if (!res.ok || !data.text) {
+          setAiSummaryError(data.error ?? `HTTP ${res.status}`);
+        } else {
+          setAiSummary(data.text);
+        }
+      } catch (e) {
+        if (cancelled) return;
+        setAiSummaryError(
+          e instanceof Error ? e.message : "AI Summary ვერ მოეშვა"
+        );
+      } finally {
+        if (!cancelled) setAiSummaryLoading(false);
+      }
+    })();
+    // Cleanup only flips the cancellation flag — we don't abort the
+    // fetch itself, so a navigation away from the page lets Gemini's
+    // response stay cached on the next mount. The `cancelled` guard
+    // just prevents setState on an unmounted/replaced component.
+    return () => {
+      cancelled = true;
+    };
+  }, [fullyDone, state.meta, state.categories, state.error, summary]);
 
   useEffect(() => {
     if (!url) {
@@ -1296,15 +1454,27 @@ export default function ResultsContent() {
     };
 
     const fireSubPages = async (urls: string[]) => {
-      // Sequential to keep load on Vercel Hobby low — 5 pages × ~10s = ~50s.
-      // Parallel would be faster but easily trips concurrent-function limits
-      // and burns more compute time per analysis.
-      for (const subUrl of urls) {
-        if (ac.signal.aborted) return;
-        const report = await fetchPageReport(subUrl, ac.signal);
-        if (ac.signal.aborted) return;
-        setSubPages((prev) => [...prev, report]);
-      }
+      // Concurrency-3 worker pool. Sequential (the original) made depth=10
+      // wait 10×30s = ~5min on slow sites and could hang indefinitely if
+      // one sub-page got stuck (no per-page timeout). With C=3 each
+      // sub-page also has SUB_PAGE_TIMEOUT_MS, so worst case for 10 URLs
+      // is ~4 × 90s ≈ 6min — and that's only if every site is maxing the
+      // timeout, which is rare. Realistic depth=10 now completes in ~60-90s.
+      const CONCURRENCY = 3;
+      let cursor = 0;
+      const workers = Array.from(
+        { length: Math.min(CONCURRENCY, urls.length) },
+        async () => {
+          while (cursor < urls.length) {
+            const i = cursor++;
+            if (ac.signal.aborted) return;
+            const report = await fetchPageReport(urls[i], ac.signal);
+            if (ac.signal.aborted) return;
+            setSubPages((prev) => [...prev, report]);
+          }
+        }
+      );
+      await Promise.all(workers);
     };
 
     const firePagespeed = async (targetUrl: string) => {
@@ -1566,6 +1736,73 @@ export default function ResultsContent() {
     }
   };
 
+  // SEO Offer reuses the same stored analysis payload that handlePresentation
+  // writes. We duplicate the save flow rather than refactoring it out
+  // because each handler reports its own error state and quota-retry
+  // behaviour, and refactoring those into a single helper would entangle
+  // both code paths' error UI for marginal gain.
+  const handleSeoOffer = () => {
+    if (!state.meta || !summary || !fullyDone) return;
+    setSeoOfferError(null);
+    const targetUrl = state.meta.finalUrl ?? state.meta.url;
+    const fullAnalysis = {
+      url: state.meta.url,
+      finalUrl: state.meta.finalUrl,
+      fetchedAt: state.meta.fetchedAt,
+      status: state.error ? "partial" : "success",
+      httpStatus: state.meta.httpStatus,
+      responseTimeMs: state.meta.responseTimeMs,
+      botProtection: state.meta.botProtection,
+      categories: state.categories,
+      summary,
+    };
+    const fullPayload = {
+      url: targetUrl,
+      fetchedAt: state.meta.fetchedAt,
+      analysis: fullAnalysis,
+      preview: state.preview,
+      subPages: subPages.length > 0 ? subPages : undefined,
+    };
+
+    const isQuotaError = (e: unknown): boolean =>
+      e instanceof DOMException &&
+      (e.name === "QuotaExceededError" ||
+        e.name === "NS_ERROR_DOM_QUOTA_REACHED" ||
+        e.code === 22 ||
+        e.code === 1014);
+
+    const trySave = (payload: typeof fullPayload): "ok" | "quota" | "error" => {
+      try {
+        localStorage.setItem(storageKey(targetUrl), JSON.stringify(payload));
+        return "ok";
+      } catch (e) {
+        return isQuotaError(e) ? "quota" : "error";
+      }
+    };
+
+    let result = trySave(fullPayload);
+    if (result === "quota") {
+      // Drop the preview (heaviest payload) and retry — the offer page
+      // doesn't render share-image previews, only the audit summary.
+      result = trySave({ ...fullPayload, preview: null });
+    }
+
+    if (result === "ok") {
+      window.open(
+        `/seo-offer?url=${encodeURIComponent(targetUrl)}`,
+        "_blank",
+        "noopener,noreferrer"
+      );
+      return;
+    }
+
+    setSeoOfferError(
+      result === "quota"
+        ? "მონაცემები ძალიან დიდია ლოკალური საცავისთვის — გასუფთავეთ ბრაუზერის storage და სცადეთ ხელახლა."
+        : "შეთავაზების მონაცემების შენახვა ვერ მოხერხდა."
+    );
+  };
+
   if (!state.meta && !state.error) {
     return (
       <div className="flex flex-1 items-center justify-center min-h-[60vh] px-4">
@@ -1636,6 +1873,14 @@ export default function ResultsContent() {
             {presentationError}
           </div>
         )}
+        {seoOfferError && (
+          <div
+            data-print-hide
+            className="mb-4 rounded-md border-l-2 border-error bg-error/10 px-4 py-2.5 text-sm text-error"
+          >
+            {seoOfferError}
+          </div>
+        )}
         <div
           data-print-hide
           className="flex items-center justify-between mb-10"
@@ -1647,7 +1892,16 @@ export default function ResultsContent() {
             <ArrowLeft className="w-3.5 h-3.5" />
             ახალი ანალიზი
           </Link>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            <button
+              type="button"
+              onClick={handleSeoOffer}
+              disabled={!fullyDone}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-accent/40 text-xs text-accent bg-accent-soft hover:bg-accent/15 transition disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              <FileText className="w-3.5 h-3.5" />
+              SEO შეთავაზება
+            </button>
             <button
               type="button"
               onClick={handlePresentation}
@@ -1813,6 +2067,41 @@ export default function ResultsContent() {
             </div>
           </div>
         </header>
+
+        {(aiSummary || aiSummaryLoading || aiSummaryError) && (
+          <section className="mb-10 print-keep-together">
+            <header className="flex items-baseline justify-between gap-4 mb-4 pb-3 border-b border-border">
+              <h2 className="text-[15px] font-medium text-foreground inline-flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-accent" strokeWidth={1.75} />
+                AI-ის შემაჯამებელი
+              </h2>
+              <p className="text-[11px] font-mono uppercase tracking-wider text-foreground-muted">
+                Gemini
+              </p>
+            </header>
+            {aiSummaryLoading && (
+              <div className="flex items-center gap-3 text-sm text-foreground-muted">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>AI ანალიზის შემაჯამებელს წერს...</span>
+              </div>
+            )}
+            {aiSummaryError && (
+              <div className="rounded-md border-l-2 border-warning bg-warning/10 px-4 py-2.5 text-sm text-foreground-muted">
+                AI Summary ვერ მოიყვანა: {aiSummaryError}
+              </div>
+            )}
+            {aiSummary && (
+              <div className="space-y-3 text-[15px] leading-relaxed text-foreground">
+                {aiSummary
+                  .split(/\n{2,}/)
+                  .filter((p) => p.trim().length > 0)
+                  .map((para, i) => (
+                    <p key={i}>{para.trim()}</p>
+                  ))}
+              </div>
+            )}
+          </section>
+        )}
 
         {state.done && (
           <TopPrioritiesBanner
