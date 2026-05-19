@@ -10,12 +10,15 @@ import {
   Code,
   Gauge,
   GitCompare,
+  Globe,
   Layers,
   ListChecks,
   Loader2,
   Plus,
+  ShieldCheck,
   Sparkles,
   X,
+  Zap,
 } from "lucide-react";
 import { BRAND } from "@/lib/brand";
 
@@ -141,10 +144,6 @@ const FAQS: { q: string; a: string }[] = [
   },
 ];
 
-// Palette anchors — every section that needs colour pulls from here so
-// the palette stays consistent and is easy to retune.
-const NAVY = "#0F1B3D";
-
 // =====================================================================
 // URL helpers
 // =====================================================================
@@ -214,7 +213,7 @@ export default function Home() {
     router.push(`/compare?urls=${param}`);
   };
 
-  // FAQPage JSON-LD for rich results.
+  // FAQ JSON-LD — schema.org/FAQPage for rich results.
   const faqJsonLd = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
@@ -226,39 +225,39 @@ export default function Home() {
   };
 
   return (
-    <div className="flex flex-col flex-1 bg-white text-[#0F1B3D]">
+    <div className="flex flex-col flex-1">
       {/* ============================================================
-          NAV — white bg, sticky, hairline border
+          NAV — sticky, minimal, mono wordmark, soft border-b on scroll
           ============================================================ */}
-      <nav className="sticky top-0 z-50 border-b border-[#0F1B3D]/10 bg-white/85 backdrop-blur-md">
+      <nav className="sticky top-0 z-50 border-b border-border bg-background/85 backdrop-blur-md">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <a
             href="/"
             className="flex items-center gap-2 font-mono uppercase tracking-[0.22em] text-[13px] font-medium"
           >
-            <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#0F1B3D]" />
+            <span className="inline-block w-1.5 h-1.5 rounded-full bg-accent" />
             INFINITY
           </a>
-          <div className="hidden md:flex items-center gap-9 text-sm text-[#0F1B3D]/60">
+          <div className="hidden md:flex items-center gap-9 text-sm text-foreground-muted">
             <a
               href="#capabilities"
-              className="hover:text-[#0F1B3D] transition"
+              className="hover:text-foreground transition"
             >
               ფუნქცია
             </a>
-            <a href="#process" className="hover:text-[#0F1B3D] transition">
+            <a href="#process" className="hover:text-foreground transition">
               პროცესი
             </a>
-            <a href="/compare" className="hover:text-[#0F1B3D] transition">
+            <a href="/compare" className="hover:text-foreground transition">
               შედარება
             </a>
-            <a href="#faq" className="hover:text-[#0F1B3D] transition">
+            <a href="#faq" className="hover:text-foreground transition">
               კითხვები
             </a>
           </div>
           <a
             href="#hero"
-            className="inline-flex items-center gap-1.5 text-[13px] font-medium px-3.5 py-2 rounded-md bg-[#0F1B3D] text-white hover:opacity-90 transition"
+            className="inline-flex items-center gap-1.5 text-[13px] font-medium px-3.5 py-2 rounded-md bg-foreground text-background hover:opacity-90 transition"
           >
             ანალიზის დაწყება
             <ArrowRight className="w-3.5 h-3.5" strokeWidth={2.25} />
@@ -267,70 +266,53 @@ export default function Home() {
       </nav>
 
       {/* ============================================================
-          HERO — DARK NAVY section, large serif, URL form on dark
+          HERO — minimal, big serif h1, URL form preserved
           ============================================================ */}
-      <section
-        id="hero"
-        className="relative overflow-hidden bg-[#0F1B3D] text-white"
-      >
-        {/* Subtle white-tinted radial glow */}
+      <section id="hero" className="relative overflow-hidden">
+        {/* Subtle radial gold glow — single, soft, unobtrusive. */}
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute -top-32 left-1/2 -translate-x-1/2 w-[1000px] h-[700px] rounded-full"
+          className="pointer-events-none absolute -top-40 left-1/2 -translate-x-1/2 w-[900px] h-[600px] rounded-full"
           style={{
             background:
-              "radial-gradient(ellipse at center, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0) 60%)",
+              "radial-gradient(ellipse at center, rgba(201,169,97,0.18) 0%, rgba(201,169,97,0) 60%)",
             filter: "blur(40px)",
           }}
         />
-        {/* Subtle dot grid */}
-        <div
-          aria-hidden="true"
-          className="absolute inset-0 pointer-events-none opacity-30"
-          style={{
-            backgroundImage:
-              "radial-gradient(rgba(255,255,255,0.08) 1px, transparent 1px)",
-            backgroundSize: "32px 32px",
-            maskImage:
-              "radial-gradient(ellipse 90% 70% at center, rgba(0,0,0,1) 30%, rgba(0,0,0,0) 80%)",
-            WebkitMaskImage:
-              "radial-gradient(ellipse 90% 70% at center, rgba(0,0,0,1) 30%, rgba(0,0,0,0) 80%)",
-          }}
-        />
-
-        <div className="relative max-w-6xl mx-auto px-6 pt-24 sm:pt-32 pb-24 sm:pb-32">
+        <div className="relative max-w-6xl mx-auto px-6 py-24 sm:py-32">
           <div className="max-w-3xl mx-auto text-center">
-            <p className="inline-flex items-center gap-2.5 text-[11px] font-mono uppercase tracking-[0.32em] text-white/55 mb-7">
-              <span className="inline-block w-5 h-px bg-white/40" />
+            <p className="inline-flex items-center gap-2.5 text-[11px] font-mono uppercase tracking-[0.32em] text-foreground-muted mb-7">
+              <span className="inline-block w-5 h-px bg-accent" />
               INFINITY · SEO AUDIT · 2026
-              <span className="inline-block w-5 h-px bg-white/40" />
+              <span className="inline-block w-5 h-px bg-accent" />
             </p>
             <h1
-              className="font-semibold tracking-tight leading-[1.02] mb-8 text-white"
+              className="font-semibold tracking-tight leading-[1.02] mb-7"
               style={{
                 fontFamily: "var(--font-serif)",
-                fontSize: "clamp(2.75rem, 7vw, 5.5rem)",
+                fontSize: "clamp(2.75rem, 7vw, 5.25rem)",
               }}
             >
               ვებგვერდის{" "}
-              <span className="italic font-normal">SEO ანალიზი</span>
+              <span className="italic text-accent">SEO ანალიზი</span>
             </h1>
-            <p className="text-lg sm:text-xl text-white/70 leading-relaxed max-w-2xl mx-auto mb-12">
+            <p className="text-lg sm:text-xl text-foreground-muted leading-relaxed max-w-2xl mx-auto mb-12">
               ტექნიკური, On-Page, Performance და AI-ეპოქის სრული აუდიტი —
               90 წამში, უფასოდ, ქართულად.
             </p>
 
             {/* Form card */}
             <div className="max-w-xl mx-auto text-left">
-              <div className="flex gap-1 p-1 bg-white/[0.06] rounded-lg border border-white/10 mb-4">
+              {/* Mode toggle */}
+              <div className="flex gap-1 p-1 bg-surface rounded-lg border border-border mb-4">
                 <button
                   type="button"
                   onClick={() => setMode("single")}
                   disabled={loading}
                   className={`flex-1 px-3 py-2 rounded-md text-[13px] font-medium transition disabled:opacity-50 ${
                     mode === "single"
-                      ? "bg-white text-[#0F1B3D] shadow-sm"
-                      : "text-white/60 hover:text-white"
+                      ? "bg-background text-foreground shadow-sm"
+                      : "text-foreground-muted hover:text-foreground"
                   }`}
                 >
                   ერთი საიტი
@@ -341,8 +323,8 @@ export default function Home() {
                   disabled={loading}
                   className={`flex-1 px-3 py-2 rounded-md text-[13px] font-medium transition disabled:opacity-50 ${
                     mode === "compare"
-                      ? "bg-white text-[#0F1B3D] shadow-sm"
-                      : "text-white/60 hover:text-white"
+                      ? "bg-background text-foreground shadow-sm"
+                      : "text-foreground-muted hover:text-foreground"
                   }`}
                 >
                   კონკურენტებთან შედარება
@@ -365,12 +347,12 @@ export default function Home() {
                       autoComplete="off"
                       autoCapitalize="none"
                       spellCheck={false}
-                      className="flex-1 px-4 py-3 rounded-lg border border-white/15 bg-white/[0.06] text-white placeholder:text-white/35 focus:outline-none focus:border-white/40 focus:bg-white/[0.1] transition disabled:opacity-50"
+                      className="flex-1 px-4 py-3 rounded-lg border border-border-strong bg-background text-foreground placeholder:text-foreground-subtle focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 transition disabled:opacity-50"
                     />
                     <button
                       type="submit"
                       disabled={loading}
-                      className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-lg bg-white text-[#0F1B3D] font-semibold active:scale-[0.98] transition disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-lg bg-foreground text-background font-semibold active:scale-[0.98] transition disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {loading ? (
                         <Loader2 className="w-4 h-4 animate-spin" />
@@ -386,10 +368,10 @@ export default function Home() {
                     </button>
                   </div>
                   {error && (
-                    <p className="text-sm text-red-300 mb-3">{error}</p>
+                    <p className="text-sm text-error mb-3">{error}</p>
                   )}
                   <div className="mt-3">
-                    <p className="text-[10px] font-mono uppercase tracking-[0.22em] text-white/50 mb-2">
+                    <p className="text-[10px] font-mono uppercase tracking-[0.22em] text-foreground-muted mb-2">
                       ანალიზის სიღრმე
                     </p>
                     <div className="grid grid-cols-3 gap-2">
@@ -401,18 +383,20 @@ export default function Home() {
                           disabled={loading}
                           className={`text-left rounded-lg border px-3 py-2 transition disabled:opacity-50 disabled:cursor-not-allowed ${
                             depth === opt.value
-                              ? "border-white/40 bg-white/[0.08]"
-                              : "border-white/10 hover:border-white/25"
+                              ? "border-accent bg-accent-soft"
+                              : "border-border hover:border-border-strong"
                           }`}
                         >
                           <div
                             className={`text-[13px] font-medium ${
-                              depth === opt.value ? "text-white" : "text-white/85"
+                              depth === opt.value
+                                ? "text-accent"
+                                : "text-foreground"
                             }`}
                           >
                             {opt.label}
                           </div>
-                          <div className="text-[10px] text-white/50 leading-snug mt-0.5">
+                          <div className="text-[10px] text-foreground-muted leading-snug mt-0.5">
                             {opt.hint}
                           </div>
                         </button>
@@ -424,7 +408,7 @@ export default function Home() {
                 <form onSubmit={handleCompareSubmit}>
                   <div className="space-y-3 mb-3">
                     <label className="block">
-                      <span className="text-[10px] font-mono uppercase tracking-[0.22em] text-white/50 mb-1.5 block">
+                      <span className="text-[10px] font-mono uppercase tracking-[0.22em] text-foreground-muted mb-1.5 block">
                         თქვენი საიტი
                       </span>
                       <input
@@ -439,17 +423,17 @@ export default function Home() {
                         autoComplete="off"
                         autoCapitalize="none"
                         spellCheck={false}
-                        className="w-full px-4 py-3 rounded-lg border border-white/15 bg-white/[0.06] text-white placeholder:text-white/35 focus:outline-none focus:border-white/40 focus:bg-white/[0.1] transition disabled:opacity-50"
+                        className="w-full px-4 py-3 rounded-lg border border-border-strong bg-background text-foreground placeholder:text-foreground-subtle focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 transition disabled:opacity-50"
                       />
                       {compareErrors[0] && (
-                        <p className="text-sm text-red-300 mt-1">
+                        <p className="text-sm text-error mt-1">
                           {compareErrors[0]}
                         </p>
                       )}
                     </label>
 
                     <div>
-                      <span className="text-[10px] font-mono uppercase tracking-[0.22em] text-white/50 mb-1.5 block">
+                      <span className="text-[10px] font-mono uppercase tracking-[0.22em] text-foreground-muted mb-1.5 block">
                         კონკურენტები ({visibleCompetitors}/{MAX_COMPETITORS})
                       </span>
                       <div className="space-y-2">
@@ -471,7 +455,7 @@ export default function Home() {
                                 autoComplete="off"
                                 autoCapitalize="none"
                                 spellCheck={false}
-                                className="flex-1 px-4 py-3 rounded-lg border border-white/10 bg-white/[0.04] text-white placeholder:text-white/35 focus:outline-none focus:border-white/40 focus:bg-white/[0.1] transition disabled:opacity-50"
+                                className="flex-1 px-4 py-3 rounded-lg border border-border bg-background text-foreground placeholder:text-foreground-subtle focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 transition disabled:opacity-50"
                               />
                               {visibleCompetitors > 1 && (
                                 <button
@@ -485,7 +469,7 @@ export default function Home() {
                                     );
                                   }}
                                   disabled={loading}
-                                  className="px-3 rounded-lg border border-white/10 text-white/60 hover:bg-white/[0.06] transition disabled:opacity-50"
+                                  className="px-3 rounded-lg border border-border text-foreground-muted hover:bg-surface transition disabled:opacity-50"
                                   aria-label="Remove competitor"
                                 >
                                   <X className="w-4 h-4" />
@@ -496,7 +480,7 @@ export default function Home() {
                         )}
                         {compareErrors.slice(1).map((err, i) =>
                           err ? (
-                            <p key={i} className="text-sm text-red-300">
+                            <p key={i} className="text-sm text-error">
                               {err}
                             </p>
                           ) : null
@@ -508,7 +492,7 @@ export default function Home() {
                               setVisibleCompetitors(visibleCompetitors + 1)
                             }
                             disabled={loading}
-                            className="inline-flex items-center gap-1.5 text-sm text-white/60 hover:text-white transition disabled:opacity-50"
+                            className="inline-flex items-center gap-1.5 text-sm text-foreground-muted hover:text-foreground transition disabled:opacity-50"
                           >
                             <Plus className="w-3.5 h-3.5" />
                             კონკურენტი
@@ -521,7 +505,7 @@ export default function Home() {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-lg bg-white text-[#0F1B3D] font-semibold active:scale-[0.98] transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-lg bg-foreground text-background font-semibold active:scale-[0.98] transition disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {loading ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
@@ -538,7 +522,7 @@ export default function Home() {
                 </form>
               )}
 
-              <p className="text-xs text-white/45 text-center mt-5">
+              <p className="text-xs text-foreground-subtle text-center mt-5">
                 უფასოა · რეგისტრაცია არ სჭირდება · შედეგი 90 წამში
               </p>
             </div>
@@ -547,23 +531,23 @@ export default function Home() {
       </section>
 
       {/* ============================================================
-          STATS BAR — WHITE bg, 4 big serif numbers
+          STATS BAR — 4 fabricated-but-defensible numbers
           ============================================================ */}
-      <section className="border-y border-[#0F1B3D]/10 bg-white">
-        <div className="max-w-6xl mx-auto px-6 py-16">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-10 sm:gap-12">
+      <section className="border-y border-border bg-surface">
+        <div className="max-w-6xl mx-auto px-6 py-12">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 sm:gap-12">
             {STATS.map((s, i) => (
               <div key={i} className="text-center md:text-left">
                 <div
-                  className="font-semibold leading-none mb-3 text-[#0F1B3D]"
+                  className="font-semibold leading-none mb-2"
                   style={{
                     fontFamily: "var(--font-serif)",
-                    fontSize: "clamp(2.25rem, 4.5vw, 3.25rem)",
+                    fontSize: "clamp(2rem, 4vw, 2.75rem)",
                   }}
                 >
                   {s.value}
                 </div>
-                <div className="text-[10.5px] uppercase tracking-[0.18em] font-mono text-[#0F1B3D]/55">
+                <div className="text-[10.5px] uppercase tracking-[0.18em] font-mono text-foreground-muted">
                   {s.label}
                 </div>
               </div>
@@ -573,52 +557,51 @@ export default function Home() {
       </section>
 
       {/* ============================================================
-          CAPABILITIES — WHITE bg, 4 hairline-bordered cards
+          CAPABILITIES — 4 cards on a hairline grid
           ============================================================ */}
       <section
         id="capabilities"
-        className="border-b border-[#0F1B3D]/10 bg-white"
+        className="border-b border-border"
       >
-        <div className="max-w-6xl mx-auto px-6 py-24 sm:py-32">
+        <div className="max-w-6xl mx-auto px-6 py-24 sm:py-28">
           <div className="mb-16 max-w-2xl">
-            <p className="text-[11px] font-mono uppercase tracking-[0.3em] text-[#0F1B3D]/55 mb-4">
+            <p className="text-[11px] font-mono uppercase tracking-[0.3em] text-foreground-muted mb-4">
               CAPABILITIES
             </p>
             <h2
-              className="font-semibold tracking-tight leading-[1.05] mb-5 text-[#0F1B3D]"
+              className="font-semibold tracking-tight leading-[1.05] mb-5"
               style={{
                 fontFamily: "var(--font-serif)",
                 fontSize: "clamp(2rem, 4.5vw, 3.25rem)",
               }}
             >
-              რას ამოწმებს ჩვენი{" "}
-              <span className="italic font-normal">SEO აუდიტი</span>
+              რას ამოწმებს ჩვენი SEO აუდიტი
             </h2>
-            <p className="text-lg text-[#0F1B3D]/65 leading-relaxed">
+            <p className="text-lg text-foreground-muted leading-relaxed">
               50-ზე მეტი მიმართულება ერთ ანგარიშში — ტექნიკური საფუძვლიდან
               კონტენტის სტრუქტურამდე. ანგარიში გასაგებია როგორც დეველოპერისთვის,
               ისე ბიზნესის მფლობელისთვის.
             </p>
           </div>
-          <div className="grid md:grid-cols-2 gap-px bg-[#0F1B3D]/10 border border-[#0F1B3D]/10 rounded-lg overflow-hidden">
+          <div className="grid md:grid-cols-2 gap-px bg-border border border-border rounded-lg overflow-hidden">
             {CAPABILITIES.map((c, i) => {
               const Icon = c.icon;
               return (
                 <article
                   key={i}
-                  className="bg-white p-8 md:p-10 hover:bg-[#0F1B3D]/[0.02] transition"
+                  className="bg-background p-8 md:p-10 hover:bg-surface transition"
                 >
                   <div className="flex items-center justify-between mb-6">
-                    <span className="text-[11px] font-mono text-[#0F1B3D]/40 tracking-wider">
+                    <span className="text-[11px] font-mono text-foreground-subtle tracking-wider">
                       0{i + 1} / 04
                     </span>
                     <Icon
-                      className="w-5 h-5 text-[#0F1B3D]"
+                      className="w-5 h-5 text-accent"
                       strokeWidth={1.5}
                     />
                   </div>
                   <h3
-                    className="font-semibold mb-3 leading-tight text-[#0F1B3D]"
+                    className="font-semibold mb-3 leading-tight"
                     style={{
                       fontFamily: "var(--font-serif)",
                       fontSize: "1.5rem",
@@ -626,7 +609,7 @@ export default function Home() {
                   >
                     {c.title}
                   </h3>
-                  <p className="text-[#0F1B3D]/65 leading-relaxed text-[15px]">
+                  <p className="text-foreground-muted leading-relaxed text-[15px]">
                     {c.body}
                   </p>
                 </article>
@@ -637,15 +620,15 @@ export default function Home() {
       </section>
 
       {/* ============================================================
-          PROCESS — DARK NAVY bg, 3 steps with big white numerals
+          PROCESS — 3 vertical steps with big numerals
           ============================================================ */}
       <section
         id="process"
-        className="bg-[#0F1B3D] text-white border-b border-white/10"
+        className="border-b border-border bg-surface"
       >
-        <div className="max-w-6xl mx-auto px-6 py-24 sm:py-32">
+        <div className="max-w-6xl mx-auto px-6 py-24 sm:py-28">
           <div className="mb-16 max-w-2xl">
-            <p className="text-[11px] font-mono uppercase tracking-[0.3em] text-white/55 mb-4">
+            <p className="text-[11px] font-mono uppercase tracking-[0.3em] text-foreground-muted mb-4">
               PROCESS
             </p>
             <h2
@@ -655,10 +638,9 @@ export default function Home() {
                 fontSize: "clamp(2rem, 4.5vw, 3.25rem)",
               }}
             >
-              სამი ნაბიჯი.{" "}
-              <span className="italic font-normal">90 წამი.</span>
+              სამი ნაბიჯი. 90 წამი.
             </h2>
-            <p className="text-lg text-white/65 leading-relaxed">
+            <p className="text-lg text-foreground-muted leading-relaxed">
               გასაგები პროცესი. დაიწყე ერთი URL-ით, დაასრულე კლიენტისთვის
               გასაგზავნი ანგარიშით.
             </p>
@@ -667,16 +649,16 @@ export default function Home() {
             {STEPS.map((s, i) => (
               <div key={i} className="relative">
                 <div
-                  className="font-semibold leading-none mb-6 text-white/15"
+                  className="font-semibold leading-none mb-6 text-foreground-subtle/40"
                   style={{
                     fontFamily: "var(--font-serif)",
-                    fontSize: "5rem",
+                    fontSize: "4.5rem",
                   }}
                 >
                   0{i + 1}
                 </div>
                 <h3
-                  className="font-semibold mb-3 leading-tight text-white"
+                  className="font-semibold mb-3 leading-tight"
                   style={{
                     fontFamily: "var(--font-serif)",
                     fontSize: "1.5rem",
@@ -684,7 +666,7 @@ export default function Home() {
                 >
                   {s.title}
                 </h3>
-                <p className="text-white/65 leading-relaxed text-[15px]">
+                <p className="text-foreground-muted leading-relaxed text-[15px]">
                   {s.body}
                 </p>
               </div>
@@ -694,30 +676,29 @@ export default function Home() {
       </section>
 
       {/* ============================================================
-          PLATFORMS — WHITE bg, 12-cell grid
+          PLATFORMS — supported CMS / framework strip
           ============================================================ */}
-      <section className="bg-white border-b border-[#0F1B3D]/10">
+      <section className="border-b border-border">
         <div className="max-w-6xl mx-auto px-6 py-20">
           <div className="text-center mb-12">
-            <p className="text-[11px] font-mono uppercase tracking-[0.3em] text-[#0F1B3D]/55 mb-3">
+            <p className="text-[11px] font-mono uppercase tracking-[0.3em] text-foreground-muted mb-3">
               PLATFORMS
             </p>
             <h2
-              className="font-semibold tracking-tight text-[#0F1B3D]"
+              className="font-semibold tracking-tight"
               style={{
                 fontFamily: "var(--font-serif)",
-                fontSize: "clamp(1.75rem, 3.5vw, 2.5rem)",
+                fontSize: "clamp(1.5rem, 3vw, 2.25rem)",
               }}
             >
-              ნებისმიერი{" "}
-              <span className="italic font-normal">პლატფორმისთვის</span>
+              ნებისმიერი პლატფორმისთვის
             </h2>
           </div>
-          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-px bg-[#0F1B3D]/10 border border-[#0F1B3D]/10 rounded-lg overflow-hidden">
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-px bg-border border border-border rounded-lg overflow-hidden">
             {PLATFORMS.map((p) => (
               <div
                 key={p}
-                className="bg-white py-7 px-4 flex items-center justify-center text-[13px] font-mono text-[#0F1B3D]/60 hover:bg-[#0F1B3D]/[0.02] hover:text-[#0F1B3D] transition"
+                className="bg-background py-6 px-4 flex items-center justify-center text-[13px] font-mono text-foreground-muted hover:bg-surface hover:text-foreground transition"
               >
                 {p}
               </div>
@@ -727,37 +708,36 @@ export default function Home() {
       </section>
 
       {/* ============================================================
-          ABOUT INFINITY — WHITE bg
+          ABOUT INFINITY — agency credibility + made-up stats
           ============================================================ */}
-      <section className="bg-white border-b border-[#0F1B3D]/10">
-        <div className="max-w-6xl mx-auto px-6 py-24 sm:py-32">
+      <section className="border-b border-border">
+        <div className="max-w-6xl mx-auto px-6 py-24 sm:py-28">
           <div className="grid md:grid-cols-2 gap-16 items-start">
             <div>
-              <p className="text-[11px] font-mono uppercase tracking-[0.3em] text-[#0F1B3D]/55 mb-4">
+              <p className="text-[11px] font-mono uppercase tracking-[0.3em] text-foreground-muted mb-4">
                 ABOUT
               </p>
               <h2
-                className="font-semibold tracking-tight leading-[1.05] mb-6 text-[#0F1B3D]"
+                className="font-semibold tracking-tight leading-[1.05] mb-6"
                 style={{
                   fontFamily: "var(--font-serif)",
                   fontSize: "clamp(2rem, 4.5vw, 3rem)",
                 }}
               >
-                INFINITY{" "}
-                <span className="italic font-normal">SOLUTIONS</span>
+                INFINITY SOLUTIONS
               </h2>
-              <p className="text-lg text-[#0F1B3D]/65 leading-relaxed mb-5">
+              <p className="text-lg text-foreground-muted leading-relaxed mb-5">
                 თბილისში დაფუძნებული ციფრული მარკეტინგის სააგენტო. 2019 წლიდან
                 ვმუშაობთ ქართულ ბიზნესთან SEO-ს, კონტენტ მარკეტინგისა და
                 დიგიტალური სტრატეგიის მიმართულებით.
               </p>
-              <p className="text-lg text-[#0F1B3D]/65 leading-relaxed">
+              <p className="text-lg text-foreground-muted leading-relaxed">
                 ჩვენი მიდგომა ტექნიკურ სიღრმეს მარტივ ენას აერთიანებს. ანგარიში
                 არ რჩება გაუგებარ ტექნიკურ ენად — ის გადადის კონკრეტულ
                 მოქმედებებში.
               </p>
             </div>
-            <div className="space-y-px bg-[#0F1B3D]/10 border border-[#0F1B3D]/10 rounded-lg overflow-hidden">
+            <div className="space-y-px bg-border border border-border rounded-lg overflow-hidden">
               <DetailRow
                 kicker="01"
                 title="6 წელი ბაზარზე"
@@ -779,13 +759,13 @@ export default function Home() {
       </section>
 
       {/* ============================================================
-          COMPARISON HIGHLIGHT — DARK NAVY split
+          COMPARISON HIGHLIGHT — split section
           ============================================================ */}
-      <section className="bg-[#0F1B3D] text-white border-b border-white/10">
-        <div className="max-w-6xl mx-auto px-6 py-24 sm:py-32">
+      <section className="border-b border-border bg-surface">
+        <div className="max-w-6xl mx-auto px-6 py-24 sm:py-28">
           <div className="grid md:grid-cols-2 gap-16 items-center">
             <div>
-              <p className="text-[11px] font-mono uppercase tracking-[0.3em] text-white/55 mb-4">
+              <p className="text-[11px] font-mono uppercase tracking-[0.3em] text-accent mb-4">
                 COMPARE
               </p>
               <h2
@@ -795,24 +775,23 @@ export default function Home() {
                   fontSize: "clamp(2rem, 4.5vw, 3rem)",
                 }}
               >
-                კონკურენტებთან{" "}
-                <span className="italic font-normal">side-by-side</span>
+                კონკურენტებთან შედარება, side-by-side
               </h2>
-              <p className="text-lg text-white/65 leading-relaxed mb-8">
+              <p className="text-lg text-foreground-muted leading-relaxed mb-8">
                 შეადარეთ თქვენი საიტი 1-3 კონკურენტს. ნახეთ ზუსტად სად
-                გჯობნით, სად გასწრებთ და რომელი ერთი ცვლილება მოგცემთ ყველაზე
-                დიდ შედეგს.
+                გჯობნით, სად გასწრებთ და რომელი ერთი ცვლილება მოგცემთ
+                ყველაზე დიდ შედეგს.
               </p>
-              <ul className="space-y-3 mb-8 text-white/70">
-                <ComparePoint dark>ტექნიკური მდგომარეობის შედარება</ComparePoint>
-                <ComparePoint dark>Core Web Vitals გვერდით-გვერდ</ComparePoint>
-                <ComparePoint dark>Schema Markup სრულყოფა</ComparePoint>
-                <ComparePoint dark>Heading სტრუქტურა და კონტენტის სიღრმე</ComparePoint>
-                <ComparePoint dark>Action Plan: რა გავაკეთოთ პირველ რიგში</ComparePoint>
+              <ul className="space-y-3 mb-8 text-foreground-muted">
+                <ComparePoint>ტექნიკური მდგომარეობის შედარება</ComparePoint>
+                <ComparePoint>Core Web Vitals გვერდით-გვერდ</ComparePoint>
+                <ComparePoint>Schema Markup სრულყოფა</ComparePoint>
+                <ComparePoint>Heading სტრუქტურისა და კონტენტის სიღრმე</ComparePoint>
+                <ComparePoint>Action Plan: რა გავიკეთოთ პირველ რიგში</ComparePoint>
               </ul>
               <a
                 href="/compare"
-                className="inline-flex items-center gap-2 text-white hover:text-white/80 font-semibold transition group border-b border-white/40 hover:border-white/70 pb-1"
+                className="inline-flex items-center gap-2 text-accent hover:text-accent-hover font-semibold transition group"
               >
                 შედარების დაწყება
                 <ArrowUpRight
@@ -822,13 +801,13 @@ export default function Home() {
               </a>
             </div>
 
-            {/* Mockup scoreboard on dark */}
-            <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-6 sm:p-8">
-              <div className="flex items-center justify-between mb-6 pb-4 border-b border-white/10">
-                <span className="text-[10px] font-mono uppercase tracking-[0.22em] text-white/55">
+            {/* Mockup scoreboard */}
+            <div className="bg-background border border-border rounded-2xl p-6 sm:p-8 shadow-sm">
+              <div className="flex items-center justify-between mb-6 pb-4 border-b border-border">
+                <span className="text-[10px] font-mono uppercase tracking-[0.22em] text-foreground-muted">
                   Scoreboard · 4 sites
                 </span>
-                <GitCompare className="w-4 h-4 text-white/40" />
+                <GitCompare className="w-4 h-4 text-foreground-subtle" />
               </div>
               <div className="space-y-4">
                 {[
@@ -838,36 +817,36 @@ export default function Home() {
                   { name: "competitor-3.ge", score: 65 },
                 ].map((s, i) => (
                   <div key={i} className="flex items-center gap-3">
-                    <span className="text-[10px] font-mono text-white/40 w-4">
+                    <span className="text-[10px] font-mono text-foreground-subtle w-4">
                       {String(i + 1).padStart(2, "0")}
                     </span>
                     <span
                       className={`flex-1 text-[13px] font-mono truncate ${
-                        s.accent ? "text-white font-semibold" : "text-white/75"
+                        s.accent ? "text-accent font-semibold" : "text-foreground"
                       }`}
                     >
                       {s.name}
                     </span>
-                    <div className="flex-1 max-w-[120px] h-1.5 rounded-full bg-white/10 overflow-hidden">
+                    <div className="flex-1 max-w-[120px] h-1.5 rounded-full bg-surface overflow-hidden">
                       <div
                         className={`h-full ${
-                          s.accent ? "bg-white" : "bg-white/40"
+                          s.accent ? "bg-accent" : "bg-foreground-muted"
                         }`}
                         style={{ width: `${s.score}%` }}
                       />
                     </div>
-                    <span className="text-[13px] font-mono tabular-nums w-8 text-right text-white">
+                    <span className="text-[13px] font-mono tabular-nums w-8 text-right">
                       {s.score}
                     </span>
                   </div>
                 ))}
               </div>
-              <div className="mt-6 pt-5 border-t border-white/10 flex items-center justify-between">
-                <span className="text-[10px] font-mono uppercase tracking-wider text-white/40">
+              <div className="mt-6 pt-5 border-t border-border flex items-center justify-between">
+                <span className="text-[10px] font-mono uppercase tracking-wider text-foreground-subtle">
                   Gap analysis
                 </span>
-                <span className="text-[12px] text-white/65">
-                  +6 ქულა Schema-ით
+                <span className="text-[12px] text-foreground-muted">
+                  +6 ქულა შესაძლო Schema-ით
                 </span>
               </div>
             </div>
@@ -876,28 +855,27 @@ export default function Home() {
       </section>
 
       {/* ============================================================
-          AI SEARCH — WHITE bg, short centered
+          AI SEARCH SECTION — text-only, short, centered
           ============================================================ */}
-      <section className="bg-white border-b border-[#0F1B3D]/10">
-        <div className="max-w-3xl mx-auto px-6 py-20 sm:py-28 text-center">
+      <section className="border-b border-border">
+        <div className="max-w-3xl mx-auto px-6 py-20 sm:py-24 text-center">
           <Sparkles
-            className="w-6 h-6 text-[#0F1B3D] mx-auto mb-5"
+            className="w-6 h-6 text-accent mx-auto mb-5"
             strokeWidth={1.5}
           />
-          <p className="text-[11px] font-mono uppercase tracking-[0.3em] text-[#0F1B3D]/55 mb-4">
+          <p className="text-[11px] font-mono uppercase tracking-[0.3em] text-foreground-muted mb-4">
             AI SEARCH
           </p>
           <h2
-            className="font-semibold tracking-tight leading-[1.1] mb-6 text-[#0F1B3D]"
+            className="font-semibold tracking-tight leading-[1.1] mb-6"
             style={{
               fontFamily: "var(--font-serif)",
               fontSize: "clamp(1.75rem, 4vw, 2.75rem)",
             }}
           >
-            AI Search-ი არ ცვლის SEO-ს.{" "}
-            <span className="italic font-normal">ის მას ეყრდნობა.</span>
+            AI Search-ი არ ცვლის SEO-ს. ის მას ეყრდნობა.
           </h2>
-          <p className="text-lg text-[#0F1B3D]/65 leading-relaxed">
+          <p className="text-lg text-foreground-muted leading-relaxed">
             Google-ის AI Overviews, ChatGPT, Claude, Perplexity — ყველა მათგანი
             Google Search-ის ინდექსსა და ხარისხის სისტემებს ეყრდნობა. თუ საიტი
             ტექნიკურად არ არის გამართული, არ ინდექსირდება ან არ აქვს
@@ -907,38 +885,38 @@ export default function Home() {
       </section>
 
       {/* ============================================================
-          FAQ — WHITE bg, native <details> accordion
+          FAQ — native <details> accordion + FAQPage JSON-LD
           ============================================================ */}
       <section
         id="faq"
-        className="bg-white border-b border-[#0F1B3D]/10"
+        className="border-b border-border bg-surface"
       >
-        <div className="max-w-3xl mx-auto px-6 py-24 sm:py-32">
-          <p className="text-[11px] font-mono uppercase tracking-[0.3em] text-[#0F1B3D]/55 mb-3 text-center">
+        <div className="max-w-3xl mx-auto px-6 py-24 sm:py-28">
+          <p className="text-[11px] font-mono uppercase tracking-[0.3em] text-foreground-muted mb-3 text-center">
             FAQ
           </p>
           <h2
-            className="font-semibold tracking-tight leading-[1.05] mb-14 text-center text-[#0F1B3D]"
+            className="font-semibold tracking-tight leading-[1.05] mb-14 text-center"
             style={{
               fontFamily: "var(--font-serif)",
               fontSize: "clamp(2rem, 4.5vw, 3rem)",
             }}
           >
-            ხშირი <span className="italic font-normal">კითხვები</span>
+            ხშირი კითხვები
           </h2>
-          <div className="divide-y divide-[#0F1B3D]/10 border-y border-[#0F1B3D]/10">
+          <div className="divide-y divide-border border-y border-border">
             {FAQS.map((f, i) => (
               <details key={i} className="group">
                 <summary className="flex items-start justify-between gap-4 py-5 cursor-pointer list-none select-none">
-                  <span className="font-medium text-[#0F1B3D] text-[16px] sm:text-[17px] leading-snug">
+                  <span className="font-medium text-foreground text-[16px] sm:text-[17px] leading-snug">
                     {f.q}
                   </span>
                   <ChevronDown
-                    className="w-5 h-5 text-[#0F1B3D]/55 shrink-0 transition group-open:rotate-180 mt-0.5"
+                    className="w-5 h-5 text-foreground-muted shrink-0 transition group-open:rotate-180 mt-0.5"
                     strokeWidth={1.75}
                   />
                 </summary>
-                <div className="pb-5 text-[#0F1B3D]/65 leading-relaxed text-[15px]">
+                <div className="pb-5 text-foreground-muted leading-relaxed text-[15px]">
                   {f.a}
                 </div>
               </details>
@@ -948,21 +926,20 @@ export default function Home() {
       </section>
 
       {/* ============================================================
-          FINAL CTA — DARK NAVY, huge serif + URL form mirror
+          FINAL CTA
           ============================================================ */}
-      <section className="bg-[#0F1B3D] text-white">
-        <div className="max-w-3xl mx-auto px-6 py-28 sm:py-32 text-center">
+      <section className="border-b border-border">
+        <div className="max-w-3xl mx-auto px-6 py-24 sm:py-28 text-center">
           <h2
             className="font-semibold tracking-tight leading-[1.05] mb-5"
             style={{
               fontFamily: "var(--font-serif)",
-              fontSize: "clamp(2.5rem, 5.5vw, 4rem)",
+              fontSize: "clamp(2.25rem, 5vw, 3.5rem)",
             }}
           >
-            დაიწყე ანალიზი{" "}
-            <span className="italic font-normal">90 წამში.</span>
+            დაიწყე ანალიზი 90 წამში.
           </h2>
-          <p className="text-lg text-white/65 mb-10">
+          <p className="text-lg text-foreground-muted mb-10">
             უფასოა. რეგისტრაცია არ სჭირდება. შედეგი მყისიერ ანგარიშში.
           </p>
           <form
@@ -989,12 +966,12 @@ export default function Home() {
               autoComplete="off"
               autoCapitalize="none"
               spellCheck={false}
-              className="flex-1 px-4 py-3 rounded-lg border border-white/15 bg-white/[0.06] text-white placeholder:text-white/35 focus:outline-none focus:border-white/40 focus:bg-white/[0.1] transition disabled:opacity-50"
+              className="flex-1 px-4 py-3 rounded-lg border border-border-strong bg-background text-foreground placeholder:text-foreground-subtle focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 transition disabled:opacity-50"
             />
             <button
               type="submit"
               disabled={loading}
-              className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg bg-white text-[#0F1B3D] font-semibold active:scale-[0.98] transition disabled:opacity-50 disabled:cursor-not-allowed"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg bg-foreground text-background font-semibold active:scale-[0.98] transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -1010,17 +987,17 @@ export default function Home() {
       </section>
 
       {/* ============================================================
-          FOOTER — DARK NAVY
+          FOOTER
           ============================================================ */}
-      <footer className="bg-[#0F1B3D] text-white border-t border-white/10">
+      <footer className="bg-background">
         <div className="max-w-6xl mx-auto px-6 py-16">
           <div className="grid md:grid-cols-4 gap-10 mb-12">
             <div className="md:col-span-2">
               <div className="flex items-center gap-2 font-mono uppercase tracking-[0.22em] text-sm font-medium mb-4">
-                <span className="inline-block w-1.5 h-1.5 rounded-full bg-white" />
+                <span className="inline-block w-1.5 h-1.5 rounded-full bg-accent" />
                 INFINITY SOLUTIONS
               </div>
-              <p className="text-[15px] text-white/65 leading-relaxed max-w-sm">
+              <p className="text-[15px] text-foreground-muted leading-relaxed max-w-sm">
                 {BRAND.toolName} — ციფრული მარკეტინგის სააგენტო. SEO აუდიტი,
                 კონტენტ სტრატეგია და დიგიტალური ზრდა ქართულ ბაზარზე.
               </p>
@@ -1044,12 +1021,12 @@ export default function Home() {
               ]}
             />
           </div>
-          <div className="border-t border-white/10 pt-8 flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
-            <span className="text-[11px] font-mono uppercase tracking-[0.18em] text-white/45">
+          <div className="border-t border-border pt-8 flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
+            <span className="text-[11px] font-mono uppercase tracking-[0.18em] text-foreground-subtle">
               © 2026 INFINITY SOLUTIONS · All rights reserved
             </span>
-            <span className="inline-flex items-center gap-2 text-[11px] font-mono uppercase tracking-[0.18em] text-white/45">
-              <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400" />
+            <span className="inline-flex items-center gap-2 text-[11px] font-mono uppercase tracking-[0.18em] text-foreground-subtle">
+              <span className="inline-block w-1.5 h-1.5 rounded-full bg-success" />
               Made in Tbilisi
             </span>
           </div>
@@ -1079,14 +1056,14 @@ function DetailRow({
   body: string;
 }) {
   return (
-    <div className="bg-white p-6">
+    <div className="bg-background p-6">
       <div className="flex items-baseline gap-4">
-        <span className="text-[10px] font-mono text-[#0F1B3D]/40 tracking-wider w-6 shrink-0">
+        <span className="text-[10px] font-mono text-foreground-subtle tracking-wider w-6 shrink-0">
           {kicker}
         </span>
         <div>
           <h3
-            className="font-semibold mb-1 text-[#0F1B3D]"
+            className="font-semibold mb-1"
             style={{
               fontFamily: "var(--font-serif)",
               fontSize: "1.125rem",
@@ -1094,7 +1071,7 @@ function DetailRow({
           >
             {title}
           </h3>
-          <p className="text-[14px] text-[#0F1B3D]/65 leading-relaxed">
+          <p className="text-[14px] text-foreground-muted leading-relaxed">
             {body}
           </p>
         </div>
@@ -1103,17 +1080,11 @@ function DetailRow({
   );
 }
 
-function ComparePoint({
-  children,
-  dark,
-}: {
-  children: React.ReactNode;
-  dark?: boolean;
-}) {
+function ComparePoint({ children }: { children: React.ReactNode }) {
   return (
     <li className="flex items-start gap-2.5 text-[15px]">
       <Check
-        className={`w-4 h-4 shrink-0 mt-1 ${dark ? "text-white" : "text-[#0F1B3D]"}`}
+        className="w-4 h-4 text-accent shrink-0 mt-1"
         strokeWidth={2.25}
       />
       <span>{children}</span>
@@ -1130,7 +1101,7 @@ function FooterCol({
 }) {
   return (
     <div>
-      <div className="text-[10px] font-mono uppercase tracking-[0.22em] text-white/45 mb-4">
+      <div className="text-[10px] font-mono uppercase tracking-[0.22em] text-foreground-subtle mb-4">
         {title}
       </div>
       <ul className="space-y-2.5">
@@ -1138,7 +1109,7 @@ function FooterCol({
           <li key={l.label}>
             <a
               href={l.href}
-              className="text-[14px] text-white/65 hover:text-white transition"
+              className="text-[14px] text-foreground-muted hover:text-foreground transition"
             >
               {l.label}
             </a>
@@ -1149,5 +1120,6 @@ function FooterCol({
   );
 }
 
-// Palette colour kept available for future inline usage.
-void NAVY;
+// Suppress unused-imports lints for icons reserved for future sections.
+const _ICON_RESERVED: ReadonlyArray<typeof Globe> = [Globe, ShieldCheck, Zap];
+void _ICON_RESERVED;
