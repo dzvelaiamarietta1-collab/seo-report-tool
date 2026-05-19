@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Script from "next/script";
 import {
-  Fira_Sans,
+  Instrument_Sans,
+  Instrument_Serif,
   Noto_Sans_Georgian,
   Noto_Serif_Georgian,
   JetBrains_Mono,
@@ -9,14 +10,16 @@ import {
 import { BRAND } from "@/lib/brand";
 import "./globals.css";
 
-// Fira Sans is the Latin twin of FiraGO (FiraGO = Fira Sans + Georgian
-// extension). For Georgian glyphs the cascade falls to Noto Sans Georgian.
-// Both are loaded with the weights the design system uses.
-const firaSans = Fira_Sans({
+// Instrument Sans is the body sans used by the Optimus v0 template —
+// matching it lets the landing land in the same visual lineage. Latin
+// glyphs render with Instrument; the Georgian fallback (Noto Sans
+// Georgian) is loaded second and picked up automatically by the CSS
+// cascade for Georgian codepoints.
+const instrumentSans = Instrument_Sans({
   subsets: ["latin", "latin-ext"],
   weight: ["400", "500", "600", "700"],
   display: "swap",
-  variable: "--font-fira-sans",
+  variable: "--font-instrument-sans",
 });
 
 const notoGeorgian = Noto_Sans_Georgian({
@@ -26,10 +29,17 @@ const notoGeorgian = Noto_Sans_Georgian({
   variable: "--font-noto-georgian",
 });
 
-// Editorial serif for headlines — pairs with the existing sans for body.
-// The cover slide overrides with its own inline serif stack (Georgia +
-// Playfair fallback) so it stays consistent in print/screenshots; this
-// font carries the in-app h1/h2.
+// Instrument Serif — also from the Optimus template, used for big
+// editorial headlines (italic emphasis on accent words). Georgian
+// fallback is Noto Serif Georgian.
+const instrumentSerif = Instrument_Serif({
+  subsets: ["latin", "latin-ext"],
+  weight: ["400"],
+  style: ["normal", "italic"],
+  display: "swap",
+  variable: "--font-instrument-serif",
+});
+
 const notoSerifGeorgian = Noto_Serif_Georgian({
   subsets: ["georgian"],
   weight: ["400", "500", "600", "700"],
@@ -201,7 +211,7 @@ export default function RootLayout({
   return (
     <html
       lang="ka"
-      className={`${firaSans.variable} ${notoGeorgian.variable} ${notoSerifGeorgian.variable} ${jetbrainsMono.variable} h-full antialiased`}
+      className={`${instrumentSans.variable} ${instrumentSerif.variable} ${notoGeorgian.variable} ${notoSerifGeorgian.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-background text-foreground">
         {children}

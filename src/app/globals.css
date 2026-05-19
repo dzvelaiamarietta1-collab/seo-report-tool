@@ -1,31 +1,33 @@
 @import "tailwindcss";
 
-/* === Theme tokens — navy + white monochrome ============================
- * Pure white background + deep navy text + navy accent (italic emphasis
- * instead of a color accent). Optimus-style minimal premium. The
- * presentation slides still set their own colours inline so they're
- * unaffected by this token rename.
+/* === Theme tokens — black + white monochrome ==========================
+ * Pure white background + near-black text. Matches the Optimus v0
+ * template (which uses #000 / #fff in its raw CSS). Italic Instrument
+ * Serif carries the emphasis where a coloured accent would be. The
+ * presentation slides keep their own inline cream palette so this
+ * change does not affect /presentation output.
  * ========================================================================= */
 :root {
   --background: #ffffff;
-  --surface: #f8f9fb;
+  --surface: #f7f7f8;
   --surface-elevated: #ffffff;
-  --foreground: #0f1b3d;
-  --foreground-muted: rgba(15, 27, 61, 0.62);
-  --foreground-subtle: rgba(15, 27, 61, 0.42);
+  --foreground: #0a0a0a;
+  --foreground-muted: rgba(10, 10, 10, 0.6);
+  --foreground-subtle: rgba(10, 10, 10, 0.4);
 
-  /* Accent kept as a navy emphasis tone (slightly brighter than the
-     main foreground). No gold anywhere on the web app. */
-  --accent: #0f1b3d;
-  --accent-hover: #1a2754;
-  --accent-soft: rgba(15, 27, 61, 0.06);
+  /* No coloured accent — emphasis is italic typography. Accent token
+     left pointing at foreground for backwards compatibility with any
+     components that still read `--accent`. */
+  --accent: #0a0a0a;
+  --accent-hover: #000000;
+  --accent-soft: rgba(10, 10, 10, 0.04);
   --accent-foreground: #ffffff;
 
-  --border: rgba(15, 27, 61, 0.1);
-  --border-strong: rgba(15, 27, 61, 0.18);
+  --border: rgba(10, 10, 10, 0.1);
+  --border-strong: rgba(10, 10, 10, 0.18);
 
-  /* Inverse — used on dark navy sections that flip the colour scheme. */
-  --background-inverse: #0f1b3d;
+  /* Inverse — used on dark sections (#0a0a0a bg + white text). */
+  --background-inverse: #0a0a0a;
   --foreground-inverse: #ffffff;
   --border-inverse: rgba(255, 255, 255, 0.1);
   --border-inverse-strong: rgba(255, 255, 255, 0.18);
@@ -35,14 +37,18 @@
   --error: #a03a3a;
   --info: #1e3a8a;
 
-  --font-sans: var(--font-fira-sans), var(--font-noto-georgian), "Fira Sans",
-    "Noto Sans Georgian", "Sylfaen", system-ui, -apple-system, "Segoe UI",
-    sans-serif;
-  /* Editorial serif used for h1/h2. Noto Serif Georgian carries Georgian
-     glyphs; Georgia is the Latin pair (matches the cover-slide inline
-     stack so headlines look the same in screenshots and on the web). */
-  --font-serif: var(--font-noto-serif-georgian), Georgia, "Times New Roman",
-    "Playfair Display", serif;
+  /* Latin glyphs render with Instrument Sans (the Optimus template's
+     body font); Georgian glyphs fall through to Noto Sans Georgian
+     automatically because the cascade picks per-codepoint coverage. */
+  --font-sans: var(--font-instrument-sans), var(--font-noto-georgian),
+    "Instrument Sans", "Noto Sans Georgian", "Sylfaen", system-ui,
+    -apple-system, "Segoe UI", sans-serif;
+  /* Editorial serif — Instrument Serif for Latin, Noto Serif Georgian
+     for Georgian glyphs. Italic Instrument Serif gives the accent
+     emphasis on headlines. */
+  --font-serif: var(--font-instrument-serif), var(--font-noto-serif-georgian),
+    "Instrument Serif", "Noto Serif Georgian", Georgia, "Times New Roman",
+    serif;
   --font-mono: var(--font-jetbrains-mono), "JetBrains Mono", ui-monospace,
     "SF Mono", Menlo, Consolas, monospace;
 }

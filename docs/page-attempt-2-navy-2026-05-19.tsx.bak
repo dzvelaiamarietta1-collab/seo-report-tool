@@ -143,106 +143,7 @@ const FAQS: { q: string; a: string }[] = [
 
 // Palette anchors — every section that needs colour pulls from here so
 // the palette stays consistent and is easy to retune.
-const BLACK = "#0a0a0a";
-
-// =====================================================================
-// Fabricated testimonials — Georgian SMB representatives, plausible.
-// =====================================================================
-
-const TESTIMONIALS: { quote: string; name: string; role: string }[] = [
-  {
-    quote:
-      "INFINITY-ის SEO აუდიტმა გვაჩვენა, რომ Schema Markup სრულად აკლდა ჩვენი 200+ პროდუქტს. გასწორების შემდეგ ორგანული ტრაფიკი 3 თვეში 40%-ით გაიზარდა.",
-    name: "გიორგი მახარაძე",
-    role: "E-commerce Manager, TechHub Tbilisi",
-  },
-  {
-    quote:
-      "ანგარიში ისე იყო დაწერილი, რომ ჩვენი დეველოპერი ერთ დღეში გასწორდა იმას, რაც წლები გვაწუხებდა. პრიორიტეტი ცხადი იყო პირველი წუთიდან.",
-    name: "ნათია ლუხუმაშვილი",
-    role: "Founder, Lusoa Studio",
-  },
-  {
-    quote:
-      "შედარებამ კონკურენტებთან გვაჩვენა, რომ ჩვენი Core Web Vitals 20%-ით სუსტი იყო. ეს გახდა ჩვენი Q4 პრიორიტეტი — და მუშაობს.",
-    name: "ლევან აფხაზიძე",
-    role: "CEO, Aphi Group",
-  },
-  {
-    quote:
-      "სრული რეპორტი ქართულად, რეალური მაგალითებით. ჩვენი მარკეტინგ-გუნდი მაშინვე მიხვდა, რა გვაკლდა და რა ცვლილებამ მოგვცა შედეგი.",
-    name: "დავით ხატია",
-    role: "CMO, LocalBiz.ge",
-  },
-];
-
-// =====================================================================
-// Pricing tiers — Free / Pro / Enterprise
-// =====================================================================
-
-const PRICING: {
-  kicker: string;
-  name: string;
-  price: string;
-  unit: string;
-  description: string;
-  features: string[];
-  cta: string;
-  ctaHref: string;
-  highlighted?: boolean;
-}[] = [
-  {
-    kicker: "00",
-    name: "Free Audit",
-    price: "0₾",
-    unit: "/ მუდამ",
-    description: "Self-service ანალიზი ნებისმიერ საიტზე.",
-    features: [
-      "მთავარი გვერდის audit",
-      "50+ SEO check",
-      "PDF download",
-      "საჯარო შედეგების URL",
-      "Email მხარდაჭერა",
-    ],
-    cta: "დაიწყე უფასოდ",
-    ctaHref: "#hero",
-  },
-  {
-    kicker: "01",
-    name: "Pro Audit",
-    price: "199₾",
-    unit: "/ ერთჯერადი",
-    description: "ღრმა site review + კონკურენტთან შედარება.",
-    features: [
-      "სრული საიტი (10 გვერდამდე)",
-      "კონკურენტთან შედარება (1-3)",
-      "AI Executive Summary",
-      "Custom PowerPoint",
-      "1 კონსულტაცია (60 წთ)",
-      "პრიორიტეტული მხარდაჭერა",
-    ],
-    cta: "შეუკვეთე Pro",
-    ctaHref: "/seo-offer",
-    highlighted: true,
-  },
-  {
-    kicker: "02",
-    name: "Enterprise SEO",
-    price: "Custom",
-    unit: "",
-    description: "გრძელვადიანი SEO პარტნიორობა.",
-    features: [
-      "ყველაფერი Pro-დან",
-      "ყოველთვიური მონიტორინგი",
-      "SEO სტრატეგია + roadmap",
-      "On-call მხარდაჭერა",
-      "გამოყოფილი სპეციალისტი",
-      "კონტენტ სტრატეგია",
-    ],
-    cta: "დაგვიკავშირდი",
-    ctaHref: "mailto:webinfinity17@gmail.com",
-  },
-];
+const NAVY = "#0F1B3D";
 
 // =====================================================================
 // URL helpers
@@ -325,39 +226,39 @@ export default function Home() {
   };
 
   return (
-    <div className="flex flex-col flex-1 bg-white text-[#0a0a0a]">
+    <div className="flex flex-col flex-1 bg-white text-[#0F1B3D]">
       {/* ============================================================
           NAV — white bg, sticky, hairline border
           ============================================================ */}
-      <nav className="sticky top-0 z-50 border-b border-[#0a0a0a]/10 bg-white/85 backdrop-blur-md">
+      <nav className="sticky top-0 z-50 border-b border-[#0F1B3D]/10 bg-white/85 backdrop-blur-md">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <a
             href="/"
             className="flex items-center gap-2 font-mono uppercase tracking-[0.22em] text-[13px] font-medium"
           >
-            <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#0a0a0a]" />
+            <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#0F1B3D]" />
             INFINITY
           </a>
-          <div className="hidden md:flex items-center gap-9 text-sm text-[#0a0a0a]/60">
+          <div className="hidden md:flex items-center gap-9 text-sm text-[#0F1B3D]/60">
             <a
               href="#capabilities"
-              className="hover:text-[#0a0a0a] transition"
+              className="hover:text-[#0F1B3D] transition"
             >
               ფუნქცია
             </a>
-            <a href="#process" className="hover:text-[#0a0a0a] transition">
+            <a href="#process" className="hover:text-[#0F1B3D] transition">
               პროცესი
             </a>
-            <a href="/compare" className="hover:text-[#0a0a0a] transition">
+            <a href="/compare" className="hover:text-[#0F1B3D] transition">
               შედარება
             </a>
-            <a href="#faq" className="hover:text-[#0a0a0a] transition">
+            <a href="#faq" className="hover:text-[#0F1B3D] transition">
               კითხვები
             </a>
           </div>
           <a
             href="#hero"
-            className="inline-flex items-center gap-1.5 text-[13px] font-medium px-3.5 py-2 rounded-md bg-[#0a0a0a] text-white hover:opacity-90 transition"
+            className="inline-flex items-center gap-1.5 text-[13px] font-medium px-3.5 py-2 rounded-md bg-[#0F1B3D] text-white hover:opacity-90 transition"
           >
             ანალიზის დაწყება
             <ArrowRight className="w-3.5 h-3.5" strokeWidth={2.25} />
@@ -370,7 +271,7 @@ export default function Home() {
           ============================================================ */}
       <section
         id="hero"
-        className="relative overflow-hidden bg-[#0a0a0a] text-white"
+        className="relative overflow-hidden bg-[#0F1B3D] text-white"
       >
         {/* Subtle white-tinted radial glow */}
         <div
@@ -428,7 +329,7 @@ export default function Home() {
                   disabled={loading}
                   className={`flex-1 px-3 py-2 rounded-md text-[13px] font-medium transition disabled:opacity-50 ${
                     mode === "single"
-                      ? "bg-white text-[#0a0a0a] shadow-sm"
+                      ? "bg-white text-[#0F1B3D] shadow-sm"
                       : "text-white/60 hover:text-white"
                   }`}
                 >
@@ -440,7 +341,7 @@ export default function Home() {
                   disabled={loading}
                   className={`flex-1 px-3 py-2 rounded-md text-[13px] font-medium transition disabled:opacity-50 ${
                     mode === "compare"
-                      ? "bg-white text-[#0a0a0a] shadow-sm"
+                      ? "bg-white text-[#0F1B3D] shadow-sm"
                       : "text-white/60 hover:text-white"
                   }`}
                 >
@@ -469,7 +370,7 @@ export default function Home() {
                     <button
                       type="submit"
                       disabled={loading}
-                      className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-lg bg-white text-[#0a0a0a] font-semibold active:scale-[0.98] transition disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-lg bg-white text-[#0F1B3D] font-semibold active:scale-[0.98] transition disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {loading ? (
                         <Loader2 className="w-4 h-4 animate-spin" />
@@ -620,7 +521,7 @@ export default function Home() {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-lg bg-white text-[#0a0a0a] font-semibold active:scale-[0.98] transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-lg bg-white text-[#0F1B3D] font-semibold active:scale-[0.98] transition disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {loading ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
@@ -648,13 +549,13 @@ export default function Home() {
       {/* ============================================================
           STATS BAR — WHITE bg, 4 big serif numbers
           ============================================================ */}
-      <section className="border-y border-[#0a0a0a]/10 bg-white">
+      <section className="border-y border-[#0F1B3D]/10 bg-white">
         <div className="max-w-6xl mx-auto px-6 py-16">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-10 sm:gap-12">
             {STATS.map((s, i) => (
               <div key={i} className="text-center md:text-left">
                 <div
-                  className="font-semibold leading-none mb-3 text-[#0a0a0a]"
+                  className="font-semibold leading-none mb-3 text-[#0F1B3D]"
                   style={{
                     fontFamily: "var(--font-serif)",
                     fontSize: "clamp(2.25rem, 4.5vw, 3.25rem)",
@@ -662,7 +563,7 @@ export default function Home() {
                 >
                   {s.value}
                 </div>
-                <div className="text-[10.5px] uppercase tracking-[0.18em] font-mono text-[#0a0a0a]/55">
+                <div className="text-[10.5px] uppercase tracking-[0.18em] font-mono text-[#0F1B3D]/55">
                   {s.label}
                 </div>
               </div>
@@ -676,15 +577,15 @@ export default function Home() {
           ============================================================ */}
       <section
         id="capabilities"
-        className="border-b border-[#0a0a0a]/10 bg-white"
+        className="border-b border-[#0F1B3D]/10 bg-white"
       >
         <div className="max-w-6xl mx-auto px-6 py-24 sm:py-32">
           <div className="mb-16 max-w-2xl">
-            <p className="text-[11px] font-mono uppercase tracking-[0.3em] text-[#0a0a0a]/55 mb-4">
+            <p className="text-[11px] font-mono uppercase tracking-[0.3em] text-[#0F1B3D]/55 mb-4">
               CAPABILITIES
             </p>
             <h2
-              className="font-semibold tracking-tight leading-[1.05] mb-5 text-[#0a0a0a]"
+              className="font-semibold tracking-tight leading-[1.05] mb-5 text-[#0F1B3D]"
               style={{
                 fontFamily: "var(--font-serif)",
                 fontSize: "clamp(2rem, 4.5vw, 3.25rem)",
@@ -693,31 +594,31 @@ export default function Home() {
               რას ამოწმებს ჩვენი{" "}
               <span className="italic font-normal">SEO აუდიტი</span>
             </h2>
-            <p className="text-lg text-[#0a0a0a]/65 leading-relaxed">
+            <p className="text-lg text-[#0F1B3D]/65 leading-relaxed">
               50-ზე მეტი მიმართულება ერთ ანგარიშში — ტექნიკური საფუძვლიდან
               კონტენტის სტრუქტურამდე. ანგარიში გასაგებია როგორც დეველოპერისთვის,
               ისე ბიზნესის მფლობელისთვის.
             </p>
           </div>
-          <div className="grid md:grid-cols-2 gap-px bg-[#0a0a0a]/10 border border-[#0a0a0a]/10 rounded-lg overflow-hidden">
+          <div className="grid md:grid-cols-2 gap-px bg-[#0F1B3D]/10 border border-[#0F1B3D]/10 rounded-lg overflow-hidden">
             {CAPABILITIES.map((c, i) => {
               const Icon = c.icon;
               return (
                 <article
                   key={i}
-                  className="bg-white p-8 md:p-10 hover:bg-[#0a0a0a]/[0.02] transition"
+                  className="bg-white p-8 md:p-10 hover:bg-[#0F1B3D]/[0.02] transition"
                 >
                   <div className="flex items-center justify-between mb-6">
-                    <span className="text-[11px] font-mono text-[#0a0a0a]/40 tracking-wider">
+                    <span className="text-[11px] font-mono text-[#0F1B3D]/40 tracking-wider">
                       0{i + 1} / 04
                     </span>
                     <Icon
-                      className="w-5 h-5 text-[#0a0a0a]"
+                      className="w-5 h-5 text-[#0F1B3D]"
                       strokeWidth={1.5}
                     />
                   </div>
                   <h3
-                    className="font-semibold mb-3 leading-tight text-[#0a0a0a]"
+                    className="font-semibold mb-3 leading-tight text-[#0F1B3D]"
                     style={{
                       fontFamily: "var(--font-serif)",
                       fontSize: "1.5rem",
@@ -725,7 +626,7 @@ export default function Home() {
                   >
                     {c.title}
                   </h3>
-                  <p className="text-[#0a0a0a]/65 leading-relaxed text-[15px]">
+                  <p className="text-[#0F1B3D]/65 leading-relaxed text-[15px]">
                     {c.body}
                   </p>
                 </article>
@@ -740,7 +641,7 @@ export default function Home() {
           ============================================================ */}
       <section
         id="process"
-        className="bg-[#0a0a0a] text-white border-b border-white/10"
+        className="bg-[#0F1B3D] text-white border-b border-white/10"
       >
         <div className="max-w-6xl mx-auto px-6 py-24 sm:py-32">
           <div className="mb-16 max-w-2xl">
@@ -793,66 +694,16 @@ export default function Home() {
       </section>
 
       {/* ============================================================
-          LIVE METRICS — WHITE bg, dashboard widget (Optimus-style)
-          ============================================================ */}
-      <section className="bg-white border-b border-[#0a0a0a]/10">
-        <div className="max-w-6xl mx-auto px-6 py-24 sm:py-32">
-          <div className="mb-12 max-w-2xl">
-            <p className="text-[11px] font-mono uppercase tracking-[0.3em] text-[#0a0a0a]/55 mb-4">
-              METRICS
-            </p>
-            <h2
-              className="font-semibold tracking-tight leading-[1.05] mb-5 text-[#0a0a0a]"
-              style={{
-                fontFamily: "var(--font-serif)",
-                fontSize: "clamp(2rem, 4.5vw, 3.25rem)",
-              }}
-            >
-              რეალური <span className="italic font-normal">audit წუთებში</span>
-            </h2>
-            <p className="text-lg text-[#0a0a0a]/65 leading-relaxed">
-              ცოცხალი მონაცემები ჩვენი audit pipeline-დან. რეალური
-              ნომრები რეალური საიტებიდან.
-            </p>
-          </div>
-          <div className="border border-[#0a0a0a]/10 rounded-2xl p-8 sm:p-10 bg-[#f7f7f8]">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 sm:gap-10">
-              <MetricCard
-                label="ANALYZED SITES"
-                value="2,847"
-                delta="+12 ბოლო საათში"
-              />
-              <MetricCard
-                label="AVG SEO SCORE"
-                value="71"
-                delta="↑ 3 vs Q3"
-              />
-              <MetricCard
-                label="ISSUES FOUND"
-                value="14,209"
-                delta="ყველა audit-ში"
-              />
-              <MetricCard
-                label="UPTIME"
-                value="99.97%"
-                delta="ბოლო 30 დღე"
-              />
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ============================================================
           PLATFORMS — WHITE bg, 12-cell grid
           ============================================================ */}
-      <section className="bg-white border-b border-[#0a0a0a]/10">
+      <section className="bg-white border-b border-[#0F1B3D]/10">
         <div className="max-w-6xl mx-auto px-6 py-20">
           <div className="text-center mb-12">
-            <p className="text-[11px] font-mono uppercase tracking-[0.3em] text-[#0a0a0a]/55 mb-3">
+            <p className="text-[11px] font-mono uppercase tracking-[0.3em] text-[#0F1B3D]/55 mb-3">
               PLATFORMS
             </p>
             <h2
-              className="font-semibold tracking-tight text-[#0a0a0a]"
+              className="font-semibold tracking-tight text-[#0F1B3D]"
               style={{
                 fontFamily: "var(--font-serif)",
                 fontSize: "clamp(1.75rem, 3.5vw, 2.5rem)",
@@ -862,11 +713,11 @@ export default function Home() {
               <span className="italic font-normal">პლატფორმისთვის</span>
             </h2>
           </div>
-          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-px bg-[#0a0a0a]/10 border border-[#0a0a0a]/10 rounded-lg overflow-hidden">
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-px bg-[#0F1B3D]/10 border border-[#0F1B3D]/10 rounded-lg overflow-hidden">
             {PLATFORMS.map((p) => (
               <div
                 key={p}
-                className="bg-white py-7 px-4 flex items-center justify-center text-[13px] font-mono text-[#0a0a0a]/60 hover:bg-[#0a0a0a]/[0.02] hover:text-[#0a0a0a] transition"
+                className="bg-white py-7 px-4 flex items-center justify-center text-[13px] font-mono text-[#0F1B3D]/60 hover:bg-[#0F1B3D]/[0.02] hover:text-[#0F1B3D] transition"
               >
                 {p}
               </div>
@@ -878,15 +729,15 @@ export default function Home() {
       {/* ============================================================
           ABOUT INFINITY — WHITE bg
           ============================================================ */}
-      <section className="bg-white border-b border-[#0a0a0a]/10">
+      <section className="bg-white border-b border-[#0F1B3D]/10">
         <div className="max-w-6xl mx-auto px-6 py-24 sm:py-32">
           <div className="grid md:grid-cols-2 gap-16 items-start">
             <div>
-              <p className="text-[11px] font-mono uppercase tracking-[0.3em] text-[#0a0a0a]/55 mb-4">
+              <p className="text-[11px] font-mono uppercase tracking-[0.3em] text-[#0F1B3D]/55 mb-4">
                 ABOUT
               </p>
               <h2
-                className="font-semibold tracking-tight leading-[1.05] mb-6 text-[#0a0a0a]"
+                className="font-semibold tracking-tight leading-[1.05] mb-6 text-[#0F1B3D]"
                 style={{
                   fontFamily: "var(--font-serif)",
                   fontSize: "clamp(2rem, 4.5vw, 3rem)",
@@ -895,18 +746,18 @@ export default function Home() {
                 INFINITY{" "}
                 <span className="italic font-normal">SOLUTIONS</span>
               </h2>
-              <p className="text-lg text-[#0a0a0a]/65 leading-relaxed mb-5">
+              <p className="text-lg text-[#0F1B3D]/65 leading-relaxed mb-5">
                 თბილისში დაფუძნებული ციფრული მარკეტინგის სააგენტო. 2019 წლიდან
                 ვმუშაობთ ქართულ ბიზნესთან SEO-ს, კონტენტ მარკეტინგისა და
                 დიგიტალური სტრატეგიის მიმართულებით.
               </p>
-              <p className="text-lg text-[#0a0a0a]/65 leading-relaxed">
+              <p className="text-lg text-[#0F1B3D]/65 leading-relaxed">
                 ჩვენი მიდგომა ტექნიკურ სიღრმეს მარტივ ენას აერთიანებს. ანგარიში
                 არ რჩება გაუგებარ ტექნიკურ ენად — ის გადადის კონკრეტულ
                 მოქმედებებში.
               </p>
             </div>
-            <div className="space-y-px bg-[#0a0a0a]/10 border border-[#0a0a0a]/10 rounded-lg overflow-hidden">
+            <div className="space-y-px bg-[#0F1B3D]/10 border border-[#0F1B3D]/10 rounded-lg overflow-hidden">
               <DetailRow
                 kicker="01"
                 title="6 წელი ბაზარზე"
@@ -930,7 +781,7 @@ export default function Home() {
       {/* ============================================================
           COMPARISON HIGHLIGHT — DARK NAVY split
           ============================================================ */}
-      <section className="bg-[#0a0a0a] text-white border-b border-white/10">
+      <section className="bg-[#0F1B3D] text-white border-b border-white/10">
         <div className="max-w-6xl mx-auto px-6 py-24 sm:py-32">
           <div className="grid md:grid-cols-2 gap-16 items-center">
             <div>
@@ -1027,17 +878,17 @@ export default function Home() {
       {/* ============================================================
           AI SEARCH — WHITE bg, short centered
           ============================================================ */}
-      <section className="bg-white border-b border-[#0a0a0a]/10">
+      <section className="bg-white border-b border-[#0F1B3D]/10">
         <div className="max-w-3xl mx-auto px-6 py-20 sm:py-28 text-center">
           <Sparkles
-            className="w-6 h-6 text-[#0a0a0a] mx-auto mb-5"
+            className="w-6 h-6 text-[#0F1B3D] mx-auto mb-5"
             strokeWidth={1.5}
           />
-          <p className="text-[11px] font-mono uppercase tracking-[0.3em] text-[#0a0a0a]/55 mb-4">
+          <p className="text-[11px] font-mono uppercase tracking-[0.3em] text-[#0F1B3D]/55 mb-4">
             AI SEARCH
           </p>
           <h2
-            className="font-semibold tracking-tight leading-[1.1] mb-6 text-[#0a0a0a]"
+            className="font-semibold tracking-tight leading-[1.1] mb-6 text-[#0F1B3D]"
             style={{
               fontFamily: "var(--font-serif)",
               fontSize: "clamp(1.75rem, 4vw, 2.75rem)",
@@ -1046,7 +897,7 @@ export default function Home() {
             AI Search-ი არ ცვლის SEO-ს.{" "}
             <span className="italic font-normal">ის მას ეყრდნობა.</span>
           </h2>
-          <p className="text-lg text-[#0a0a0a]/65 leading-relaxed">
+          <p className="text-lg text-[#0F1B3D]/65 leading-relaxed">
             Google-ის AI Overviews, ChatGPT, Claude, Perplexity — ყველა მათგანი
             Google Search-ის ინდექსსა და ხარისხის სისტემებს ეყრდნობა. თუ საიტი
             ტექნიკურად არ არის გამართული, არ ინდექსირდება ან არ აქვს
@@ -1056,91 +907,18 @@ export default function Home() {
       </section>
 
       {/* ============================================================
-          TESTIMONIALS — WHITE bg, 2x2 quote grid
-          ============================================================ */}
-      <section className="bg-white border-b border-[#0a0a0a]/10">
-        <div className="max-w-6xl mx-auto px-6 py-24 sm:py-32">
-          <div className="mb-16 max-w-2xl">
-            <p className="text-[11px] font-mono uppercase tracking-[0.3em] text-[#0a0a0a]/55 mb-4">
-              TESTIMONIALS
-            </p>
-            <h2
-              className="font-semibold tracking-tight leading-[1.05] mb-5 text-[#0a0a0a]"
-              style={{
-                fontFamily: "var(--font-serif)",
-                fontSize: "clamp(2rem, 4.5vw, 3.25rem)",
-              }}
-            >
-              რას ამბობენ{" "}
-              <span className="italic font-normal">ჩვენი კლიენტები</span>
-            </h2>
-            <p className="text-lg text-[#0a0a0a]/65 leading-relaxed">
-              ქართული ბიზნესის რეალური გამოცდილება — როგორ შეცვალა SEO აუდიტმა მათი
-              ციფრული მდგომარეობა.
-            </p>
-          </div>
-          <div className="grid md:grid-cols-2 gap-px bg-[#0a0a0a]/10 border border-[#0a0a0a]/10 rounded-lg overflow-hidden">
-            {TESTIMONIALS.map((t, i) => (
-              <TestimonialCard
-                key={i}
-                index={i + 1}
-                total={TESTIMONIALS.length}
-                {...t}
-              />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ============================================================
-          PRICING — WHITE bg, 3-tier grid with one highlighted
-          ============================================================ */}
-      <section className="bg-white border-b border-[#0a0a0a]/10">
-        <div className="max-w-6xl mx-auto px-6 py-24 sm:py-32">
-          <div className="mb-16 text-center max-w-2xl mx-auto">
-            <p className="text-[11px] font-mono uppercase tracking-[0.3em] text-[#0a0a0a]/55 mb-4">
-              PRICING
-            </p>
-            <h2
-              className="font-semibold tracking-tight leading-[1.05] mb-5 text-[#0a0a0a]"
-              style={{
-                fontFamily: "var(--font-serif)",
-                fontSize: "clamp(2rem, 4.5vw, 3.25rem)",
-              }}
-            >
-              გასაგები{" "}
-              <span className="italic font-normal">ფასები</span>
-            </h2>
-            <p className="text-lg text-[#0a0a0a]/65 leading-relaxed">
-              უფასოდ დაიწყე. გადახდი მხოლოდ მაშინ, როცა SEO-მ უკვე გადასცა შენი
-              ბიზნესის ღირებულება.
-            </p>
-          </div>
-          <div className="grid md:grid-cols-3 gap-px bg-[#0a0a0a]/10 border border-[#0a0a0a]/10 rounded-lg overflow-hidden">
-            {PRICING.map((p, i) => (
-              <PricingCard key={i} {...p} />
-            ))}
-          </div>
-          <p className="text-center mt-8 text-sm text-[#0a0a0a]/55">
-            ყველა გეგმაში — ქართულ ენაზე მხარდაჭერა · უსაფრთხო HTTPS ·
-            გაუქმება ნებისმიერ დროს · ფასები ეროვნულ ვალუტაში.
-          </p>
-        </div>
-      </section>
-
-      {/* ============================================================
           FAQ — WHITE bg, native <details> accordion
           ============================================================ */}
       <section
         id="faq"
-        className="bg-white border-b border-[#0a0a0a]/10"
+        className="bg-white border-b border-[#0F1B3D]/10"
       >
         <div className="max-w-3xl mx-auto px-6 py-24 sm:py-32">
-          <p className="text-[11px] font-mono uppercase tracking-[0.3em] text-[#0a0a0a]/55 mb-3 text-center">
+          <p className="text-[11px] font-mono uppercase tracking-[0.3em] text-[#0F1B3D]/55 mb-3 text-center">
             FAQ
           </p>
           <h2
-            className="font-semibold tracking-tight leading-[1.05] mb-14 text-center text-[#0a0a0a]"
+            className="font-semibold tracking-tight leading-[1.05] mb-14 text-center text-[#0F1B3D]"
             style={{
               fontFamily: "var(--font-serif)",
               fontSize: "clamp(2rem, 4.5vw, 3rem)",
@@ -1148,19 +926,19 @@ export default function Home() {
           >
             ხშირი <span className="italic font-normal">კითხვები</span>
           </h2>
-          <div className="divide-y divide-[#0a0a0a]/10 border-y border-[#0a0a0a]/10">
+          <div className="divide-y divide-[#0F1B3D]/10 border-y border-[#0F1B3D]/10">
             {FAQS.map((f, i) => (
               <details key={i} className="group">
                 <summary className="flex items-start justify-between gap-4 py-5 cursor-pointer list-none select-none">
-                  <span className="font-medium text-[#0a0a0a] text-[16px] sm:text-[17px] leading-snug">
+                  <span className="font-medium text-[#0F1B3D] text-[16px] sm:text-[17px] leading-snug">
                     {f.q}
                   </span>
                   <ChevronDown
-                    className="w-5 h-5 text-[#0a0a0a]/55 shrink-0 transition group-open:rotate-180 mt-0.5"
+                    className="w-5 h-5 text-[#0F1B3D]/55 shrink-0 transition group-open:rotate-180 mt-0.5"
                     strokeWidth={1.75}
                   />
                 </summary>
-                <div className="pb-5 text-[#0a0a0a]/65 leading-relaxed text-[15px]">
+                <div className="pb-5 text-[#0F1B3D]/65 leading-relaxed text-[15px]">
                   {f.a}
                 </div>
               </details>
@@ -1172,7 +950,7 @@ export default function Home() {
       {/* ============================================================
           FINAL CTA — DARK NAVY, huge serif + URL form mirror
           ============================================================ */}
-      <section className="bg-[#0a0a0a] text-white">
+      <section className="bg-[#0F1B3D] text-white">
         <div className="max-w-3xl mx-auto px-6 py-28 sm:py-32 text-center">
           <h2
             className="font-semibold tracking-tight leading-[1.05] mb-5"
@@ -1216,7 +994,7 @@ export default function Home() {
             <button
               type="submit"
               disabled={loading}
-              className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg bg-white text-[#0a0a0a] font-semibold active:scale-[0.98] transition disabled:opacity-50 disabled:cursor-not-allowed"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg bg-white text-[#0F1B3D] font-semibold active:scale-[0.98] transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -1234,7 +1012,7 @@ export default function Home() {
       {/* ============================================================
           FOOTER — DARK NAVY
           ============================================================ */}
-      <footer className="bg-[#0a0a0a] text-white border-t border-white/10">
+      <footer className="bg-[#0F1B3D] text-white border-t border-white/10">
         <div className="max-w-6xl mx-auto px-6 py-16">
           <div className="grid md:grid-cols-4 gap-10 mb-12">
             <div className="md:col-span-2">
@@ -1303,12 +1081,12 @@ function DetailRow({
   return (
     <div className="bg-white p-6">
       <div className="flex items-baseline gap-4">
-        <span className="text-[10px] font-mono text-[#0a0a0a]/40 tracking-wider w-6 shrink-0">
+        <span className="text-[10px] font-mono text-[#0F1B3D]/40 tracking-wider w-6 shrink-0">
           {kicker}
         </span>
         <div>
           <h3
-            className="font-semibold mb-1 text-[#0a0a0a]"
+            className="font-semibold mb-1 text-[#0F1B3D]"
             style={{
               fontFamily: "var(--font-serif)",
               fontSize: "1.125rem",
@@ -1316,7 +1094,7 @@ function DetailRow({
           >
             {title}
           </h3>
-          <p className="text-[14px] text-[#0a0a0a]/65 leading-relaxed">
+          <p className="text-[14px] text-[#0F1B3D]/65 leading-relaxed">
             {body}
           </p>
         </div>
@@ -1335,7 +1113,7 @@ function ComparePoint({
   return (
     <li className="flex items-start gap-2.5 text-[15px]">
       <Check
-        className={`w-4 h-4 shrink-0 mt-1 ${dark ? "text-white" : "text-[#0a0a0a]"}`}
+        className={`w-4 h-4 shrink-0 mt-1 ${dark ? "text-white" : "text-[#0F1B3D]"}`}
         strokeWidth={2.25}
       />
       <span>{children}</span>
@@ -1371,187 +1149,5 @@ function FooterCol({
   );
 }
 
-function MetricCard({
-  label,
-  value,
-  delta,
-}: {
-  label: string;
-  value: string;
-  delta: string;
-}) {
-  return (
-    <div>
-      <div className="text-[10px] font-mono uppercase tracking-[0.22em] text-[#0a0a0a]/45 mb-2">
-        {label}
-      </div>
-      <div
-        className="font-semibold leading-none text-[#0a0a0a] mb-2 tabular-nums"
-        style={{
-          fontFamily: "var(--font-serif)",
-          fontSize: "clamp(1.75rem, 3.5vw, 2.5rem)",
-        }}
-      >
-        {value}
-      </div>
-      <div className="text-[12px] text-[#0a0a0a]/55 font-mono">{delta}</div>
-    </div>
-  );
-}
-
-function TestimonialCard({
-  quote,
-  name,
-  role,
-  index,
-  total,
-}: {
-  quote: string;
-  name: string;
-  role: string;
-  index: number;
-  total: number;
-}) {
-  return (
-    <article className="bg-white p-8 md:p-10 hover:bg-[#0a0a0a]/[0.02] transition flex flex-col">
-      <div className="flex items-center justify-between mb-6">
-        <span className="text-[11px] font-mono text-[#0a0a0a]/40 tracking-wider">
-          {String(index).padStart(2, "0")} / {String(total).padStart(2, "0")}
-        </span>
-        <span className="text-2xl text-[#0a0a0a]/30 leading-none font-serif">
-          &ldquo;
-        </span>
-      </div>
-      <p
-        className="text-[#0a0a0a] leading-relaxed mb-8 flex-1"
-        style={{
-          fontFamily: "var(--font-serif)",
-          fontSize: "1.125rem",
-          lineHeight: "1.55",
-        }}
-      >
-        {quote}
-      </p>
-      <div className="border-t border-[#0a0a0a]/10 pt-4">
-        <div className="font-medium text-[#0a0a0a] text-[14px]">{name}</div>
-        <div className="text-[12px] text-[#0a0a0a]/55 mt-0.5">{role}</div>
-      </div>
-    </article>
-  );
-}
-
-function PricingCard({
-  kicker,
-  name,
-  price,
-  unit,
-  description,
-  features,
-  cta,
-  ctaHref,
-  highlighted,
-}: {
-  kicker: string;
-  name: string;
-  price: string;
-  unit: string;
-  description: string;
-  features: string[];
-  cta: string;
-  ctaHref: string;
-  highlighted?: boolean;
-}) {
-  return (
-    <article
-      className={`p-8 md:p-10 flex flex-col ${
-        highlighted ? "bg-[#0a0a0a] text-white" : "bg-white text-[#0a0a0a]"
-      }`}
-    >
-      <div className="flex items-center justify-between mb-6">
-        <span
-          className={`text-[11px] font-mono tracking-wider ${
-            highlighted ? "text-white/45" : "text-[#0a0a0a]/40"
-          }`}
-        >
-          {kicker} / 03
-        </span>
-        {highlighted && (
-          <span className="text-[10px] font-mono uppercase tracking-[0.18em] px-2 py-1 rounded bg-white text-[#0a0a0a]">
-            Most popular
-          </span>
-        )}
-      </div>
-      <h3
-        className={`font-semibold mb-2 leading-tight ${
-          highlighted ? "text-white" : "text-[#0a0a0a]"
-        }`}
-        style={{
-          fontFamily: "var(--font-serif)",
-          fontSize: "1.75rem",
-        }}
-      >
-        {name}
-      </h3>
-      <p
-        className={`text-[14px] leading-relaxed mb-6 ${
-          highlighted ? "text-white/65" : "text-[#0a0a0a]/65"
-        }`}
-      >
-        {description}
-      </p>
-      <div className="mb-8 flex items-baseline gap-2">
-        <span
-          className="font-semibold tabular-nums"
-          style={{
-            fontFamily: "var(--font-serif)",
-            fontSize: "clamp(2.25rem, 4vw, 3rem)",
-          }}
-        >
-          {price}
-        </span>
-        {unit && (
-          <span
-            className={`text-sm ${
-              highlighted ? "text-white/55" : "text-[#0a0a0a]/55"
-            }`}
-          >
-            {unit}
-          </span>
-        )}
-      </div>
-      <ul className="space-y-2.5 mb-8 flex-1">
-        {features.map((f, i) => (
-          <li key={i} className="flex items-start gap-2.5 text-[14px]">
-            <Check
-              className={`w-4 h-4 shrink-0 mt-0.5 ${
-                highlighted ? "text-white" : "text-[#0a0a0a]"
-              }`}
-              strokeWidth={2.25}
-            />
-            <span
-              className={
-                highlighted ? "text-white/85" : "text-[#0a0a0a]/85"
-              }
-            >
-              {f}
-            </span>
-          </li>
-        ))}
-      </ul>
-      <a
-        href={ctaHref}
-        className={`inline-flex items-center justify-center gap-2 px-5 py-3 rounded-lg font-semibold text-[14px] transition ${
-          highlighted
-            ? "bg-white text-[#0a0a0a] hover:opacity-90"
-            : "bg-[#0a0a0a] text-white hover:opacity-90"
-        }`}
-      >
-        {cta}
-        <ArrowRight className="w-4 h-4" strokeWidth={2.25} />
-      </a>
-    </article>
-  );
-}
-
 // Palette colour kept available for future inline usage.
-void BLACK;
+void NAVY;
