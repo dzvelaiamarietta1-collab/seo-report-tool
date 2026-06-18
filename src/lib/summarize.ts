@@ -1,7 +1,7 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import type { AnalysisResult, CategoryKey, CheckResult } from "./types";
 
-// AI executive summary generator — uses Gemini Flash for cheap fast
+// AI executive summary generator - uses Gemini Flash for cheap fast
 // generation in Georgian. The audit JSON is condensed before sending
 // (we don't need to feed 50KB of metadata for a 2-paragraph summary),
 // and the model gets a strict system prompt so output is predictable.
@@ -14,16 +14,16 @@ const MODEL = "gemini-2.5-flash";
 const SYSTEM_PROMPT = `შენ ხარ პროფესიონალური SEO სპეციალისტი, რომელიც ქართულად წერ მოკლე, კონკრეტულ executive summary-ს კლიენტისთვის.
 
 წესები:
-1. ენა — საქართველოს ქართული, პროფესიონალური, კლიენტ-ფეისინგი (არც ძალიან ფორმალური, არც ბავშვური).
-2. სიგრძე — 2 პარაგრაფი, თითო 60-120 სიტყვის ფარგლებში. პირველი: ზოგადი მდგომარეობა (ქულის ახსნა მუშტრის ენით). მეორე: TOP 3 პრიორიტეტი + სავარაუდო ეფექტი.
-3. ციფრები პირდაპირ audit-დან — არ მოიგონო. თუ რომელიმე მონაცემი არ არის მოწოდებული — არ ახსენო.
-4. ტექნიკური ჟარგონი მინიმუმამდე — "title tag" ❌ → "გვერდის სათაური" ✓. "LCP" ❌ → "გვერდის ჩატვირთვის სიჩქარე" ✓.
-5. ციტატები ან quotation marks-ი არ გამოიყენო — ცხადი ქართული წინადადებებით.
-6. არ დაიწყო "გამარჯობა" ან "მოხარული ვარ" ფრაზებით — პირდაპირ ფაქტებზე.
-7. ფინალური ფრაზა — call to action: "მზად ვართ ეს გავაუმჯობესოთ" ან მსგავსი.
-8. **არასოდეს გააწყვიტო წინადადება შუაში** — ბოლო პუნქტამდე დაიყვანე.
+1. ენა - საქართველოს ქართული, პროფესიონალური, კლიენტ-ფეისინგი (არც ძალიან ფორმალური, არც ბავშვური).
+2. სიგრძე - 2 პარაგრაფი, თითო 50-80 სიტყვის ფარგლებში (სულ მაქს 160 სიტყვა). პირველი: ზოგადი მდგომარეობა (ქულის ახსნა მუშტრის ენით). მეორე: TOP 3 პრიორიტეტი + სავარაუდო ეფექტი.
+3. ციფრები პირდაპირ audit-დან - არ მოიგონო. თუ რომელიმე მონაცემი არ არის მოწოდებული - არ ახსენო.
+4. ტექნიკური ჟარგონი მინიმუმამდე - "title tag" ❌ → "გვერდის სათაური" ✓. "LCP" ❌ → "გვერდის ჩატვირთვის სიჩქარე" ✓.
+5. ციტატები ან quotation marks-ი არ გამოიყენო - ცხადი ქართული წინადადებებით.
+6. არ დაიწყო "გამარჯობა" ან "მოხარული ვარ" ფრაზებით - პირდაპირ ფაქტებზე.
+7. ფინალური ფრაზა - call to action: "მზად ვართ ეს გავაუმჯობესოთ" ან მსგავსი.
+8. **არასოდეს გააწყვიტო წინადადება შუაში** - ბოლო პუნქტამდე დაიყვანე. თუ ადგილი ცოტა გრჩება, ბოლო წინადადება შემოკლე - მთლიანი წინადადება დაიწერე.
 
-გამოსავალი — მხოლოდ 2 პარაგრაფი. არანაირი მარკდაუნი, headers, bullets. ცარიელი ხაზი მხოლოდ პარაგრაფებს შორის.`;
+გამოსავალი - მხოლოდ 2 პარაგრაფი. არანაირი მარკდაუნი, headers, bullets. ცარიელი ხაზი მხოლოდ პარაგრაფებს შორის.`;
 
 // Condense the audit into a model-friendly payload. The original
 // AnalysisResult has all check details and big check.value arrays;
@@ -182,7 +182,7 @@ function getClient(): GoogleGenerativeAI {
   const key = process.env.GEMINI_API_KEY;
   if (!key) {
     throw new Error(
-      "GEMINI_API_KEY not configured — set it in .env.local and Vercel env"
+      "GEMINI_API_KEY not configured - set it in .env.local and Vercel env"
     );
   }
   cachedClient = new GoogleGenerativeAI(key);
@@ -206,15 +206,35 @@ export async function generateExecutiveSummary(
     generationConfig: {
       temperature: 0.4, // a bit of creativity, mostly grounded
       // Georgian characters cost ~2-3 tokens each in Gemini's tokenizer,
-      // so 600 tokens was clipping mid-sentence on real summaries (the
-      // observed bug — "საერთო ქ..." truncated). 2000 fits a full two
-      // paragraphs (~250 words) with ~30% headroom.
-      maxOutputTokens: 2000,
+      // so 2000 was still clipping mid-word on dense summaries (observed:
+      // "ეს ნიშნავს, რომ თქვენი ვებგვერდი უკ" - truncated). 4000 covers
+      // 2 full Georgian paragraphs (~160 words) with comfortable headroom.
+      maxOutputTokens: 4000,
     },
   });
 
-  const text = result.response.text().trim();
+  let text = result.response.text().trim();
   if (!text) throw new Error("Gemini-მ ცარიელი response დააბრუნა");
+
+  // Defensive truncation guard: if Gemini still hit MAX_TOKENS and ended
+  // mid-sentence, cut back to the last complete sentence so the client
+  // never sees "...უკ" style debris.
+  const finishReason = result.response.candidates?.[0]?.finishReason;
+  if (finishReason === "MAX_TOKENS") {
+    // Find the last sentence terminator. Walk back from end through
+    // Georgian/Latin punctuation in priority: period > question > excl.
+    const terminators = [".", "!", "?"];
+    let cutAt = -1;
+    for (let i = text.length - 1; i >= text.length - 200 && i >= 0; i--) {
+      if (terminators.includes(text[i])) {
+        cutAt = i + 1;
+        break;
+      }
+    }
+    if (cutAt > 0 && cutAt < text.length) {
+      text = text.substring(0, cutAt).trim();
+    }
+  }
 
   return {
     text,

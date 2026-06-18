@@ -8,9 +8,10 @@ import {
   JetBrains_Mono,
 } from "next/font/google";
 import { BRAND } from "@/lib/brand";
+import { LocaleProvider } from "@/lib/locale";
 import "./globals.css";
 
-// Instrument Sans is the body sans used by the Optimus v0 template —
+// Instrument Sans is the body sans used by the Optimus v0 template -
 // matching it lets the landing land in the same visual lineage. Latin
 // glyphs render with Instrument; the Georgian fallback (Noto Sans
 // Georgian) is loaded second and picked up automatically by the CSS
@@ -29,7 +30,7 @@ const notoGeorgian = Noto_Sans_Georgian({
   variable: "--font-noto-georgian",
 });
 
-// Instrument Serif — also from the Optimus template, used for big
+// Instrument Serif - also from the Optimus template, used for big
 // editorial headlines (italic emphasis on accent words). Georgian
 // fallback is Noto Serif Georgian.
 const instrumentSerif = Instrument_Serif({
@@ -54,11 +55,11 @@ const jetbrainsMono = JetBrains_Mono({
   variable: "--font-jetbrains-mono",
 });
 
-// Canonical site URL — used by Open Graph / Twitter / canonical link.
+// Canonical site URL - used by Open Graph / Twitter / canonical link.
 // Update when the custom domain is wired up.
 const SITE_URL = "https://seo-report-tool-pi.vercel.app";
 
-// Verification codes — paste the value Google Search Console gives you
+// Verification codes - paste the value Google Search Console gives you
 // (just the content="XXX" string, not the full <meta> tag). Leave the
 // empty string until the user provides theirs; Next.js will skip the
 // tag entirely instead of emitting an empty one.
@@ -90,7 +91,7 @@ export const metadata: Metadata = {
   publisher: BRAND.agency,
   applicationName: BRAND.toolName,
   category: "technology",
-  // Open Graph — what Facebook/LinkedIn/iMessage etc. show when shared.
+  // Open Graph - what Facebook/LinkedIn/iMessage etc. show when shared.
   openGraph: {
     type: "website",
     locale: "ka_GE",
@@ -104,7 +105,7 @@ export const metadata: Metadata = {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: `${BRAND.toolName} — ${BRAND.tagline}`,
+        alt: `${BRAND.toolName} - ${BRAND.tagline}`,
       },
     ],
   },
@@ -128,14 +129,14 @@ export const metadata: Metadata = {
   alternates: {
     canonical: SITE_URL,
   },
-  // Verification block — fill in when Search Console / Bing / Yandex
+  // Verification block - fill in when Search Console / Bing / Yandex
   // hand you a code. Empty strings are skipped by Next.js.
   ...(GOOGLE_VERIFICATION
     ? { verification: { google: GOOGLE_VERIFICATION } }
     : {}),
 };
 
-// JSON-LD payload — Organization + Service + SoftwareApplication, all
+// JSON-LD payload - Organization + Service + SoftwareApplication, all
 // at once so the page has a Knowledge-Graph-worthy footprint from one
 // fetch. We render via next/script with type="application/ld+json" so
 // Google's crawler picks it up in the static HTML.
@@ -214,7 +215,7 @@ export default function RootLayout({
       className={`${instrumentSans.variable} ${instrumentSerif.variable} ${notoGeorgian.variable} ${notoSerifGeorgian.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-background text-foreground">
-        {children}
+        <LocaleProvider>{children}</LocaleProvider>
         <Script
           id="ld-json-graph"
           type="application/ld+json"

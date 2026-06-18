@@ -41,9 +41,9 @@ const FIX_GENERATORS: Record<string, FixGenerator> = {
     const current = typeof value === "string" ? value.trim() : "";
     return [
       {
-        title: "Title tag — შაბლონი",
+        title: "Title tag - შაბლონი",
         language: "html",
-        code: `<title>${current || "თქვენი ბრენდი"} | მთავარი საკვანძო სიტყვა — ლოკაცია/სერვისი</title>`,
+        code: `<title>${current || "თქვენი ბრენდი"} | მთავარი საკვანძო სიტყვა - ლოკაცია/სერვისი</title>`,
         note: "ოპტიმალური 50-60 სიმბოლო. მთავარი საკვანძო სიტყვა დასაწყისში.",
       },
     ];
@@ -53,8 +53,8 @@ const FIX_GENERATORS: Record<string, FixGenerator> = {
     {
       title: "Meta Description",
       language: "html",
-      code: `<meta name="description" content="თქვენი საიტის ხანმოკლე აღწერა — რას სთავაზობთ, ვის ეხმარებით და რა არის უნიკალური. 140-160 სიმბოლო — Google ჩამოაჭრის უფრო გრძელს.">`,
-      note: "Active voice. CTR-ზე გავლენას ახდენს — წერეთ მიმზიდველად.",
+      code: `<meta name="description" content="თქვენი საიტის ხანმოკლე აღწერა - რას სთავაზობთ, ვის ეხმარებით და რა არის უნიკალური. 140-160 სიმბოლო - Google ჩამოაჭრის უფრო გრძელს.">`,
+      note: "Active voice. CTR-ზე გავლენას ახდენს - წერეთ მიმზიდველად.",
     },
   ],
 
@@ -72,7 +72,7 @@ const FIX_GENERATORS: Record<string, FixGenerator> = {
       title: "Viewport meta tag",
       language: "html",
       code: `<meta name="viewport" content="width=device-width, initial-scale=1">`,
-      note: "Mobile-friendly საიტებისთვის აუცილებელია — Google-ის Mobile-First Indexing.",
+      note: "Mobile-friendly საიტებისთვის აუცილებელია - Google-ის Mobile-First Indexing.",
     },
   ],
 
@@ -122,7 +122,7 @@ add_header Content-Security-Policy "default-src 'self'; img-src 'self' data: htt
 <link rel="alternate" hreflang="en" href="${ctx.origin}/en/">
 <link rel="alternate" hreflang="ru" href="${ctx.origin}/ru/">
 <link rel="alternate" hreflang="x-default" href="${ctx.origin}/">`,
-      note: "მხოლოდ მრავალენოვანი საიტებისთვის. x-default — ნაგულისხმევი ვერსია.",
+      note: "მხოლოდ მრავალენოვანი საიტებისთვის. x-default - ნაგულისხმევი ვერსია.",
     },
   ],
 
@@ -149,13 +149,13 @@ Allow: /
 
 # Sitemap
 Sitemap: ${ctx.origin}/sitemap.xml`,
-      note: "ჩაწერეთ საიტის root-ში. AI-ბოტების Allow/Disallow თქვენი არჩევანია — ბრენდის AI-ხილვადობისთვის რეკომენდებულია Allow.",
+      note: "ჩაწერეთ საიტის root-ში. AI-ბოტების Allow/Disallow თქვენი არჩევანია - ბრენდის AI-ხილვადობისთვის რეკომენდებულია Allow.",
     },
   ],
 
   "XML Sitemap": (ctx) => [
     {
-      title: "sitemap.xml — საბაზო შაბლონი",
+      title: "sitemap.xml - საბაზო შაბლონი",
       language: "xml",
       filename: "sitemap.xml",
       code: `<?xml version="1.0" encoding="UTF-8"?>
@@ -176,7 +176,7 @@ Sitemap: ${ctx.origin}/sitemap.xml`,
     <priority>0.8</priority>
   </url>
 </urlset>`,
-      note: "WordPress-ისთვის — Yoast/RankMath ავტომატურად ქმნის. Google Search Console-ში დაარეგისტრირეთ შემდეგ.",
+      note: "WordPress-ისთვის - Yoast/RankMath ავტომატურად ქმნის. Google Search Console-ში დაარეგისტრირეთ შემდეგ.",
     },
   ],
 
@@ -204,7 +204,7 @@ Sitemap: ${ctx.origin}/sitemap.xml`,
   }
 }
 </script>`,
-      note: "მთავარი გვერდისთვის. პროდუქტებისთვის — Product schema, სტატიებისთვის — Article. sameAs-ში ჩასვით მხოლოდ ნამდვილი ანგარიშები.",
+      note: "მთავარი გვერდისთვის. პროდუქტებისთვის - Product schema, სტატიებისთვის - Article. sameAs-ში ჩასვით მხოლოდ ნამდვილი ანგარიშები.",
     },
   ],
 
@@ -226,7 +226,7 @@ Sitemap: ${ctx.origin}/sitemap.xml`,
   ]
 }
 </script>`,
-      note: "sameAs-ში ჩასვით მხოლოდ ნამდვილი ანგარიშები სოც.მედიაში ან ცნობარებში (Google Business Profile, ინდუსტრიული ცნობარები). Wikipedia მხოლოდ მაშინ, თუ ბრენდს ნამდვილად აქვს გვერდი — ცრუ ბმულები საზიანოა.",
+      note: "sameAs-ში ჩასვით მხოლოდ ნამდვილი ანგარიშები სოც.მედიაში ან ცნობარებში (Google Business Profile, ინდუსტრიული ცნობარები). Wikipedia მხოლოდ მაშინ, თუ ბრენდს ნამდვილად აქვს გვერდი - ცრუ ბმულები საზიანოა.",
     },
   ],
 
@@ -267,13 +267,13 @@ Sitemap: ${ctx.origin}/sitemap.xml`,
       title: "Open Graph meta tags",
       language: "html",
       code: `<meta property="og:title" content="გვერდის სათაური">
-<meta property="og:description" content="გვერდის აღწერა — 140-160 სიმბოლო.">
+<meta property="og:description" content="გვერდის აღწერა - 140-160 სიმბოლო.">
 <meta property="og:image" content="${ctx.origin}/og-image.jpg">
 <meta property="og:url" content="${ctx.finalUrl}">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="${ctx.host}">
 <meta property="og:locale" content="ka_GE">`,
-      note: "og:image — 1200x630px, JPG/PNG, max 8MB. Facebook/LinkedIn გაზიარების preview-სთვის.",
+      note: "og:image - 1200x630px, JPG/PNG, max 8MB. Facebook/LinkedIn გაზიარების preview-სთვის.",
     },
   ],
 
@@ -286,7 +286,7 @@ Sitemap: ${ctx.origin}/sitemap.xml`,
 <meta name="twitter:description" content="გვერდის აღწერა.">
 <meta name="twitter:image" content="${ctx.origin}/og-image.jpg">
 <meta name="twitter:site" content="@yourtwitterhandle">`,
-      note: "summary_large_image — დიდი ბანერით; summary — პატარა thumbnail-ით.",
+      note: "summary_large_image - დიდი ბანერით; summary - პატარა thumbnail-ით.",
     },
   ],
 
@@ -297,7 +297,7 @@ Sitemap: ${ctx.origin}/sitemap.xml`,
       filename: "llms.txt",
       code: `# ${ctx.host}
 
-> ერთი წინადადება — რას სთავაზობთ, ვის ეხმარებით.
+> ერთი წინადადება - რას სთავაზობთ, ვის ეხმარებით.
 
 ## მთავარი გვერდები
 - [მთავარი](${ctx.origin}/): საიტის ზოგადი აღწერა
@@ -321,11 +321,11 @@ Sitemap: ${ctx.origin}/sitemap.xml`,
       language: "html",
       code: `<img
   src="image.webp"
-  alt="აღწერითი ტექსტი — რა ჩანს სურათზე"
+  alt="აღწერითი ტექსტი - რა ჩანს სურათზე"
   width="800"
   height="600"
   loading="lazy">`,
-      note: 'alt — აღწერითი (არა keyword stuffing). loading="lazy" below-the-fold-ისთვის. width/height — CLS-ის წინააღმდეგ.',
+      note: 'alt - აღწერითი (არა keyword stuffing). loading="lazy" below-the-fold-ისთვის. width/height - CLS-ის წინააღმდეგ.',
     },
   ],
 
@@ -334,7 +334,7 @@ Sitemap: ${ctx.origin}/sitemap.xml`,
       title: "Lazy loading attribute",
       language: "html",
       code: `<img src="image.webp" alt="..." loading="lazy" width="800" height="600">`,
-      note: "მხოლოდ below-the-fold სურათებისთვის. LCP სურათისთვის — НЕ lazy.",
+      note: "მხოლოდ below-the-fold სურათებისთვის. LCP სურათისთვის - НЕ lazy.",
     },
   ],
 
@@ -347,7 +347,7 @@ Sitemap: ${ctx.origin}/sitemap.xml`,
   <source srcset="image.webp" type="image/webp">
   <img src="image.jpg" alt="..." loading="lazy" width="800" height="600">
 </picture>`,
-      note: "AVIF — 50% უფრო პატარა; WebP — 30% უფრო პატარა. fallback ძველი ბრაუზერებისთვის.",
+      note: "AVIF - 50% უფრო პატარა; WebP - 30% უფრო პატარა. fallback ძველი ბრაუზერებისთვის.",
     },
   ],
 };

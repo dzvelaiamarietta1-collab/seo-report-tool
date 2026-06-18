@@ -1,0 +1,119 @@
+[
+  {
+    "index": 0,
+    "tag": "header",
+    "id": null,
+    "cls": "fixed z-50 transition-all duration-500 top-0 left-0 right-0",
+    "y": 0,
+    "height": 80,
+    "textPreview": "Optimus TM Features How it works Developers Pricing Sign in Start creating"
+  },
+  {
+    "index": 1,
+    "tag": "section",
+    "id": null,
+    "cls": "relative min-h-screen flex flex-col justify-center overflow-hidden",
+    "y": 0,
+    "height": 900,
+    "textPreview": "The platform for modern teams The platform to s h i p Your toolkit to stop configuring and start inn"
+  },
+  {
+    "index": 2,
+    "tag": "section",
+    "id": "features",
+    "cls": "relative py-24 lg:py-32",
+    "y": 900,
+    "height": 1808,
+    "textPreview": "Capabilities Everything you need. Nothing you don't. 01 Instant Deployment Push to production in sec"
+  },
+  {
+    "index": 3,
+    "tag": "section",
+    "id": "how-it-works",
+    "cls": "jsx-d0fb98a0b853be6f relative py-24 lg:py-32 bg-foreground text-background overflow-hidden",
+    "y": 2707.5,
+    "height": 1010,
+    "textPreview": "Process Three steps. Infinite possibilities. I Connect your tools Integrate with your existing stack"
+  },
+  {
+    "index": 4,
+    "tag": "section",
+    "id": null,
+    "cls": "relative py-24 lg:py-32 overflow-hidden",
+    "y": 3717,
+    "height": 820,
+    "textPreview": "Infrastructure Global by default. Deploy once, run everywhere. Our edge network spans 17 data center"
+  },
+  {
+    "index": 5,
+    "tag": "section",
+    "id": "studio",
+    "cls": "relative py-24 lg:py-32 border-y border-foreground/10",
+    "y": 4537,
+    "height": 999,
+    "textPreview": "Live metrics Performance you can measure. Live | 12:23:49 PM 0 API requests today 0.99% Uptime this "
+  },
+  {
+    "index": 6,
+    "tag": "section",
+    "id": "integrations",
+    "cls": "relative py-24 lg:py-32 overflow-hidden",
+    "y": 5535.5,
+    "height": 796,
+    "textPreview": "Integrations Works with everything you already use. 200+ pre-built integrations. Connect your entire"
+  },
+  {
+    "index": 7,
+    "tag": "section",
+    "id": "security",
+    "cls": "relative py-24 lg:py-32 bg-foreground/[0.02] overflow-hidden",
+    "y": 6331,
+    "height": 776,
+    "textPreview": "Security Trust is non-negotiable. Enterprise-grade security isn't optional. It's built into every la"
+  },
+  {
+    "index": 8,
+    "tag": "section",
+    "id": "developers",
+    "cls": "relative py-24 lg:py-32 overflow-hidden",
+    "y": 7107,
+    "height": 693,
+    "textPreview": "For developers Built by devs. For devs. A thoughtfully designed SDK that gets out of your way. Ship "
+  },
+  {
+    "index": 9,
+    "tag": "section",
+    "id": null,
+    "cls": "relative py-32 lg:py-40 border-t border-foreground/10 lg:pb-14",
+    "y": 7799.5,
+    "height": 898,
+    "textPreview": "WHAT PEOPLE SAY 02 / 04 \"The developer experience is unmatched. Our team's productivity has never be"
+  },
+  {
+    "index": 10,
+    "tag": "section",
+    "id": "pricing",
+    "cls": "relative py-32 lg:py-40 border-t border-foreground/10",
+    "y": 8697.5,
+    "height": 1492,
+    "textPreview": "PRICING Simple, transparent pricing Start free and scale as you grow. No hidden fees, no surprises. "
+  },
+  {
+    "index": 11,
+    "tag": "section",
+    "id": null,
+    "cls": "relative py-24 lg:py-32 overflow-hidden",
+    "y": 10189.5,
+    "height": 950,
+    "textPreview": "Ready to build something great? Join thousands of teams shipping faster with Optimus. Start free, sc"
+  },
+  {
+    "index": 12,
+    "tag": "footer",
+    "id": null,
+    "cls": "relative border-t border-foreground/10",
+    "y": 11139.5,
+    "height": 466,
+    "textPreview": "Optimus TM The platform for teams who ship. Build, deploy, and scale with unprecedented velocity. Tw"
+  }
+]

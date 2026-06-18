@@ -14,30 +14,30 @@ type Pptx = PptxGenJS;
 type Slide = PptxGenJS.Slide;
 type TextRun = PptxGenJS.TextProps;
 
-// Editorial / financial-report palette — cream + deep navy + restrained
+// Editorial / financial-report palette - cream + deep navy + restrained
 // status colours. Reads as a McKinsey / FT report rather than a dashboard.
 // Constant names (NAVY, CYAN, WHITE, …) kept for legacy call sites; their
 // meanings have inverted: NAVY is now the cream page bg, CYAN the navy
 // accent, WHITE the navy primary text.
-const NAVY = "F1EBDD"; // page background — warm cream (was dark)
-const CYAN = "1E3A8A"; // brand accent — deep royal navy (was lime/cyan)
-const WHITE = "0F1B3D"; // primary text — deep navy on cream
+const NAVY = "F1EBDD"; // page background - warm cream (was dark)
+const CYAN = "1E3A8A"; // brand accent - deep royal navy (was lime/cyan)
+const WHITE = "0F1B3D"; // primary text - deep navy on cream
 const WHITE_BRIGHT = "0F1B3D"; // alias for primary text
-const WHITE_MUTED = "4A5A7C"; // secondary text — muted navy-gray
-const WHITE_DIM = "8B95A8"; // dim — labels, footer
-const WHITE_FAINT = "8B95A8"; // faintest — page numbers
+const WHITE_MUTED = "4A5A7C"; // secondary text - muted navy-gray
+const WHITE_DIM = "8B95A8"; // dim - labels, footer
+const WHITE_FAINT = "8B95A8"; // faintest - page numbers
 const RED = "A03A3A"; // muted brick (was bright red)
 const RED_TEXT = "A03A3A";
 const AMBER = "B8843E"; // muted amber (was bright)
 const AMBER_DARK = "78350F";
 const BLUE_LINK = "1E3A8A";
-const SURFACE = "FAF6ED"; // lighter cream — card fills (new)
+const SURFACE = "FAF6ED"; // lighter cream - card fills (new)
 const BORDER = "D9D0BC"; // soft cream border (new)
-const SUCCESS = "1F6F4A"; // forest green — score-good (new)
+const SUCCESS = "1F6F4A"; // forest green - score-good (new)
 
 // Sylfaen ships with Windows by default and has full Georgian + Latin
 // glyph coverage. FiraGO/JetBrains Mono are our web fonts but they don't
-// ship with PowerPoint — Georgian text fell back to a font without the
+// ship with PowerPoint - Georgian text fell back to a font without the
 // glyphs and rendered as empty boxes for clients viewing the .pptx.
 const FONT = "Sylfaen";
 const FONT_MONO = "Sylfaen";
@@ -170,7 +170,7 @@ function addCoverSlide(
     fontFace: FONT_MONO,
   });
 
-  // Date pill — pinned to literal white bg + deep navy text so the
+  // Date pill - pinned to literal white bg + deep navy text so the
   // editorial-palette shuffle (WHITE / NAVY constants flipped meaning)
   // doesn't render the date invisible on the cover.
   slide.addShape("roundRect", {
@@ -198,7 +198,7 @@ function addCoverSlide(
   // Logo + "made by INFINITY SOLUTIONS" group, visually centered. pptxgenjs
   // has no flex layout, so we approximate the text width and offset the
   // logo to the left of it so the pair reads as one centered unit. Width
-  // estimate is loose — tweak `textWidth` if the agency name length changes.
+  // estimate is loose - tweak `textWidth` if the agency name length changes.
   const logoSize = 0.32;
   const gap = 0.15;
   const textWidth = 3.5;
@@ -728,7 +728,7 @@ function drawSerpVisual(
 
   if (isDescCheck && !value) {
     slide.addText(
-      "Description-ი არ არის — Google ავტომატურად აიღებს შემთხვევით ტექსტს.",
+      "Description-ი არ არის - Google ავტომატურად აიღებს შემთხვევით ტექსტს.",
       {
         x: cardX + 0.3,
         y: cardY + 1.95,
@@ -1478,9 +1478,9 @@ function drawHeadingsVisual(
   addWhiteCard(slide, cardX, cardY, cardW, cardH);
 
   const lines: TextRun[] = [
-    { text: "H1 — გვერდის სათაური", options: { color: "374151", breakLine: true } },
+    { text: "H1 - გვერდის სათაური", options: { color: "374151", breakLine: true } },
     { text: "    (H2 აკლია)", options: { color: "9CA3AF", breakLine: true } },
-    { text: "        ⚠ H4 პირდაპირ H1-ის ქვეშ — გადახტომა", options: { color: "D97706" } },
+    { text: "        ⚠ H4 პირდაპირ H1-ის ქვეშ - გადახტომა", options: { color: "D97706" } },
   ];
 
   slide.addText(lines, {
@@ -1969,7 +1969,7 @@ function addProblemPagesSlide(
         { x: 7.5, y: rowY, w: 1.5, h: 0.35, align: "right" }
       );
     } else {
-      slide.addText("—", {
+      slide.addText("-", {
         x: 7.5,
         y: rowY,
         w: 1.5,
@@ -1998,7 +1998,7 @@ function addProblemPagesSlide(
       : row.score >= 50
       ? AMBER
       : RED_TEXT;
-    slide.addText(row.error ? "—" : String(row.score), {
+    slide.addText(row.error ? "-" : String(row.score), {
       x: 11.7,
       y: rowY,
       w: 1.1,

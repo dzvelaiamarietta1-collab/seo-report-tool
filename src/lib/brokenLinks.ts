@@ -247,8 +247,23 @@ export async function checkLinkHealth(
   // together produced false positives on slow shared hosts (tabatea.ge:
   // every link reported as broken when the site is actually live, just
   // slow). The UI surfaces these as a separate `unchecked` bucket.
+  //
+  // Rate-limit + anti-bot statuses also go in `unchecked`, not `broken`:
+  //   429 Too Many Requests
+  //   503 Service Unavailable (often rate-limit on shared hosts)
+  //   508 Loop Detected (in practice — LiteSpeed/Apache anti-flood signal)
+  //   520-527 Cloudflare origin-protection codes
+  // A real browser opens these URLs fine — our parallel scanner just
+  // tripped the host's bot-protection. Reporting them as "broken" was
+  // a false positive on coridoor.ge (LiteSpeed) and similar hosts.
+  const isAmbiguousStatus = (s: number) =>
+    s === 429 || s === 503 || s === 508 || (s >= 520 && s <= 527);
   const unchecked = results.filter(
-    (r) => !r.ok && (r.error === "stage timed out" || r.status === 0)
+    (r) =>
+      !r.ok &&
+      (r.error === "stage timed out" ||
+        r.status === 0 ||
+        isAmbiguousStatus(r.status))
   );
   const broken = results.filter(
     (r) => !r.ok && !unchecked.includes(r)

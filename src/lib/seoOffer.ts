@@ -1,6 +1,6 @@
 import type { AnalysisResult, CategoryKey, CheckResult } from "./types";
 
-// SEO Offer — a client-facing service proposal generated from the audit
+// SEO Offer - a client-facing service proposal generated from the audit
 // data. It frames the audit findings as "what we'll fix" and pairs that
 // with an honest "what's on you" section so the client doesn't expect us
 // to magically conjure backlinks or run paid ads from this engagement.
@@ -10,8 +10,8 @@ export type ServicePriority = "critical" | "high" | "medium" | "low";
 export interface ServiceItem {
   // Short name shown as a bullet/heading.
   title: string;
-  // 1-2 sentence justification — why this matters for THIS site, based on
-  // the audit data. e.g. "Title-ი 92 სიმბოლოა — Google ჩამოაჭრის".
+  // 1-2 sentence justification - why this matters for THIS site, based on
+  // the audit data. e.g. "Title-ი 92 სიმბოლოა - Google ჩამოაჭრის".
   rationale: string;
   // Concrete deliverables this work produces.
   deliverables: string[];
@@ -33,7 +33,7 @@ export interface ServiceCategory {
 export interface ClientResponsibility {
   icon: string;
   title: string;
-  // Why this stays on the client side — important to manage expectations.
+  // Why this stays on the client side - important to manage expectations.
   reason: string;
   // What the client actually needs to do or decide.
   examples: string[];
@@ -60,14 +60,14 @@ export interface SeoOffer {
   generatedAt: string;
   currentScore: number;
   // 1-2 paragraph executive summary in Georgian, generated from score +
-  // top gaps. No AI required — template-driven.
+  // top gaps. No AI required - template-driven.
   executiveSummary: string;
   // Top 3 priority actions surfaced from the audit.
   topPriorities: string[];
   // What we deliver, grouped by category.
   services: ServiceCategory[];
   // What the client owns. This is the section the user explicitly
-  // asked for — making "ads/backlinks/PR is on you" crystal clear.
+  // asked for - making "ads/backlinks/PR is on you" crystal clear.
   clientResponsibilities: ClientResponsibility[];
   // 3/6/12-month roadmap.
   timeline: TimelinePhase[];
@@ -94,7 +94,7 @@ function statusToPriority(status: CheckResult["status"]): ServicePriority {
   return "low";
 }
 
-// Group audit failures/warnings by category. Pass checks are skipped —
+// Group audit failures/warnings by category. Pass checks are skipped -
 // we don't sell work for things the site already does well.
 function collectIssues(
   analysis: AnalysisResult
@@ -112,7 +112,7 @@ function collectIssues(
 }
 
 // Build dynamic service items from the audit issues. Each fail/warn
-// becomes a tailored "we'll fix X" item — concrete and traceable to
+// becomes a tailored "we'll fix X" item - concrete and traceable to
 // the audit, not boilerplate.
 function issuesToItems(issues: CheckResult[]): ServiceItem[] {
   return issues.slice(0, 6).map((issue) => ({
@@ -139,7 +139,7 @@ const STATIC_SERVICES: Record<
     icon: "Wrench",
     title: "ტექნიკური SEO",
     overview:
-      "საიტის ფუნდამენტი — Google-ის crawler-ი როგორ ხედავს თქვენს გვერდებს. ვაკეთებთ სრულ ტექნიკურ აუდიტს და ვუსწორებთ ყველაფერს HTML-დან server-ის headers-მდე.",
+      "საიტის ფუნდამენტი - Google-ის crawler-ი როგორ ხედავს თქვენს გვერდებს. ვაკეთებთ სრულ ტექნიკურ აუდიტს და ვუსწორებთ ყველაფერს HTML-დან server-ის headers-მდე.",
     staticDeliverables: [
       "HTTPS კონფიგურაცია + mixed content გასუფთავება",
       "robots.txt-ის შექმნა / გადახედვა",
@@ -162,7 +162,7 @@ const STATIC_SERVICES: Record<
       "H1-H6 იერარქიის გასწორება",
       "ALT ტექსტები ყველა სურათისთვის (accessibility + Image SEO)",
       "შიდა ბმულების სტრუქტურა (pillar + cluster მოდელი)",
-      "გვერდის content-ის optimization (კონტენტს თვით კლიენტი ქმნის — იხ. ქვემოთ)",
+      "გვერდის content-ის optimization (კონტენტს თვით კლიენტი ქმნის - იხ. ქვემოთ)",
     ],
   },
   schema: {
@@ -172,9 +172,9 @@ const STATIC_SERVICES: Record<
     overview:
       "JSON-LD schema Google-ისთვის გვერდის შინაარსის \"მთარგმნელია\". აქედან გამოდის Rich Results (FAQ, Recipe, Product cards) და AI Overviews-ში ციტირების შანსი.",
     staticDeliverables: [
-      "Organization schema — ბრენდის graph-ისთვის",
-      "BreadcrumbList — navigation",
-      "FAQPage / HowTo / Product / Article — საიტის ტიპის მიხედვით",
+      "Organization schema - ბრენდის graph-ისთვის",
+      "BreadcrumbList - navigation",
+      "FAQPage / HowTo / Product / Article - საიტის ტიპის მიხედვით",
       "Open Graph (og:title, og:description, og:image 1200×630)",
       "Twitter Card (summary_large_image)",
       "Google Rich Results Test-ით ვალიდაცია",
@@ -183,16 +183,16 @@ const STATIC_SERVICES: Record<
   performance: {
     id: "performance",
     icon: "Zap",
-    title: "Performance — Core Web Vitals",
+    title: "Performance - Core Web Vitals",
     overview:
-      "LCP, INP, CLS — Google-ის ოფიციალური რანკინგ ფაქტორებია 2021-დან. ნელი საიტი = დაბალი ranking + მაღალი bounce rate.",
+      "LCP, INP, CLS - Google-ის ოფიციალური რანკინგ ფაქტორებია 2021-დან. ნელი საიტი = დაბალი ranking + მაღალი bounce rate.",
     staticDeliverables: [
       "LCP optimization: სურათების preload, WebP/AVIF კონვერსია",
       "INP optimization: JavaScript bundle splitting, third-party სკრიპტების audit",
       "CLS გასწორება: image dimensions, font-display strategy",
       "Critical CSS extraction",
       "CDN setup-ის რეკომენდაცია (კლიენტი ხარჯავს)",
-      "PageSpeed Insights მონიტორინგი — ყოველთვიური",
+      "PageSpeed Insights მონიტორინგი - ყოველთვიური",
     ],
   },
   aiEra: {
@@ -200,13 +200,13 @@ const STATIC_SERVICES: Record<
     icon: "Bot",
     title: "AI-ერის SEO (2026)",
     overview:
-      "ChatGPT, Claude, Perplexity და Google AI Overviews — ახალი ძიების landscape-ი. ვამზადებთ თქვენს საიტს AI კრაულერებისთვის, რომ ბრენდი მათ პასუხებში გამოჩნდეს.",
+      "ChatGPT, Claude, Perplexity და Google AI Overviews - ახალი ძიების landscape-ი. ვამზადებთ თქვენს საიტს AI კრაულერებისთვის, რომ ბრენდი მათ პასუხებში გამოჩნდეს.",
     staticDeliverables: [
       "llms.txt სტანდარტის დანერგვა (2026 ახალი)",
-      "FAQ Schema — AI Overviews-ში ციტირების სიგნალი",
+      "FAQ Schema - AI Overviews-ში ციტირების სიგნალი",
       "BLUF (Bottom Line Up Front) კონტენტის სტრუქტურა",
-      "SSR/SSG ვალიდაცია — AI კრაულერები JS-ს არ ასრულებენ",
-      "Organization schema sameAs-ით — ბრენდის graph",
+      "SSR/SSG ვალიდაცია - AI კრაულერები JS-ს არ ასრულებენ",
+      "Organization schema sameAs-ით - ბრენდის graph",
       "robots.txt-ში AI bot rules (GPTBot, ClaudeBot, etc.)",
     ],
   },
@@ -228,13 +228,13 @@ const STATIC_SERVICES: Record<
     icon: "Lightbulb",
     title: "Content Strategy Consulting",
     overview:
-      "კონტენტს თვით კლიენტი ქმნის (იხ. ქვემოთ), მაგრამ ჩვენ ვაძლევთ strategy-ის ჩარჩოს — რომელ თემებზე, რა keyword-ებით, რა სიგრძით.",
+      "კონტენტს თვით კლიენტი ქმნის (იხ. ქვემოთ), მაგრამ ჩვენ ვაძლევთ strategy-ის ჩარჩოს - რომელ თემებზე, რა keyword-ებით, რა სიგრძით.",
     staticDeliverables: [
-      "Keyword research — სამიზნე keywords-ის სია",
-      "Content gap analysis — რა აკლია კონკურენტებთან შედარებით",
-      "Topic clusters — pillar + cluster მოდელის რუკა",
+      "Keyword research - სამიზნე keywords-ის სია",
+      "Content gap analysis - რა აკლია კონკურენტებთან შედარებით",
+      "Topic clusters - pillar + cluster მოდელის რუკა",
       "Content brief templates ცალკეული სტატიისთვის",
-      "User intent mapping — keyword-ის უკან რა აქვს მომხმარებელს",
+      "User intent mapping - keyword-ის უკან რა აქვს მომხმარებელს",
     ],
   },
   monitoring: {
@@ -242,7 +242,7 @@ const STATIC_SERVICES: Record<
     icon: "Target",
     title: "Monitoring & Reporting",
     overview:
-      "SEO გრძელვადიანი მუშაობაა — შედეგი 3-6 თვეში ჩანს. ვამზადებთ ყოველთვიურ ანგარიშებს და ვცვლით სტრატეგიას მონაცემების მიხედვით.",
+      "SEO გრძელვადიანი მუშაობაა - შედეგი 3-6 თვეში ჩანს. ვამზადებთ ყოველთვიურ ანგარიშებს და ვცვლით სტრატეგიას მონაცემების მიხედვით.",
     staticDeliverables: [
       "Google Search Console setup + ვერიფიკაცია",
       "Google Analytics 4 setup (თუ კლიენტი არ ჰქონია)",
@@ -271,7 +271,7 @@ const CLIENT_RESPONSIBILITIES: ClientResponsibility[] = [
     icon: "PenTool",
     title: "კონტენტის შექმნა",
     reason:
-      "კონტენტი თქვენი ბრენდის ცოდნა და ხედვაა — ვერც AI ვერც გარე სპეციალისტი ვერ შექმნის ისეთს, როგორც თქვენ. ჩვენ ვაძლევთ structure-ს და briefs-ს, კონტენტს თვით უნდა დაწეროთ ან თარგმნოთ.",
+      "კონტენტი თქვენი ბრენდის ცოდნა და ხედვაა - ვერც AI ვერც გარე სპეციალისტი ვერ შექმნის ისეთს, როგორც თქვენ. ჩვენ ვაძლევთ structure-ს და briefs-ს, კონტენტს თვით უნდა დაწეროთ ან თარგმნოთ.",
     examples: [
       "Blog სტატიები (1500+ სიტყვა საფუძვლიანი თემებისთვის)",
       "Product აღწერები / სერვისების გვერდები",
@@ -286,7 +286,7 @@ const CLIENT_RESPONSIBILITIES: ClientResponsibility[] = [
     icon: "Users",
     title: "Brand Outreach & PR",
     reason:
-      "ბრენდის ცნობადობა გრძელვადიანი მუშაობაა — ჟურნალისტებთან, ბლოგერებთან, industry partners-თან კავშირები. ეს თქვენი ბრენდის voice და სანდოობაა — ვერ outsourcing-ით ხდება.",
+      "ბრენდის ცნობადობა გრძელვადიანი მუშაობაა - ჟურნალისტებთან, ბლოგერებთან, industry partners-თან კავშირები. ეს თქვენი ბრენდის voice და სანდოობაა - ვერ outsourcing-ით ხდება.",
     examples: [
       "Industry-ის ბლოგერებთან კავშირები",
       "PR სტატიები ადგილობრივ მედიაში",
@@ -294,7 +294,7 @@ const CLIENT_RESPONSIBILITIES: ClientResponsibility[] = [
       "Partner-ებთან მცირე kollaboraciebi (cross-promotion)",
     ],
     ourSupport:
-      "ვაძლევთ რეკომენდაციებს ვის უნდა ეცადოს — relevant ბლოგერების / publications-ის სია.",
+      "ვაძლევთ რეკომენდაციებს ვის უნდა ეცადოს - relevant ბლოგერების / publications-ის სია.",
   },
   {
     icon: "ExternalLink",
@@ -315,22 +315,22 @@ const CLIENT_RESPONSIBILITIES: ClientResponsibility[] = [
     icon: "Megaphone",
     title: "Paid Advertising (Google Ads, Meta, etc.)",
     reason:
-      "Ads-ის ბიუჯეტი, ROI-ის ციფრები, target audience — ბიზნესის გადაწყვეტილებებია. SEO ორგანულ traffic-ს ეხება; ფასიანი ads ცალკე channel-ია.",
+      "Ads-ის ბიუჯეტი, ROI-ის ციფრები, target audience - ბიზნესის გადაწყვეტილებებია. SEO ორგანულ traffic-ს ეხება; ფასიანი ads ცალკე channel-ია.",
     examples: [
       "Google Ads campaigns (Search, Display, Shopping)",
       "Meta Ads (Facebook, Instagram)",
       "LinkedIn Ads B2B-სთვის",
       "ბიუჯეტის გადაწყვეტა და ROI tracking",
-      "ad creatives — სათაურები, banners, video",
+      "ad creatives - სათაურები, banners, video",
     ],
     ourSupport:
-      "ვაკავშირებთ SEO და SEM strategy-ს — რომელ keyword-ებზე ღირს paid-ი იქამდე, სანამ organic ranking-ი მოვა.",
+      "ვაკავშირებთ SEO და SEM strategy-ს - რომელ keyword-ებზე ღირს paid-ი იქამდე, სანამ organic ranking-ი მოვა.",
   },
   {
     icon: "Star",
     title: "Customer Reviews & Reputation",
     reason:
-      "Google Business Profile reviews, Trustpilot, industry directories — მუშტრები წერენ, არა SEO სპეციალისტი. Review-ების ხარისხი ლოკალური SEO-ისთვის კრიტიკულია.",
+      "Google Business Profile reviews, Trustpilot, industry directories - მუშტრები წერენ, არა SEO სპეციალისტი. Review-ების ხარისხი ლოკალური SEO-ისთვის კრიტიკულია.",
     examples: [
       "Google Business Profile-ის update და reviews-ის წახალისება",
       "Trustpilot / Facebook reviews-ის მართვა",
@@ -344,7 +344,7 @@ const CLIENT_RESPONSIBILITIES: ClientResponsibility[] = [
     icon: "Building",
     title: "ბიზნეს გადაწყვეტილებები",
     reason:
-      "რა პროდუქცია/სერვისს გაყიდით, რა ფასი, რა საბაზრო პოზიცია — ბიზნესის strategy-ია. SEO ეხმარება უკვე გადაწყვეტილ ბიზნესს მეტი ხილვადობის მიღწევაში.",
+      "რა პროდუქცია/სერვისს გაყიდით, რა ფასი, რა საბაზრო პოზიცია - ბიზნესის strategy-ია. SEO ეხმარება უკვე გადაწყვეტილ ბიზნესს მეტი ხილვადობის მიღწევაში.",
     examples: [
       "Service offering / pricing",
       "Target market segment",
@@ -362,7 +362,7 @@ const STANDARD_TIMELINE: TimelinePhase[] = [
     title: "Audit + Technical Foundation",
     items: [
       "სრული SEO აუდიტი (ეს რაც გავაკეთეთ)",
-      "ტექნიკური ფიქსები — robots.txt, sitemap, canonical, HTTPS, headers",
+      "ტექნიკური ფიქსები - robots.txt, sitemap, canonical, HTTPS, headers",
       "Google Search Console + Analytics 4 setup",
       "Initial keyword research",
     ],
@@ -425,7 +425,7 @@ function buildOutcomes(currentScore: number): ExpectedOutcome[] {
       timeframe: "6-12 თვე",
     },
     {
-      metric: "Core Web Vitals — სრულად მწვანე",
+      metric: "Core Web Vitals - სრულად მწვანე",
       current: "მერყევი",
       target: "ყველა LCP/INP/CLS მწვანე ზონაში",
       timeframe: "2-3 თვე",
@@ -442,14 +442,14 @@ function buildOutcomes(currentScore: number): ExpectedOutcome[] {
 // ── Exclusions (what's NOT in this offer) ──────────────────────────────
 
 const STANDARD_EXCLUSIONS: string[] = [
-  "კონტენტის წერა (blog სტატიები, product copy) — separate retainer სჭირდება ან კლიენტი თვით ქმნის",
-  "Paid advertising management (Google Ads, Meta Ads) — ცალკე სერვისია",
-  "ვებსაიტის development / რედიზაინი — საჭიროების შემთხვევაში გვაქვს partner-ები",
+  "კონტენტის წერა (blog სტატიები, product copy) - separate retainer სჭირდება ან კლიენტი თვით ქმნის",
+  "Paid advertising management (Google Ads, Meta Ads) - ცალკე სერვისია",
+  "ვებსაიტის development / რედიზაინი - საჭიროების შემთხვევაში გვაქვს partner-ები",
   "Email marketing კამპანიები",
   "Social media management",
   "Direct outreach (PR, ბლოგერებთან cold contact)",
-  "Reputation management — Crisis PR ცალკე ექსპერტიზაა",
-  "Translation / localization — ცალკე ენაში გაცემული გვერდები",
+  "Reputation management - Crisis PR ცალკე ექსპერტიზაა",
+  "Translation / localization - ცალკე ენაში გაცემული გვერდები",
 ];
 
 // ── Executive Summary template ─────────────────────────────────────────
@@ -476,7 +476,7 @@ function buildExecutiveSummary(
           .join(", ")
       : "ცალკეული fine-tuning";
 
-  return `თქვენი საიტი — ${hostname} — ტექნიკურად ${standing}ა (${score}/100 ქულა). მთავარი გასაუმჯობესებელი წერტილებია: ${focus}. ეს შეთავაზება გადახედავს როგორ ვაუმჯობესებთ თქვენი საიტის ხილვადობას Google-სა და AI ძიებაში მომდევნო 12 თვის განმავლობაში — რას ჩვენ ვაკეთებთ და რა თქვენი ვალდებულებაა.`;
+  return `თქვენი საიტი - ${hostname} - ტექნიკურად ${standing}ა (${score}/100 ქულა). მთავარი გასაუმჯობესებელი წერტილებია: ${focus}. ეს შეთავაზება გადახედავს როგორ ვაუმჯობესებთ თქვენი საიტის ხილვადობას Google-სა და AI ძიებაში მომდევნო 12 თვის განმავლობაში - რას ჩვენ ვაკეთებთ და რა თქვენი ვალდებულებაა.`;
 }
 
 function topPriorityList(issues: Map<CategoryKey, CheckResult[]>): string[] {
@@ -494,7 +494,7 @@ function topPriorityList(issues: Map<CategoryKey, CheckResult[]>): string[] {
   for (const c of all) {
     if (seen.has(c.label)) continue;
     seen.add(c.label);
-    out.push(`${c.label} — ${c.message}`);
+    out.push(`${c.label} - ${c.message}`);
     if (out.length >= 3) break;
   }
   return out;
@@ -522,7 +522,7 @@ export function buildSeoOffer(
   const services: ServiceCategory[] = CATEGORY_SERVICE_ORDER.map((id) => {
     const base = STATIC_SERVICES[id];
     // Audit-driven items come from the matching analysis category. For
-    // content-strategy and monitoring we have no audit data — items stay
+    // content-strategy and monitoring we have no audit data - items stay
     // empty and the static deliverables carry the section.
     let items: ServiceItem[] = [];
     if (id !== "content-strategy" && id !== "monitoring") {

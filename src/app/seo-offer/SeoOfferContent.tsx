@@ -228,7 +228,7 @@ export default function SeoOfferContent() {
           : null);
       if (!raw) {
         setError(
-          "ანალიზი ვერ მოიძებნა — ჯერ შეიყვანე URL მთავარ გვერდზე და გაუშვი ანალიზი."
+          "ანალიზი ვერ მოიძებნა - ჯერ შეიყვანე URL მთავარ გვერდზე და გაუშვი ანალიზი."
         );
         return;
       }
@@ -333,7 +333,7 @@ export default function SeoOfferContent() {
         {offer.topPriorities.length > 0 && (
           <div className="rounded-lg border border-accent/30 bg-accent-soft/30 px-5 py-4">
             <p className="text-[11px] font-mono uppercase tracking-wider text-accent mb-2">
-              🎯 პრიორიტეტი #1 — ეს უნდა გავაკეთოთ პირველად
+              🎯 პრიორიტეტი #1 - ეს უნდა გავაკეთოთ პირველად
             </p>
             <ul className="space-y-1.5">
               {offer.topPriorities.map((p, i) => (
@@ -352,7 +352,7 @@ export default function SeoOfferContent() {
         )}
       </section>
 
-      {/* Services — what WE do */}
+      {/* Services - what WE do */}
       <section className="mb-10">
         <div className="mb-5">
           <p className="text-[11px] font-mono uppercase tracking-[0.3em] text-success mb-2">
@@ -364,7 +364,7 @@ export default function SeoOfferContent() {
           <p className="text-base text-foreground-muted leading-relaxed">
             ქვემოთ ჩამოწერილია სრული ტექნიკური SEO ექსპერტიზა, რომელსაც{" "}
             {BRAND.agency} მოგაწვდით. ცალკეული ფიქსები გენერირდება თქვენი
-            საიტის რეალური audit-ის შედეგებიდან — გენერიკი არ არის.
+            საიტის რეალური audit-ის შედეგებიდან - გენერიკი არ არის.
           </p>
         </div>
         {offer.services.map((service) => (
@@ -383,7 +383,7 @@ export default function SeoOfferContent() {
           </h2>
           <p className="text-base text-foreground-muted leading-relaxed">
             ეს ნაწილები <strong className="text-foreground">თქვენი</strong>{" "}
-            ვალდებულებაა — SEO სპეციალისტი არ ფარავს ბრენდის შინაარსს,
+            ვალდებულებაა - SEO სპეციალისტი არ ფარავს ბრენდის შინაარსს,
             partnership-ებს, ფასიან რეკლამას ან customer reviews-ს. ჩვენ
             ვაძლევთ რჩევებს და frameworks-ს, მაგრამ მფლობელი თქვენ ხართ.
           </p>
@@ -403,8 +403,8 @@ export default function SeoOfferContent() {
             12-თვიანი Roadmap
           </h2>
           <p className="text-base text-foreground-muted leading-relaxed">
-            SEO გრძელვადიანი მუშაობაა — ხელშესახები შედეგი 3-6 თვეში ჩანს.
-            ქვემოთ — ფაზური გეგმა.
+            SEO გრძელვადიანი მუშაობაა - ხელშესახები შედეგი 3-6 თვეში ჩანს.
+            ქვემოთ - ფაზური გეგმა.
           </p>
         </div>
         <div className="grid gap-3 md:grid-cols-2">
@@ -502,7 +502,7 @@ export default function SeoOfferContent() {
             შეთავაზების ფარგლები
           </h2>
           <p className="text-base text-foreground-muted leading-relaxed">
-            გამჭვირვალე ფარგლები — რომ ცხადი იყოს რა შემოდის ამ შეთავაზებაში
+            გამჭვირვალე ფარგლები - რომ ცხადი იყოს რა შემოდის ამ შეთავაზებაში
             და რა არა.
           </p>
         </div>

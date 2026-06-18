@@ -3,7 +3,7 @@ import type { CheerioAPI } from "cheerio";
 // Schema.org Organization subtype tree (most common ~150 types).
 // Anything in this set means "is an Organization" per the schema.org
 // hierarchy. Source: https://schema.org/Organization (subtypes are
-// transitive — FurnitureStore is-a Store is-a LocalBusiness is-a
+// transitive - FurnitureStore is-a Store is-a LocalBusiness is-a
 // Organization, so listing FurnitureStore alone is enough).
 const ORGANIZATION_TYPES: ReadonlySet<string> = new Set([
   "Organization",
@@ -42,7 +42,7 @@ const ORGANIZATION_TYPES: ReadonlySet<string> = new Set([
   "TheaterGroup",
   // SportsOrganization subtypes
   "SportsTeam",
-  // LocalBusiness — major subtypes
+  // LocalBusiness - major subtypes
   "AnimalShelter",
   "ArchiveOrganization",
   "AutomotiveBusiness",
@@ -227,7 +227,7 @@ export function* walkNodes(payload: unknown): Generator<Record<string, unknown>>
 }
 
 export interface ParsedSchemaInventory {
-  // Every distinct @type observed (joined for arrays — kept as raw labels)
+  // Every distinct @type observed (joined for arrays - kept as raw labels)
   types: string[];
   // Whether at least one node matches Organization / FAQPage
   hasOrganization: boolean;
@@ -239,14 +239,14 @@ export interface ParsedSchemaInventory {
   // Whether structured data exists at all (JSON-LD OR microdata OR RDFa)
   anyStructuredData: boolean;
   // First Organization-like node (for field validation in analyzeAiEra).
-  // Microdata sites have this null — we can't extract fields without
+  // Microdata sites have this null - we can't extract fields without
   // walking itemprop attributes, which is out of scope for now.
   organizationNode: Record<string, unknown> | null;
 }
 
 export interface OrganizationFieldIssues {
-  missingRequired: string[]; // name, url — Google requires these
-  missingRecommended: string[]; // logo, sameAs, contactPoint — improves Knowledge Graph
+  missingRequired: string[]; // name, url - Google requires these
+  missingRecommended: string[]; // logo, sameAs, contactPoint - improves Knowledge Graph
 }
 
 export function validateOrganizationFields(
@@ -296,16 +296,16 @@ export interface SchemaFieldIssues {
   invalidCurrencies: SchemaFieldIssue[];
 }
 
-// Loose E.164-ish: optional +, then 7–15 digits with allowed separators.
+// Loose E.164-ish: optional +, then 7-15 digits with allowed separators.
 // We don't enforce full E.164 because Google itself accepts national
-// formats — we just reject obviously malformed entries like "555-CALL".
+// formats - we just reject obviously malformed entries like "555-CALL".
 const PHONE_OK = /^[+]?[\s\d\-().  ]{7,30}$/;
 const PHONE_DIGIT_COUNT = /(?:\d.*){7,15}/;
 const EMAIL_OK = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const ISO_4217 = /^[A-Z]{3}$/;
 
 function isUrlOk(v: string): boolean {
-  // mailto:/tel: aren't really URLs in the http sense — Schema accepts
+  // mailto:/tel: aren't really URLs in the http sense - Schema accepts
   // them in some contexts but they belong in their own fields.
   if (/^(mailto:|tel:)/i.test(v)) return false;
   try {
@@ -390,14 +390,14 @@ export function validateSchemaFields(
             type: typeLabel,
             value: trimmed,
             reason:
-              "ფორმატი არ ჯდება — Google იღებს E.164 ან ეროვნულ ფორმატებს. შემოწმე ციფრების რაოდენობა (7-15) და სიმბოლოები.",
+              "ფორმატი არ ჯდება - Google იღებს E.164 ან ეროვნულ ფორმატებს. შემოწმე ციფრების რაოდენობა (7-15) და სიმბოლოები.",
           });
         }
       }
       for (const hit of collectFieldStrings(node, EMAIL_KEYS)) {
         const trimmed = hit.value.trim();
         if (!trimmed) continue;
-        // schema spec lets email be "mailto:foo@bar.com" — strip prefix.
+        // schema spec lets email be "mailto:foo@bar.com" - strip prefix.
         const value = trimmed.replace(/^mailto:/i, "");
         if (!EMAIL_OK.test(value)) {
           out.invalidEmails.push({
@@ -417,7 +417,7 @@ export function validateSchemaFields(
             type: typeLabel,
             value: trimmed,
             reason:
-              "URL უნდა იყოს სრული http:// ან https:// — relative path ან tel:/mailto: Google-ისთვის არ ეთვლება valid.",
+              "URL უნდა იყოს სრული http:// ან https:// - relative path ან tel:/mailto: Google-ისთვის არ ეთვლება valid.",
           });
         }
       }

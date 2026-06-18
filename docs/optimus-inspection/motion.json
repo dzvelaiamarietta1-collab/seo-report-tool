@@ -1,0 +1,71 @@
+{
+  "keyframes": [
+    {
+      "name": "spin",
+      "cssText": "@keyframes spin { \n  100% { transform: rotate(360deg); }\n}"
+    },
+    {
+      "name": "pulse",
+      "cssText": "@keyframes pulse { \n  50% { opacity: 0.5; }\n}"
+    },
+    {
+      "name": "enter",
+      "cssText": "@keyframes enter { \n  0% { opacity: var(--tw-enter-opacity,1); transform: translate3d(var(--tw-enter-translate-x,0),var(--tw-enter-translate-y,0),0)scale3d(var(--tw-enter-scale,1),var(--tw-enter-scale,1),var(--tw-enter-scale,1))rotate(var(--tw-enter-rotate,0)); }\n}"
+    },
+    {
+      "name": "exit",
+      "cssText": "@keyframes exit { \n  100% { opacity: var(--tw-exit-opacity,1); transform: translate3d(var(--tw-exit-translate-x,0),var(--tw-exit-translate-y,0),0)scale3d(var(--tw-exit-scale,1),var(--tw-exit-scale,1),var(--tw-exit-scale,1))rotate(var(--tw-exit-rotate,0)); }\n}"
+    },
+    {
+      "name": "accordion-down",
+      "cssText": "@keyframes accordion-down { \n  0% { height: 0px; }\n  100% { height: var(--radix-accordion-content-height,var(--bits-accordion-content-height,var(--reka-accordion-content-height,var(--kb-accordion-content-height,auto)))); }\n}"
+    },
+    {
+      "name": "accordion-up",
+      "cssText": "@keyframes accordion-up { \n  0% { height: var(--radix-accordion-content-height,var(--bits-accordion-content-height,var(--reka-accordion-content-height,var(--kb-accordion-content-height,auto)))); }\n  100% { height: 0px; }\n}"
+    },
+    {
+      "name": "caret-blink",
+      "cssText": "@keyframes caret-blink { \n  0%, 70%, 100% { opacity: 1; }\n  20%, 50% { opacity: 0; }\n}"
+    },
+    {
+      "name": "progress",
+      "cssText": "@keyframes progress { \n  0% { width: 0%; }\n  100% { width: 100%; }\n}"
+    },
+    {
+      "name": "lineReveal",
+      "cssText": "@keyframes lineReveal { \n  100% { opacity: 1; transform: translate(0px); }\n}"
+    },
+    {
+      "name": "charReveal",
+      "cssText": "@keyframes charReveal { \n  100% { opacity: 1; filter: blur(); }\n}"
+    },
+    {
+      "name": "devLineReveal",
+      "cssText": "@keyframes devLineReveal { \n  100% { opacity: 1; transform: translateX(0px); }\n}"
+    },
+    {
+      "name": "devCharReveal",
+      "cssText": "@keyframes devCharReveal { \n  100% { opacity: 1; filter: blur(0px); }\n}"
+    }
+  ],
+  "transitions": [],
+  "animations": [
+    {
+      "selector": ".code-line-reveal.jsx-d0fb98a0b853be6f",
+      "value": "0.4s cubic-bezier(0.22, 1, 0.36, 1) 0s 1 normal forwards running lineReveal"
+    },
+    {
+      "selector": ".code-char-reveal.jsx-d0fb98a0b853be6f",
+      "value": "0.3s cubic-bezier(0.22, 1, 0.36, 1) 0s 1 normal forwards running charReveal"
+    },
+    {
+      "selector": ".dev-code-line",
+      "value": "0.4s cubic-bezier(0.22, 1, 0.36, 1) 0s 1 normal forwards running devLineReveal"
+    },
+    {
+      "selector": ".dev-code-char",
+      "value": "0.3s cubic-bezier(0.22, 1, 0.36, 1) 0s 1 normal forwards running devCharReveal"
+    }
+  ]
+}

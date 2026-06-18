@@ -75,7 +75,7 @@ function emptySite(url: string): SiteState {
 
 // Streams /api/analyze for one URL and invokes onUpdate after each event so
 // the parent can re-render progress. Resolves once the stream closes (with
-// the final SiteState). Errors don't throw — they're attached to the state.
+// the final SiteState). Errors don't throw - they're attached to the state.
 async function analyzeOneSite(
   url: string,
   signal: AbortSignal,
@@ -170,7 +170,7 @@ async function analyzeOneSite(
   }
 
   // Pagespeed runs in a separate route and adds the performance category.
-  // Fire it after the main stream finishes; failure here is non-fatal —
+  // Fire it after the main stream finishes; failure here is non-fatal -
   // we still show the rest of the audit.
   try {
     const psRes = await fetch(
@@ -191,7 +191,7 @@ async function analyzeOneSite(
       }
     }
   } catch {
-    // ignore — performance category just won't appear
+    // ignore - performance category just won't appear
   }
 
   onUpdate({ status: "done", progress: 100 });
@@ -408,7 +408,7 @@ function MatrixTable({ sites }: { sites: SiteState[] }) {
                           key={i}
                           className="text-center px-3 py-2.5 text-foreground-subtle"
                         >
-                          —
+                          -
                         </td>
                       );
                     }
@@ -469,7 +469,7 @@ function GapsSection({
     return (
       <div className="rounded-lg border border-success/30 bg-success/5 p-4">
         <p className="text-sm text-foreground">
-          🎉 ტექნიკურად კონკურენტებზე უპირატესობა გაქვთ — არცერთი მათგანი არ
+          🎉 ტექნიკურად კონკურენტებზე უპირატესობა გაქვთ - არცერთი მათგანი არ
           აღემატება არცერთ შემოწმებაში.
         </p>
       </div>
@@ -481,10 +481,10 @@ function GapsSection({
       <div className="px-4 py-3 border-b border-border bg-surface">
         <h2 className="text-sm font-medium text-foreground inline-flex items-center gap-2">
           <Target className="w-4 h-4 text-warning" />
-          რატომ კონკურენტები წინ — ტექნიკური სხვაობები
+          რატომ კონკურენტები წინ - ტექნიკური სხვაობები
         </h2>
         <p className="text-[11px] text-foreground-muted mt-0.5">
-          ფაქტებზე დაფუძნებული შედარება — რას აკეთებენ ისინი, რასაც თქვენ არ
+          ფაქტებზე დაფუძნებული შედარება - რას აკეთებენ ისინი, რასაც თქვენ არ
           აკეთებთ
         </p>
       </div>
@@ -555,7 +555,7 @@ function GapsSection({
                     <div className="flex-1 min-w-0">
                       <p className="text-foreground">
                         <span className="font-medium">{adv.checkLabel}</span>
-                        <span className="text-foreground-muted"> — </span>
+                        <span className="text-foreground-muted"> - </span>
                         <span className="text-foreground-muted">
                           {adv.competitorMessage}
                         </span>
@@ -576,7 +576,7 @@ function SelfIssuesSection({ sites }: { sites: SiteState[] }) {
   const report = useMemo(() => analyzeGaps(sites), [sites]);
   if (report.selfIssues.length === 0) return null;
 
-  // Group by category for readability — many issues without grouping is
+  // Group by category for readability - many issues without grouping is
   // overwhelming when the list runs long.
   const byCategory = new Map<CategoryKey, typeof report.selfIssues>();
   for (const issue of report.selfIssues) {
@@ -605,7 +605,7 @@ function SelfIssuesSection({ sites }: { sites: SiteState[] }) {
           {warnCount > 0 && (
             <span className="text-warning font-medium">{warnCount} warn</span>
           )}
-          {" "}— ანოტირებული "რამდენ კონკურენტს აქვს იგივე პრობლემა"
+          {" "}- ანოტირებული "რამდენ კონკურენტს აქვს იგივე პრობლემა"
         </p>
       </div>
       <div className="divide-y divide-border">
@@ -618,8 +618,8 @@ function SelfIssuesSection({ sites }: { sites: SiteState[] }) {
               </p>
               <ul className="space-y-1.5">
                 {issues.map((issue, i) => {
-                  // "Alone" means only you fail among competitors — most urgent.
-                  // "Industry" means everyone fails — least urgent in comparison,
+                  // "Alone" means only you fail among competitors - most urgent.
+                  // "Industry" means everyone fails - least urgent in comparison,
                   // but still a real fix worth doing.
                   const isAlone =
                     issue.competitorsPassing > 0 &&
@@ -678,7 +678,7 @@ function ActionPlanSection({ sites }: { sites: SiteState[] }) {
   const report = useMemo(() => analyzeGaps(sites), [sites]);
   if (report.recommendations.length === 0) return null;
 
-  // Top 8 — enough to be actionable, not overwhelming.
+  // Top 8 - enough to be actionable, not overwhelming.
   const top = report.recommendations.slice(0, 8);
 
   return (
@@ -686,7 +686,7 @@ function ActionPlanSection({ sites }: { sites: SiteState[] }) {
       <div className="px-4 py-3 border-b border-border bg-surface">
         <h2 className="text-sm font-medium text-foreground inline-flex items-center gap-2">
           <Zap className="w-4 h-4 text-accent" />
-          აქცია-პლანი — რა გავაკეთო კონკურენტებზე გასაცილებლად
+          აქცია-პლანი - რა გავაკეთო კონკურენტებზე გასაცილებლად
         </h2>
         <p className="text-[11px] text-foreground-muted mt-0.5">
           პრიორიტეტი მოწესრიგებულია severity-სა და კონკურენტთა ფარგლების
@@ -916,8 +916,8 @@ export default function CompareContent() {
           <section className="rounded-lg border border-border bg-surface/40 px-4 py-3">
             <p className="text-[11px] text-foreground-muted leading-relaxed">
               📊 ეს არის <strong className="text-foreground">ტექნიკური</strong>{" "}
-              შედარება — HTML სტრუქტურა, Performance, Schema. ვერ ვაჩვენებთ
-              backlinks-ს, keyword rankings-ს ან traffic-ს — ეს მონაცემები
+              შედარება - HTML სტრუქტურა, Performance, Schema. ვერ ვაჩვენებთ
+              backlinks-ს, keyword rankings-ს ან traffic-ს - ეს მონაცემები
               ფასიან API-ებს ექვემდებარება (Ahrefs, Moz, SEMrush).
             </p>
           </section>

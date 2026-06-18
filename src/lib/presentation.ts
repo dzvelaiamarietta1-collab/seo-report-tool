@@ -174,7 +174,7 @@ export const SEO_SERVICES: ServiceBlock[] = [
       "ვებსაიტის და კონკურენტების ბექლინქ პროფილის ანალიზი",
       "ბექლინქ სტრატეგიის დაგეგმვა",
       "ყოველთვიურად მინიმუმ 3 ბექლინქის მოპოვება უცხო ლისტინგ საიტებიდან",
-      "დამკვეთის ფინანსური მხარის შემთხვევაში — ყოველთვიურად 2 PR სტატიის მომზადება და განთავსება რელევანტურ პლატფორმაზე",
+      "დამკვეთის ფინანსური მხარის შემთხვევაში - ყოველთვიურად 2 PR სტატიის მომზადება და განთავსება რელევანტურ პლატფორმაზე",
       "Domain Authority-ს მუდმივი მონიტორინგი",
       "ბრენდის ნახსენებების (mentions) მონიტორინგი",
     ],
@@ -218,10 +218,10 @@ export type PresentationSlide =
       logoUrl?: string;
       // High-res discovered logo (apple-touch-icon, Organization schema,
       // body <img class="logo">). Sits between logoUrl and faviconUrl in
-      // the cover-slide fallback chain — beats a tiny favicon when og:image
+      // the cover-slide fallback chain - beats a tiny favicon when og:image
       // is missing or breaks at render time.
       siteLogoUrl?: string;
-      // Site favicon — used as a final fallback in the cover slide when
+      // Site favicon - used as a final fallback in the cover slide when
       // both logoUrl and siteLogoUrl fail to load.
       faviconUrl?: string;
     }
@@ -328,7 +328,7 @@ interface RecommendationDef {
 
 const RECOMMENDATION_DEFS: RecommendationDef[] = [
   {
-    title: "ტექნიკური საფუძველი ჯერ — შემდეგ კონტენტი",
+    title: "ტექნიკური საფუძველი ჯერ - შემდეგ კონტენტი",
     text:
       "იმისათვის, რომ გვერდულივი SEO-მ ეფექტურად იმუშაოს, აუცილებლად უნდა გაიმართოს ვებსაიტის ტექნიკური საფუძველი. SEO სპეციალისტის ხელმძღვანელობით და დეველოპერების გუნდის ჩართულობით უნდა გასწორდეს ყველა ტექნიკური ხარვეზი, რომელიც ამ დოკუმენტში იხილეთ.",
     condition: (problems) => problems.some((p) => p.group === "technical"),
@@ -344,14 +344,14 @@ const RECOMMENDATION_DEFS: RecommendationDef[] = [
       "გამომდინარე იქედან, რომ ვებსაიტს Google-ის საძიებო სისტემაში დაბალი ავტორიტეტი აქვს, კონკურენციაში მაღალი ავტორიტეტის მქონე საიტებთან გასათანასწორებლად სასურველია ყოველთვიურად სხვადასხვა მედიაპლატფორმებზე გამოქვეყნდეს სტატიები ბრენდის ხილვადობის გაზრდისთვის.",
   },
   {
-    title: "Google Business Profile — ლოკალური ხილვადობა",
+    title: "Google Business Profile - ლოკალური ხილვადობა",
     text:
       "სასურველია SEO სპეციალისტის მიერ შეიქმნას და დაოპტიმიზდეს Google Business Profile, რომელიც მომხმარებელს ფიზიკურ მისამართამდე ნავიგაციას გაუმარტივებს და Google Maps-ში გამოჩენის შანსებს გაზრდის. ლოკალური ბიზნესისთვის ეს ერთ-ერთი მთავარი არხია ახალი მომხმარებლების მოსაზიდად.",
   },
   {
     title: "AI ეპოქის მზადყოფნა (2026)",
     text:
-      "ChatGPT-სა, Claude-სა და Perplexity-ს AI ბოტებზე ხილვადობის ოპტიმიზაცია ცალკე სტრატეგიული მიმართულებაა — llms.txt ფაილი, FAQ Schema, სერვერ-მხარეს რენდერი. AI-ით ძიება ტრადიციული Google-ის ძიების ხარჯზე იზრდება ყოველთვიურად — წინასწარი მზადება უპირატესობას მოიტანს.",
+      "ChatGPT-სა, Claude-სა და Perplexity-ს AI ბოტებზე ხილვადობის ოპტიმიზაცია ცალკე სტრატეგიული მიმართულებაა - llms.txt ფაილი, FAQ Schema, სერვერ-მხარეს რენდერი. AI-ით ძიება ტრადიციული Google-ის ძიების ხარჯზე იზრდება ყოველთვიურად - წინასწარი მზადება უპირატესობას მოიტანს.",
     condition: (problems) =>
       problems.some(
         (p) =>
@@ -383,7 +383,7 @@ function buildProblemPagesRows(
     score: homeAnalysis.summary?.score ?? 0,
     failed: homeAnalysis.summary?.failed ?? 0,
     warnings: homeAnalysis.summary?.warnings ?? 0,
-    topIssue: homeTop?.check.label ?? "—",
+    topIssue: homeTop?.check.label ?? "-",
     isHome: true,
   });
 
@@ -407,7 +407,7 @@ function buildProblemPagesRows(
         score: sub.summary.score,
         failed: sub.summary.failed,
         warnings: sub.summary.warnings,
-        topIssue: subTop?.check.label ?? "—",
+        topIssue: subTop?.check.label ?? "-",
         isHome: false,
       });
     }
@@ -462,7 +462,7 @@ export function buildSlides(
     siteName,
   });
 
-  // Problem Pages slide — only when multi-page audit was run. Shows the
+  // Problem Pages slide - only when multi-page audit was run. Shows the
   // home page + each sub-page sorted by score (worst first), with the
   // top issue per page so the client can scan health at a glance.
   if (subPages && subPages.length > 0) {

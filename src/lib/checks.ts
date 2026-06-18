@@ -47,7 +47,7 @@ type FetchPageResult = {
   responseTimeMs: number;
   // True when the raw (no-JS) HTML was too thin to analyze, i.e. the page
   // is JS-rendered. This is the real SSR signal: it means AI bots like
-  // GPTBot/ClaudeBot/PerplexityBot — which don't execute JavaScript —
+  // GPTBot/ClaudeBot/PerplexityBot - which don't execute JavaScript -
   // would see a near-empty page even though end users see content.
   rawHtmlThin: boolean;
 };
@@ -75,7 +75,7 @@ function looksThin(html: string): boolean {
 
 export async function fetchPage(url: string): Promise<FetchPageResult | null> {
   // Phase 1: try axios first (fast path, ~1-3s).
-  // Most sites serve real HTML to plain HTTP — no need to spin up Chrome.
+  // Most sites serve real HTML to plain HTTP - no need to spin up Chrome.
   const start = Date.now();
   const axiosRes = await fetchWithTimeout(url);
   const axiosHtml =
@@ -83,7 +83,7 @@ export async function fetchPage(url: string): Promise<FetchPageResult | null> {
   const axiosOk =
     !!axiosRes && axiosRes.status >= 200 && axiosRes.status < 400;
 
-  // Single source of truth for "is the no-JS HTML usable?" — used both
+  // Single source of truth for "is the no-JS HTML usable?" - used both
   // for the fast-path decision and the SSR signal we expose downstream.
   const rawAxiosThin = !axiosRes || !axiosOk || looksThin(axiosHtml);
 
@@ -113,7 +113,7 @@ export async function fetchPage(url: string): Promise<FetchPageResult | null> {
     };
   }
 
-  // Last resort: return whatever axios gave us, even if thin or 4xx —
+  // Last resort: return whatever axios gave us, even if thin or 4xx -
   // the route will detect bot-protection downstream.
   if (axiosRes) {
     return {
@@ -212,12 +212,12 @@ export function analyzeTechnical(
 
   checks.push(
     isHttps
-      ? check("pass", "HTTPS", "საიტი იყენებს HTTPS-ს — დაცული კავშირი ✓")
+      ? check("pass", "HTTPS", "საიტი იყენებს HTTPS-ს - დაცული კავშირი ✓")
       : check(
           "fail",
           "HTTPS",
           "საიტი არ იყენებს HTTPS-ს",
-          "გადაიყვანეთ საიტი HTTPS-ზე SSL სერტიფიკატით — Google-ის რანკინგისთვის აუცილებელია."
+          "საიტს გადავიყვანთ HTTPS-ზე SSL სერტიფიკატით - Google-ის რანკინგისთვის აუცილებელია."
         )
   );
 
@@ -236,7 +236,7 @@ export function analyzeTechnical(
           "fail",
           "HTTP→HTTPS Redirect",
           "http:// ვერსია ცოცხალია და redirect-ი არ აქვს",
-          "მოაწყვეთ 301 redirect http:// → https:// (Apache: .htaccess; Nginx: server block; Cloudflare: Always Use HTTPS rule). სხვაგვარად Google ცალკე ინდექსაციას უკეთებს http ვერსიას — duplicate content."
+          "მოაწყვეთ 301 redirect http:// → https:// (Apache: .htaccess; Nginx: server block; Cloudflare: Always Use HTTPS rule). სხვაგვარად Google ცალკე ინდექსაციას უკეთებს http ვერსიას - duplicate content."
         )
       );
     } else {
@@ -244,7 +244,7 @@ export function analyzeTechnical(
         check(
           "info",
           "HTTP→HTTPS Redirect",
-          "http:// ვერსია მიუწვდომელია — სავარაუდოდ მხოლოდ https გაშვება (კარგია)"
+          "http:// ვერსია მიუწვდომელია - სავარაუდოდ მხოლოდ https გაშვება (კარგია)"
         )
       );
     }
@@ -253,12 +253,12 @@ export function analyzeTechnical(
   if (status >= 200 && status < 300) {
     checks.push(check("pass", "HTTP სტატუსი", `მთავარი გვერდი აბრუნებს ${status} OK`, undefined, status));
   } else if (status >= 300 && status < 400) {
-    checks.push(check("warn", "HTTP სტატუსი", `მთავარი გვერდი აბრუნებს ${status} (რედირექტი)`, "შეამოწმეთ რედირექტების ჯაჭვი — ზედმეტი hop-ები ანელებს საიტს.", status));
+    checks.push(check("warn", "HTTP სტატუსი", `მთავარი გვერდი აბრუნებს ${status} (რედირექტი)`, "შეამოწმეთ რედირექტების ჯაჭვი - ზედმეტი hop-ები ანელებს საიტს.", status));
   } else {
-    checks.push(check("fail", "HTTP სტატუსი", `მთავარი გვერდი აბრუნებს ${status}`, "გვერდი არ არის ხელმისაწვდომი — Google ვერ ინდექსაციას უკეთებს.", status));
+    checks.push(check("fail", "HTTP სტატუსი", `მთავარი გვერდი აბრუნებს ${status}`, "გვერდი არ არის ხელმისაწვდომი - Google ვერ ინდექსაციას უკეთებს.", status));
   }
 
-  // Soft 404 — page returns 200 but content screams "not found". Google
+  // Soft 404 - page returns 200 but content screams "not found". Google
   // demotes these because they masquerade as real pages. We look at title
   // and visible body text; very short content combined with a "not found"
   // string is the strongest signal. Skip when bot-protected (challenge
@@ -280,7 +280,7 @@ export function analyzeTechnical(
           "fail",
           "Soft 404",
           `გვერდი აბრუნებს 200 OK-ს, მაგრამ შინაარსი "ვერ მოიძებნა" ტიპისაა${title ? `: "${title}"` : ""}`,
-          "Google ამას low-quality signal-ად აღიქვამს — გვერდმა უნდა დააბრუნოს რეალური 404/410 სტატუსი ან გასწორდეს content-ი.",
+          "Google ამას low-quality signal-ად აღიქვამს - გვერდმა უნდა დააბრუნოს რეალური 404/410 სტატუსი ან გასწორდეს content-ი.",
           title
         )
       );
@@ -289,14 +289,14 @@ export function analyzeTechnical(
         check(
           "warn",
           "Soft 404",
-          'შინაარსი ძალიან მცირეა და "ვერ მოიძებნა" pattern-ი ჩანს — შეიძლება soft 404 იყოს.',
-          "გადახედე — თუ მართლა 404 გვერდია, აბრუნე HTTP 404 statusi."
+          'შინაარსი ძალიან მცირეა და "ვერ მოიძებნა" pattern-ი ჩანს - შეიძლება soft 404 იყოს.',
+          "თუ მართლა 404 გვერდია, შევცვლით HTTP status-ს 404-ად."
         )
       );
     }
   }
 
-  // Cache-Control — Google's crawler benefits from sane HTML caching.
+  // Cache-Control - Google's crawler benefits from sane HTML caching.
   // "no-store" / "private" on the main HTML costs crawl budget because
   // every revisit re-fetches the full page even if nothing changed.
   // Common WordPress / Cloudflare misconfiguration.
@@ -307,8 +307,8 @@ export function analyzeTechnical(
         check(
           "warn",
           "Cache-Control",
-          `Cache-Control: ${cacheCtl} — HTML არ ქეშირდება`,
-          "no-store გადახედე — HTML გვერდისთვის თუ ნამდვილად დინამიკურია, ოკ; თუ სტატიკურია, შეცვალე public, max-age=300 (5 წუთი) ან მეტ. crawl budget-ისთვის მნიშვნელოვანია.",
+          `Cache-Control: ${cacheCtl} - HTML არ ქეშირდება`,
+          "no-store გადავხედავთ - HTML გვერდისთვის თუ ნამდვილად დინამიკურია, ოკ; თუ სტატიკურია, შევცვლით public, max-age=300 (5 წუთი) ან მეტად. crawl budget-ისთვის მნიშვნელოვანია.",
           cacheCtl
         )
       );
@@ -317,7 +317,7 @@ export function analyzeTechnical(
         check(
           "info",
           "Cache-Control",
-          `Cache-Control: ${cacheCtl} — proxy-ები ვერ ქეშირებენ`,
+          `Cache-Control: ${cacheCtl} - proxy-ები ვერ ქეშირებენ`,
           undefined,
           cacheCtl
         )
@@ -332,32 +332,71 @@ export function analyzeTechnical(
   checks.push(
     extras.robotsTxt
       ? check("pass", "robots.txt", "robots.txt ფაილი არსებობს ✓")
-      : check("warn", "robots.txt", "robots.txt ფაილი ვერ მოიძებნა", "შექმენით /robots.txt ფაილი crawler-ების სამართავად.")
+      : check("warn", "robots.txt", "robots.txt ფაილი ვერ მოიძებნა", "შევქმნით /robots.txt-ს ფაილი crawler-ების სამართავად.")
   );
 
-  checks.push(
-    extras.sitemap
-      ? check("pass", "XML Sitemap", "sitemap.xml ფაილი არსებობს ✓")
-      : check("warn", "XML Sitemap", "sitemap.xml ფაილი ვერ მოიძებნა", "შექმენით XML sitemap და დაარეგისტრირეთ Google Search Console-ში.")
-  );
+  // Sitemap check uses 4-way status to distinguish "we verified it works"
+  // from "robots.txt promised it but URL is 404" from "couldn't reach due
+  // to anti-bot protection". The middle case (declared-broken) is a real
+  // critical issue worth flagging hard.
+  if (extras.sitemapStatus === "verified") {
+    checks.push(
+      check(
+        "pass",
+        "XML Sitemap",
+        `Sitemap მუშაობს ✓${extras.sitemapUrl ? ` (${extras.sitemapUrl})` : ""}`
+      )
+    );
+  } else if (extras.sitemapStatus === "declared-broken") {
+    checks.push(
+      check(
+        "fail",
+        "XML Sitemap",
+        `Sitemap URL დარეგისტრირებულია robots.txt-ში, მაგრამ ფაილი არ პასუხობს (404/error)${
+          extras.sitemapUrl ? `: ${extras.sitemapUrl}` : ""
+        }.`,
+        "Google ვერ აღმოაჩენს გვერდებს - გადავაგენერირებთ sitemap-ს (Yoast/Rank Math/WordPress core) ან გავასწორებთ robots.txt-ში Sitemap: ხაზს."
+      )
+    );
+  } else if (extras.sitemapStatus === "declared-unverified") {
+    checks.push(
+      check(
+        "warn",
+        "XML Sitemap",
+        `Sitemap დარეგისტრირებულია robots.txt-ში, მაგრამ ჩვენი scanner-ი სერვერმა ვერ უპასუხა (anti-bot დაცვა)${
+          extras.sitemapUrl ? `: ${extras.sitemapUrl}` : ""
+        }. გადაამოწმე ხელით ბრაუზერში - Google-ის crawler-ი whitelist-ში ხშირად დაიშვება.`,
+        "ხელით ვამოწმებთ ბრაუზერში. თუ XML-ი ჩანს - OK. თუ არა - გადავაგენერირებთ sitemap-ს."
+      )
+    );
+  } else {
+    checks.push(
+      check(
+        "warn",
+        "XML Sitemap",
+        "sitemap.xml ფაილი ვერ მოიძებნა.",
+        "შევქმნით XML sitemap-ს (Yoast/Rank Math/WordPress core) და დავარეგისტრირებთ Google Search Console-ში."
+      )
+    );
+  }
 
   if (!skipHtml) {
     const canonical = $('link[rel="canonical"]').attr("href");
     checks.push(
       canonical
         ? check("pass", "Canonical Tag", `Canonical tag მითითებულია: ${canonical}`, undefined, canonical)
-        : check("warn", "Canonical Tag", "Canonical tag არ არის მითითებული", "დაამატეთ <link rel=\"canonical\"> დუბლირებული კონტენტის თავიდან ასაცილებლად.")
+        : check("warn", "Canonical Tag", "Canonical tag არ არის მითითებული", "დავამატებთ <link rel=\"canonical\">-ს დუბლირებული კონტენტის თავიდან ასაცილებლად.")
     );
 
     const metaRobots = $('meta[name="robots"]').attr("content");
     if (metaRobots) {
       if (/noindex/i.test(metaRobots)) {
-        checks.push(check("fail", "Meta Robots", `noindex მითითებულია: "${metaRobots}"`, "მთავარ გვერდზე noindex Google-ს უკრძალავს ინდექსაციას — გადახედეთ.", metaRobots));
+        checks.push(check("fail", "Meta Robots", `noindex მითითებულია: "${metaRobots}"`, "მთავარ გვერდზე noindex Google-ს უკრძალავს ინდექსაციას - გადავხედავთ და მოვხსნით.", metaRobots));
       } else {
         checks.push(check("pass", "Meta Robots", `Meta robots: "${metaRobots}"`, undefined, metaRobots));
       }
     } else {
-      checks.push(check("info", "Meta Robots", "Meta robots tag არ არის — ნაგულისხმევად index, follow"));
+      checks.push(check("info", "Meta Robots", "Meta robots tag არ არის - ნაგულისხმევად index, follow"));
     }
   }
 
@@ -368,7 +407,7 @@ export function analyzeTechnical(
   if (headersFound.length >= 2) {
     checks.push(check("pass", "Security Headers", `მითითებულია: ${headersFound.join(", ")}`, undefined, headersFound));
   } else if (headersFound.length === 1) {
-    checks.push(check("warn", "Security Headers", `მხოლოდ ${headersFound[0]} მითითებულია`, "დაამატეთ Content-Security-Policy, X-Frame-Options და Strict-Transport-Security headers."));
+    checks.push(check("warn", "Security Headers", `მხოლოდ ${headersFound[0]} მითითებულია`, "დავამატებთ Content-Security-Policy, X-Frame-Options და Strict-Transport-Security headers-ს."));
   } else {
     checks.push(check("warn", "Security Headers", "უსაფრთხოების headers ვერ მოიძებნა", "კონფიგურაცია გააკეთეთ სერვერზე CSP, X-Frame-Options, HSTS-სთვის."));
   }
@@ -381,7 +420,7 @@ export function analyzeTechnical(
       checks.push(check("info", "hreflang", "hreflang teag-ები არ არის (მხოლოდ ერთენოვანი საიტისთვის ნორმალურია)"));
     }
 
-    // <html lang> — accessibility + Google's local search signal.
+    // <html lang> - accessibility + Google's local search signal.
     // Common Georgian-site bug: lang="en" left over from a starter template.
     const htmlLang = $("html").attr("lang")?.trim() ?? "";
     if (!htmlLang) {
@@ -390,7 +429,7 @@ export function analyzeTechnical(
           "warn",
           "HTML lang",
           "<html lang> ატრიბუტი არ არის",
-          'დაამატეთ <html lang="ka"> (ქართულისთვის) ან შესაბამისი კოდი — ეკრანის წამკითხავი ხელსაწყო და Google ლოკალური SEO ამას იყენებს.'
+          'დავამატებთ <html lang="ka">-ს (ქართულისთვის) ან შესაბამის კოდს - ეკრანის წამკითხავი ხელსაწყო და Google ლოკალური SEO ამას იყენებს.'
         )
       );
     } else if (!/^[a-zA-Z]{2,3}(-[a-zA-Z0-9]{2,8})*$/.test(htmlLang)) {
@@ -409,7 +448,7 @@ export function analyzeTechnical(
       );
     }
 
-    // URL/lang mismatch — if the URL path declares a locale (/en, /ru,
+    // URL/lang mismatch - if the URL path declares a locale (/en, /ru,
     // /de etc.) the <html lang> should match. Common WordPress/Webflow
     // bug: the English version of a Georgian site keeps lang="ka" because
     // the template wasn't customised per-locale. Google then sends the
@@ -433,14 +472,14 @@ export function analyzeTechnical(
             "warn",
             "URL/lang mismatch",
             `URL მიუთითებს /${pathLocale}/, მაგრამ <html lang="${htmlLang}">`,
-            "ცალკეული ენის ვერსიის lang ატრიბუტი უნდა შეესაბამებოდეს URL-ის ენას — Google იყენებს ამას audience targeting-ისთვის. შესწორე template-ი რომ თითო ენაზე ცალკე lang დააყენო.",
+            "ცალკეული ენის ვერსიის lang ატრიბუტი უნდა შეესაბამებოდეს URL-ის ენას - Google იყენებს ამას audience targeting-ისთვის. შესწორე template-ი რომ თითო ენაზე ცალკე lang დააყენო.",
             `${pathLocale} ↔ ${htmlLang}`
           )
         );
       }
     }
 
-    // Mixed content — only meaningful on HTTPS pages. <a href> excluded
+    // Mixed content - only meaningful on HTTPS pages. <a href> excluded
     // since browsers don't fetch link targets (no mixed-content warning).
     if (isHttps) {
       const httpResources: string[] = [];
@@ -472,7 +511,7 @@ export function analyzeTechnical(
             "fail",
             "Mixed Content",
             `${httpCount}${httpCount >= 100 ? "+" : ""} HTTP რესურსი HTTPS გვერდზე`,
-            "ბრაუზერი აქტიურ რესურსებს (script, iframe) დაბლოკავს, პასიურებზე (img) გაფრთხილებას აჩვენებს. გადაიყვანეთ ყველაფერი https://-ზე ან გამოიყენეთ პროტოკოლ-ნეიტრალური `//`-ით დაწყებული URL.",
+            "ბრაუზერი აქტიურ რესურსებს (script, iframe) დაბლოკავს, პასიურებზე (img) გაფრთხილებას აჩვენებს. ყველაფერს გადავიყვანთ https://-ზე ან გამოვიყენებთ პროტოკოლ-ნეიტრალურ `//`-ით დაწყებულ URL-ს.",
             examples.length > 0 ? examples : httpCount
           )
         );
@@ -488,22 +527,22 @@ export function analyzeOnPage($: cheerio.CheerioAPI, baseUrl: string): CategoryR
 
   const title = $("title").first().text().trim();
   if (!title) {
-    checks.push(check("fail", "Title Tag", "Title არ არსებობს", "დაამატეთ <title> tag — SEO-სთვის კრიტიკულია."));
+    checks.push(check("fail", "Title Tag", "Title არ არსებობს", "დავამატებთ <title> tag-ს - SEO-სთვის კრიტიკულია."));
   } else if (title.length < 30) {
     checks.push(check("warn", "Title Tag", `Title ძალიან მოკლეა (${title.length} სიმბ.): "${title}"`, "ოპტიმალური სიგრძე 50-60 სიმბოლოა.", title));
   } else if (title.length > 60) {
-    checks.push(check("warn", "Title Tag", `Title ძალიან გრძელია (${title.length} სიმბ.): "${title}"`, "Google ჩამოაჭრის — შეამცირეთ 50-60 სიმბოლომდე.", title));
+    checks.push(check("warn", "Title Tag", `Title ძალიან გრძელია (${title.length} სიმბ.): "${title}"`, "Google ჩამოაჭრის - შეამცირეთ 50-60 სიმბოლომდე.", title));
   } else {
     checks.push(check("pass", "Title Tag", `Title ოპტიმალური სიგრძისაა (${title.length} სიმბ.): "${title}"`, undefined, title));
   }
 
   const desc = $('meta[name="description"]').attr("content")?.trim() ?? "";
   if (!desc) {
-    checks.push(check("fail", "Meta Description", "Meta description არ არსებობს", "დაამატეთ <meta name=\"description\"> 140-160 სიმბოლოთი — CTR-ზე გავლენას ახდენს."));
+    checks.push(check("fail", "Meta Description", "Meta description არ არსებობს", "დავამატებთ <meta name=\"description\">-ს 140-160 სიმბოლოთი - CTR-ზე გავლენას ახდენს."));
   } else if (desc.length < 100) {
     checks.push(check("warn", "Meta Description", `Description ძალიან მოკლეა (${desc.length} სიმბ.)`, "ოპტიმალური სიგრძე 140-160 სიმბოლოა.", desc));
   } else if (desc.length > 160) {
-    checks.push(check("warn", "Meta Description", `Description ძალიან გრძელია (${desc.length} სიმბ.)`, "Google ჩამოაჭრის 160 სიმბოლოზე — შეამცირეთ.", desc));
+    checks.push(check("warn", "Meta Description", `Description ძალიან გრძელია (${desc.length} სიმბ.)`, "Google ჩამოაჭრის 160 სიმბოლოზე - შეამცირეთ.", desc));
   } else {
     checks.push(check("pass", "Meta Description", `Description ოპტიმალური სიგრძისაა (${desc.length} სიმბ.)`, undefined, desc));
   }
@@ -511,15 +550,15 @@ export function analyzeOnPage($: cheerio.CheerioAPI, baseUrl: string): CategoryR
   const h1Count = $("h1").length;
   const h1Text = $("h1").first().text().trim();
   if (h1Count === 0) {
-    checks.push(check("fail", "H1 სათაური", "H1 tag არ არსებობს", "დაამატეთ ერთი H1 — გვერდის მთავარი სათაური."));
+    checks.push(check("fail", "H1 სათაური", "H1 tag არ არსებობს", "დავამატებთ ერთ H1-ს - გვერდის მთავარ სათაურს."));
   } else if (h1Count > 1) {
-    checks.push(check("warn", "H1 სათაური", `${h1Count} H1 ნაპოვნია — უნდა იყოს მხოლოდ ერთი`, "გვერდზე მხოლოდ ერთი H1 უნდა იყოს — დანარჩენები გადააქციეთ H2-ად.", h1Count));
+    checks.push(check("warn", "H1 სათაური", `${h1Count} H1 ნაპოვნია - უნდა იყოს მხოლოდ ერთი`, "გვერდზე მხოლოდ ერთი H1 უნდა იყოს - დანარჩენებს გადავაქცევთ H2-ად.", h1Count));
   } else {
     checks.push(check("pass", "H1 სათაური", `H1 ერთია: "${h1Text}"`, undefined, h1Text));
   }
 
   // Walk headings in document order to detect skipped levels (H1 → H3 etc.)
-  // Counting alone misses real accessibility issues — screen readers rely
+  // Counting alone misses real accessibility issues - screen readers rely
   // on contiguous nesting.
   const headingLevels: number[] = [];
   const headingCounts: Record<string, number> = {
@@ -554,7 +593,7 @@ export function analyzeOnPage($: cheerio.CheerioAPI, baseUrl: string): CategoryR
         "warn",
         "სათაურების იერარქია",
         "H2-H6 სათაურები არ არის",
-        "დაამატეთ ქვესათაურები კონტენტის სტრუქტურირებისთვის.",
+        "დავამატებთ ქვესათაურებს კონტენტის სტრუქტურირებისთვის.",
         headingSummary
       )
     );
@@ -563,8 +602,8 @@ export function analyzeOnPage($: cheerio.CheerioAPI, baseUrl: string): CategoryR
       check(
         "warn",
         "სათაურების იერარქია",
-        `${headingSummary} — გადახტომები: ${skipped.slice(0, 3).join(", ")}`,
-        "სათაურების დონეები გამოტოვებული გაქვთ — ეკრანის წამკითხავი ხელსაწყო ვერ ცნობს სტრუქტურას სწორად. გამოიყენეთ მხოლოდ მომიჯნავე დონეები (H1→H2→H3).",
+        `${headingSummary} - გადახტომები: ${skipped.slice(0, 3).join(", ")}`,
+        "სათაურების დონეები გამოტოვებულია - ეკრანის წამკითხავი ხელსაწყო ვერ ცნობს სტრუქტურას სწორად. გავასწორებთ ისე, რომ მხოლოდ მომიჯნავე დონეები გამოვიყენოთ (H1→H2→H3).",
         skipped
       )
     );
@@ -575,9 +614,9 @@ export function analyzeOnPage($: cheerio.CheerioAPI, baseUrl: string): CategoryR
   }
 
   // Three-bucket ALT analysis:
-  //   descriptiveAlt — alt="actual text"  → good for content images
-  //   emptyAlt       — alt=""             → correct only for decorative images
-  //   missingAlt     — no alt attribute   → always wrong (screen readers read filename)
+  //   descriptiveAlt - alt="actual text"  → good for content images
+  //   emptyAlt       - alt=""             → correct only for decorative images
+  //   missingAlt     - no alt attribute   → always wrong (screen readers read filename)
   // Previous code lumped empty + descriptive together as "with alt", masking
   // the common mistake of putting alt="" on content images.
   const allImages = $("img");
@@ -618,7 +657,7 @@ export function analyzeOnPage($: cheerio.CheerioAPI, baseUrl: string): CategoryR
 
   const isLikelyJsRendered = totalImages > 0 && totalImages < 8;
   const jsNote = isLikelyJsRendered
-    ? " (HTML-ში მოცემულ სურათებზე — JavaScript-ით დატვირთული სურათები არ ჩანს ბოტებისთვის)"
+    ? " (HTML-ში მოცემულ სურათებზე - JavaScript-ით დატვირთული სურათები არ ჩანს ბოტებისთვის)"
     : "";
 
   const altRatio = `${descriptiveAlt}/${totalImages}`;
@@ -631,7 +670,7 @@ export function analyzeOnPage($: cheerio.CheerioAPI, baseUrl: string): CategoryR
       check(
         "info",
         "ALT ტექსტები",
-        "HTML-ში სურათები არ მოიძებნა — შესაძლოა საიტი JavaScript-ით ხატავს კონტენტს, რასაც ჩვენი სკანერი ვერ ხედავს."
+        "HTML-ში სურათები არ მოიძებნა - შესაძლოა საიტი JavaScript-ით ხატავს კონტენტს, რასაც ჩვენი სკანერი ვერ ხედავს."
       )
     );
   } else if (missingAlt === 0 && emptyAlt === 0) {
@@ -646,7 +685,7 @@ export function analyzeOnPage($: cheerio.CheerioAPI, baseUrl: string): CategoryR
       )
     );
   } else if (missingAlt === 0 && emptyAlt > 0) {
-    // No missing, but some empty — could be decorative (correct) or
+    // No missing, but some empty - could be decorative (correct) or
     // content image with wrong empty alt (false-pass risk). Warn so
     // the auditor checks in person.
     checks.push(
@@ -654,7 +693,7 @@ export function analyzeOnPage($: cheerio.CheerioAPI, baseUrl: string): CategoryR
         "warn",
         "ALT ტექსტები",
         `${emptyAlt}/${totalImages} სურათს ცარიელი ALT (alt="") აქვს${jsNote}.`,
-        "ცარიელი ALT სწორია მხოლოდ წმინდა დეკორატიული სურათებისთვის (ფონი, separator). თუ ეს კონტენტ-სურათია (პროდუქტი, ლოგო, ილუსტრაცია) — შეავსეთ აღწერითი ტექსტი.",
+        "ცარიელი ALT სწორია მხოლოდ წმინდა დეკორატიული სურათებისთვის (ფონი, separator). თუ ეს კონტენტ-სურათია (პროდუქტი, ლოგო, ილუსტრაცია) - შევავსებთ აღწერითი ტექსტით.",
         `აღწერითი: ${descriptiveAlt}, ცარიელი: ${emptyAlt}, ამოკლული: 0 / სულ ${totalImages}`
       )
     );
@@ -666,7 +705,7 @@ export function analyzeOnPage($: cheerio.CheerioAPI, baseUrl: string): CategoryR
         `${missingAlt}/${totalImages} სურათს alt ატრიბუტი საერთოდ არ აქვს${jsNote}${
           emptyAlt > 0 ? `, ${emptyAlt} კი ცარიელი ALT-ით` : ""
         }.`,
-        "დაამატეთ აღწერითი alt ტექსტი — accessibility + SEO. დეკორატიული სურათებისთვის alt=\"\" (ცარიელი) სწორია; კონტენტ-სურათისთვის — სავალდებულო აღწერა.",
+        "დავამატებთ აღწერითი alt ტექსტს - accessibility + SEO. დეკორატიული სურათებისთვის alt=\"\" (ცარიელი) სწორია; კონტენტ-სურათისთვის - სავალდებულო აღწერა.",
         truncSrcs.length > 0 ? truncSrcs : altRatio
       )
     );
@@ -678,7 +717,7 @@ export function analyzeOnPage($: cheerio.CheerioAPI, baseUrl: string): CategoryR
         `${missingAlt}/${totalImages} სურათს alt ატრიბუტი არ აქვს${jsNote}${
           emptyAlt > 0 ? `, ${emptyAlt} ცარიელი ALT-ით` : ""
         }.`,
-        "შეავსეთ დარჩენილი ALT-ები. დეკორატიული სურათებისთვის alt=\"\" (ცარიელი).",
+        "შევავსებთ დარჩენილ ALT-ებს. დეკორატიული სურათებისთვის alt=\"\" (ცარიელი).",
         truncSrcs.length > 0 ? truncSrcs : altRatio
       )
     );
@@ -688,17 +727,17 @@ export function analyzeOnPage($: cheerio.CheerioAPI, baseUrl: string): CategoryR
     if (lazyImages / totalImages > 0.5) {
       checks.push(check("pass", "Lazy Loading", `${lazyImages}/${totalImages} სურათი იყენებს lazy loading-ს`, undefined, `${lazyImages}/${totalImages}`));
     } else {
-      checks.push(check("warn", "Lazy Loading", `მხოლოდ ${lazyImages}/${totalImages} სურათი lazy load-ით${jsNote}`, "დაამატეთ loading=\"lazy\" below-the-fold სურათებისთვის (LCP-ის გარდა).", `${lazyImages}/${totalImages}`));
+      checks.push(check("warn", "Lazy Loading", `მხოლოდ ${lazyImages}/${totalImages} სურათი lazy load-ით${jsNote}`, "დავამატებთ loading=\"lazy\"-ს below-the-fold სურათებისთვის (LCP-ის გარდა).", `${lazyImages}/${totalImages}`));
     }
     if (modernFormat / totalImages > 0.3) {
       checks.push(check("pass", "Image Format", `${modernFormat}/${totalImages} თანამედროვე ფორმატში (WebP/AVIF)`, undefined, `${modernFormat}/${totalImages}`));
     } else {
-      checks.push(check("warn", "Image Format", `${modernFormat}/${totalImages} მხოლოდ WebP/AVIF-ში`, "გადაიყვანეთ JPG/PNG WebP-ში — 30-50% უფრო მცირე ზომა."));
+      checks.push(check("warn", "Image Format", `${modernFormat}/${totalImages} მხოლოდ WebP/AVIF-ში`, "JPG/PNG-ს გადავიყვანთ WebP-ში - 30-50% უფრო მცირე ზომა.", `${modernFormat}/${totalImages}`));
     }
   }
 
   // Dedupe links (same URL counted once) and treat subdomains of the same
-  // registrable domain as internal — blog.coridoor.ge and coridoor.ge
+  // registrable domain as internal - blog.coridoor.ge and coridoor.ge
   // belong to the same site.
   const uniqueInternal = new Set<string>();
   const uniqueExternal = new Set<string>();
@@ -748,7 +787,7 @@ export function analyzeOnPage($: cheerio.CheerioAPI, baseUrl: string): CategoryR
   const external = uniqueExternal.size;
 
   if (internal < 3) {
-    checks.push(check("warn", "შიდა ბმულები", `მხოლოდ ${internal} უნიკალური შიდა ბმული`, "დაამატეთ შიდა ბმულები სტრუქტურისა და topical authority-სთვის."));
+    checks.push(check("warn", "შიდა ბმულები", `მხოლოდ ${internal} უნიკალური შიდა ბმული`, "დავამატებთ შიდა ბმულებს სტრუქტურისა და topical authority-სთვის."));
   } else {
     checks.push(check("pass", "შიდა ბმულები", `${internal} უნიკალური შიდა ბმული (subdomain-ებიც)`, undefined, internal));
   }
@@ -759,7 +798,7 @@ export function analyzeOnPage($: cheerio.CheerioAPI, baseUrl: string): CategoryR
     checks.push(check("pass", "გარე ბმულები", `${external} უნიკალური გარე ბმული`, undefined, external));
   }
 
-  // Word count over CONTENT only — strip nav/header/footer/aside/script/
+  // Word count over CONTENT only - strip nav/header/footer/aside/script/
   // style/noscript before counting. Prefer <main>/<article> as content
   // root if the site is structured semantically; fall back to <body>.
   // Previous version counted entire body (incl. menus, cookie banners,
@@ -780,7 +819,7 @@ export function analyzeOnPage($: cheerio.CheerioAPI, baseUrl: string): CategoryR
   const wordCount = contentText.split(" ").filter((w) => w.length > 1).length;
 
   if (wordCount < 300) {
-    checks.push(check("warn", "კონტენტის მოცულობა", `${wordCount} სიტყვა — ცოტაა (nav/footer გამოთიშულია)`, "მინიმუმ 600-1000 სიტყვა, იდეალურად 1500+.", wordCount));
+    checks.push(check("warn", "კონტენტის მოცულობა", `${wordCount} სიტყვა - ცოტაა (nav/footer გამოთიშულია)`, "მინიმუმ 600-1000 სიტყვა, იდეალურად 1500+.", wordCount));
   } else if (wordCount < 600) {
     checks.push(check("warn", "კონტენტის მოცულობა", `${wordCount} სიტყვა (nav/footer გამოთიშულია)`, "ვრცელი კონტენტი (1500+ სიტყვა) ფრიად გაგიადვილებთ რანკინგს კონკურენტულ keyword-ებზე.", wordCount));
   } else {
@@ -806,7 +845,7 @@ export function analyzeSchema(
         "warn",
         "Schema Markup (JSON-LD)",
         "სტრუქტურირებული მონაცემები ვერ მოიძებნა (არც JSON-LD, არც microdata)",
-        "დაამატეთ JSON-LD: Organization, Article, Product, FAQ — AI Overviews-ისთვის კრიტიკულია 2026-ში."
+        "დავამატებთ JSON-LD-ს: Organization, Article, Product, FAQ - AI Overviews-ისთვის კრიტიკულია 2026-ში."
       )
     );
   } else if (inventory.jsonLdBlocks > 0) {
@@ -834,7 +873,7 @@ export function analyzeSchema(
         `${inventory.microdataBlocks} microdata ნოდი, JSON-LD არ არის. ტიპები: ${
           inventory.types.join(", ") || "უცნობი"
         }`,
-        "Google იღებს microdata-ს, მაგრამ JSON-LD რეკომენდებულია 2026-ისთვის — უფრო მარტივი მოვლა, AI ბოტები უკეთ კითხულობენ.",
+        "Google იღებს microdata-ს, მაგრამ JSON-LD რეკომენდებულია 2026-ისთვის - უფრო მარტივი მოვლა, AI ბოტები უკეთ კითხულობენ.",
         inventory.types
       )
     );
@@ -845,9 +884,9 @@ export function analyzeSchema(
   if (foundOg.length >= 4) {
     checks.push(check("pass", "Open Graph", `${foundOg.length}/${ogProps.length} OG tag მითითებულია`, undefined, foundOg));
   } else if (foundOg.length > 0) {
-    checks.push(check("warn", "Open Graph", `მხოლოდ ${foundOg.length}/${ogProps.length} OG tag`, "დაამატეთ ყველა Open Graph tag სოციალური მედიის სანახავად."));
+    checks.push(check("warn", "Open Graph", `მხოლოდ ${foundOg.length}/${ogProps.length} OG tag`, "დავამატებთ ყველა Open Graph tag-ს სოციალური მედიის სანახავად."));
   } else {
-    checks.push(check("warn", "Open Graph", "Open Graph tags არ არის", "დაამატეთ og:title, og:description, og:image — Facebook/LinkedIn გაზიარებისთვის."));
+    checks.push(check("warn", "Open Graph", "Open Graph tags არ არის", "დავამატებთ og:title-ს, og:description-ს და og:image-ს - Facebook/LinkedIn გაზიარებისთვის."));
   }
 
   // Surface the OG image probe verdict (already computed in extractPreview).
@@ -862,19 +901,19 @@ export function analyzeSchema(
         check(
           "pass",
           "OG Image",
-          `OG image ვალიდურია — ${og.reason}`,
+          `OG image ვალიდურია - ${og.reason}`,
           undefined,
           og.url
         )
       );
     } else if (og.verdict === "missing") {
-      // Already covered by Open Graph tag check — skip to avoid duplication.
+      // Already covered by Open Graph tag check - skip to avoid duplication.
     } else if (og.verdict === "fail") {
       checks.push(
         check(
           "fail",
           "OG Image",
-          `OG image-ი პრობლემურია — ${og.reason}`,
+          `OG image-ი პრობლემურია - ${og.reason}`,
           og.recommendation,
           og.url
         )
@@ -884,7 +923,7 @@ export function analyzeSchema(
         check(
           "warn",
           "OG Image",
-          `OG image-ის გადახედვა საჭიროა — ${og.reason}`,
+          `OG image-ის გადახედვა საჭიროა - ${og.reason}`,
           og.recommendation,
           og.url
         )
@@ -906,10 +945,10 @@ export function analyzeSchema(
   if (twitterCard) {
     checks.push(check("pass", "Twitter Card", `Twitter Card: ${twitterCard}`, undefined, twitterCard));
   } else {
-    checks.push(check("info", "Twitter Card", "Twitter Card არ არის", "დაამატეთ თუ Twitter/X-ზე ვიზიტორებს ელოდებით."));
+    checks.push(check("info", "Twitter Card", "Twitter Card არ არის", "დავამატებთ თუ Twitter/X-ზე ვიზიტორებს ელოდებით."));
   }
 
-  // Deep field validation — catches malformed values inside otherwise-
+  // Deep field validation - catches malformed values inside otherwise-
   // well-formed schemas (telephone "555-CALL", relative-URL images,
   // currency symbols instead of ISO codes). Google Rich Results Test
   // flags these as warnings, so surfacing them early saves a round-trip.
@@ -957,7 +996,7 @@ export function analyzeSchema(
           totalIssues >= 3 ? "fail" : "warn",
           "JSON-LD Field Validation",
           `${totalIssues} ცალკეული ველი არასწორი ფორმატითაა (${buckets.join(", ")})`,
-          "Google Rich Results Test-ი ამ ველებზე გადააქცევს warning-ს. გადახედე — telephone უნდა იყოს E.164/ეროვნული ფორმატით, URL სრული http(s)://-ით, priceCurrency 3-ასოიანი ISO 4217 კოდი (USD/EUR/GEL).",
+          "Google Rich Results Test-ი ამ ველებზე გადააქცევს warning-ს. გადავხედავთ - telephone უნდა იყოს E.164/ეროვნული ფორმატით, URL სრული http(s)://-ით, priceCurrency 3-ასოიანი ISO 4217 კოდი (USD/EUR/GEL).",
           examples
         )
       );
@@ -976,8 +1015,8 @@ export function analyzeAiEra(
 
   checks.push(
     llmsTxt
-      ? check("pass", "llms.txt", "llms.txt ფაილი არსებობს — AI კრაულერებისთვის მზადაა ✓")
-      : check("warn", "llms.txt", "llms.txt ფაილი ვერ მოიძებნა", "შექმენით /llms.txt — ChatGPT, Claude, Perplexity-სთვის ახალი 2026 სტანდარტი.")
+      ? check("pass", "llms.txt", "llms.txt ფაილი არსებობს - AI კრაულერებისთვის მზადაა ✓")
+      : check("warn", "llms.txt", "llms.txt ფაილი ვერ მოიძებნა", "შევქმნით /llms.txt-ს - ChatGPT, Claude, Perplexity-სთვის ახალი 2026 სტანდარტი.")
   );
 
   const inventory = inventorySchema($);
@@ -987,7 +1026,7 @@ export function analyzeAiEra(
       ? check(
           "pass",
           "FAQ Schema",
-          "FAQPage schema ნაპოვნია — AI Overviews-ისთვის ღონიერი სიგნალი ✓"
+          "FAQPage schema ნაპოვნია - AI Overviews-ისთვის ღონიერი სიგნალი ✓"
         )
       : check(
           "info",
@@ -1003,17 +1042,17 @@ export function analyzeAiEra(
         "warn",
         "Organization Schema",
         "Organization schema არ არის",
-        "დაამატეთ Organization (ან რელევანტური ქვე-ტიპი — LocalBusiness ლოკალური ბიზნესისთვის, Restaurant რესტორნისთვის, Store მაღაზიისთვის) sameAs ლინკებით სოც.მედიაზე."
+        "დავამატებთ Organization-ს (ან რელევანტურ ქვე-ტიპს - LocalBusiness ლოკალური ბიზნესისთვის, Restaurant რესტორნისთვის, Store მაღაზიისთვის) sameAs ლინკებით სოც.მედიაზე."
       )
     );
   } else if (!inventory.organizationNode) {
-    // Microdata-based — we can't introspect fields without a separate
+    // Microdata-based - we can't introspect fields without a separate
     // microdata parser, so just confirm presence.
     checks.push(
       check(
         "pass",
         "Organization Schema",
-        "Organization schema მითითებულია (microdata) — ბრენდის ცნობადობა AI-სთვის ✓"
+        "Organization schema მითითებულია (microdata) - ბრენდის ცნობადობა AI-სთვის ✓"
       )
     );
   } else {
@@ -1024,7 +1063,7 @@ export function analyzeAiEra(
           "fail",
           "Organization Schema",
           `Organization schema-ს აკლია სავალდებულო ველები: ${fields.missingRequired.join(", ")}`,
-          "Google-ის Knowledge Graph-ში ბრენდის გამოსაჩენად name + url სავალდებულოა. დამატებითი — logo, sameAs (სოც.მედიის ბმულები) — Knowledge Panel-ში გამოჩენის შანსს ზრდის.",
+          "Google-ის Knowledge Graph-ში ბრენდის გამოსაჩენად name + url სავალდებულოა. დამატებითი - logo, sameAs (სოც.მედიის ბმულები) - Knowledge Panel-ში გამოჩენის შანსს ზრდის.",
           fields.missingRequired
         )
       );
@@ -1034,7 +1073,7 @@ export function analyzeAiEra(
           "warn",
           "Organization Schema",
           `Organization schema სრულდება, მაგრამ აკლია რეკომენდებული ველები: ${fields.missingRecommended.join(", ")}`,
-          "name + url არის — საფუძველი დადებულია. მიზანი: logo (Knowledge Panel-ისთვის), sameAs (Facebook/LinkedIn/Wikipedia ბმულები — Google ბრენდს ცნობს ერთი არსებობით).",
+          "name + url არის - საფუძველი დადებულია. მიზანი: logo (Knowledge Panel-ისთვის), sameAs (Facebook/LinkedIn/Wikipedia ბმულები - Google ბრენდს ცნობს ერთი არსებობით).",
           fields.missingRecommended
         )
       );
@@ -1043,7 +1082,7 @@ export function analyzeAiEra(
         check(
           "pass",
           "Organization Schema",
-          "Organization (ან მისი ქვე-ტიპი — LocalBusiness, Store და ა.შ.) schema სრულია: name, url, logo, sameAs, contact info ✓"
+          "Organization (ან მისი ქვე-ტიპი - LocalBusiness, Store და ა.შ.) schema სრულია: name, url, logo, sameAs, contact info ✓"
         )
       );
     }
@@ -1051,10 +1090,10 @@ export function analyzeAiEra(
 
   // Real SSR check: rawHtmlThin is true when the no-JS axios fetch
   // returned thin content and we had to fall back to Puppeteer to see
-  // anything. That's exactly the signal AI bots experience — they don't
+  // anything. That's exactly the signal AI bots experience - they don't
   // run JavaScript, so they see what axios saw, not what Puppeteer renders.
   // The previous body-length check ran AFTER Puppeteer, so it always
-  // passed even on full SPAs. Note: noscript fallback can rescue this —
+  // passed even on full SPAs. Note: noscript fallback can rescue this -
   // if the page provides substantial <noscript> content, AI bots see that.
   const noscriptContent = $("noscript").text().trim();
   if (rawHtmlThin && noscriptContent.length < 200) {
@@ -1062,7 +1101,7 @@ export function analyzeAiEra(
       check(
         "warn",
         "Server-Side Rendering",
-        "გვერდი ცარიელი ჩანს JavaScript-ის გარეშე — AI კრაულერები ვერ ხედავენ კონტენტს",
+        "გვერდი ცარიელი ჩანს JavaScript-ის გარეშე - AI კრაულერები ვერ ხედავენ კონტენტს",
         "AI კრაულერები (GPTBot, ClaudeBot, PerplexityBot) JavaScript-ს არ ასრულებენ. გამოსავალი: SSR (Next.js getServerSideProps), SSG (static export), ან მნიშვნელოვანი კონტენტის <noscript> ბლოკში დუბლირება."
       )
     );
@@ -1071,7 +1110,7 @@ export function analyzeAiEra(
       check(
         "warn",
         "Server-Side Rendering",
-        "გვერდი JS-ს საჭიროებს, მაგრამ <noscript> ბლოკი არსებობს — ნაწილობრივ ფარავს AI ბოტებს",
+        "გვერდი JS-ს საჭიროებს, მაგრამ <noscript> ბლოკი არსებობს - ნაწილობრივ ფარავს AI ბოტებს",
         "უკეთესია სრული SSR/SSG. <noscript>-ი ხშირად მხოლოდ მცირე fallback-ია, არა სრული კონტენტი."
       )
     );
@@ -1080,12 +1119,12 @@ export function analyzeAiEra(
       check(
         "pass",
         "Server-Side Rendering",
-        "კონტენტი ხელმისაწვდომია JavaScript-ის გარეშე — AI კრაულერებისთვის ხილვადი ✓"
+        "კონტენტი ხელმისაწვდომია JavaScript-ის გარეშე - AI კრაულერებისთვის ხილვადი ✓"
       )
     );
   }
 
-  return { name: "GEO — Generative Engine", icon: "Bot", checks };
+  return { name: "GEO - Generative Engine", icon: "Bot", checks };
 }
 
 const BROWSER_UA =
@@ -1160,16 +1199,62 @@ async function checkHttpToHttpsRedirect(
     if (res.status >= 200 && res.status < 300) return "missing";
     return "n/a";
   } catch {
-    // ECONNREFUSED on http means no insecure listener — that's fine.
+    // ECONNREFUSED on http means no insecure listener - that's fine.
     return "n/a";
   }
 }
 
+export type SitemapStatus =
+  | "verified" // fetched successfully, body looks like a sitemap
+  | "declared-broken" // robots.txt declared a URL but it returned 4xx/5xx (not rate-limit)
+  | "declared-unverified" // robots.txt declared but we couldn't verify (rate-limited)
+  | "missing"; // no declaration + no fallback path responded ok
+
 export interface ExtrasResult {
   robotsTxt: boolean;
-  sitemap: boolean;
+  sitemap: boolean; // back-compat: true when verified or declared-unverified
+  sitemapStatus: SitemapStatus;
+  sitemapUrl: string | null;
   llmsTxt: boolean;
   httpToHttps: "ok" | "missing" | "n/a";
+}
+
+// Sitemap fetch with one retry - if the first attempt gets a rate-limit
+// signal, wait a moment and try again. Distinguishes "definitely 404"
+// from "couldn't verify because the host blocked us" so the check above
+// can emit accurate guidance (fail vs warn).
+async function fetchSitemap(
+  url: string
+): Promise<{ ok: boolean; status: number; rateLimited: boolean } | null> {
+  const isRateLimited = (s: number) =>
+    s === 429 || s === 503 || s === 508 || (s >= 520 && s <= 527);
+  for (let attempt = 0; attempt < 2; attempt++) {
+    if (attempt > 0) await new Promise((r) => setTimeout(r, 1400));
+    const result = await fetchExtraFile(url);
+    if (!result) {
+      if (attempt === 1) return null;
+      continue;
+    }
+    if (result.ok) {
+      // Sanity check - body should at least mention <urlset|<sitemapindex
+      const looksLikeSitemap =
+        /<urlset|<sitemapindex/i.test(result.body) || result.body.length > 50;
+      return {
+        ok: looksLikeSitemap,
+        status: result.status,
+        rateLimited: false,
+      };
+    }
+    if (isRateLimited(result.status)) {
+      if (attempt === 1) {
+        return { ok: false, status: result.status, rateLimited: true };
+      }
+      continue;
+    }
+    // Definite non-200 (404, 403, 410, 500) - no retry needed
+    return { ok: false, status: result.status, rateLimited: false };
+  }
+  return null;
 }
 
 export async function checkExtras(baseUrl: string): Promise<ExtrasResult> {
@@ -1181,32 +1266,65 @@ export async function checkExtras(baseUrl: string): Promise<ExtrasResult> {
     checkHttpToHttpsRedirect(origin),
   ]);
 
-  let sitemapFound = false;
+  let sitemapStatus: SitemapStatus = "missing";
+  let sitemapUrl: string | null = null;
+  const declaredUrls: string[] = [];
 
   if (robots?.ok && robots.body) {
-    const sitemapsInRobots = extractSitemapsFromRobots(robots.body);
-    for (const url of sitemapsInRobots.slice(0, 3)) {
-      const result = await fetchExtraFile(url);
-      if (result?.ok) {
-        sitemapFound = true;
-        break;
-      }
-    }
+    declaredUrls.push(...extractSitemapsFromRobots(robots.body).slice(0, 3));
   }
 
-  if (!sitemapFound) {
-    for (const path of SITEMAP_FALLBACK_PATHS) {
-      const result = await fetchExtraFile(`${origin}${path}`);
-      if (result?.ok) {
-        sitemapFound = true;
+  if (declaredUrls.length > 0) {
+    // Walk each declared URL. Outcomes:
+    //   - any verified → "verified"
+    //   - all hit rate-limit → "declared-unverified" (couldn't verify)
+    //   - any got a definite 4xx/5xx that wasn't rate-limit → "declared-broken"
+    //     (overrides unverified - if owner-stated URL is genuinely 404,
+    //     that's a real problem worth surfacing)
+    let anyVerified = false;
+    let anyBroken = false;
+    let anyRateLimited = false;
+    for (const url of declaredUrls) {
+      const result = await fetchSitemap(url);
+      if (!result) continue;
+      if (result.ok) {
+        anyVerified = true;
+        sitemapUrl = url;
         break;
       }
+      if (result.rateLimited) {
+        anyRateLimited = true;
+      } else {
+        // 404 / 403 / 410 / 500 etc. - real broken URL
+        anyBroken = true;
+        sitemapUrl = url;
+      }
+    }
+    if (anyVerified) sitemapStatus = "verified";
+    else if (anyBroken) sitemapStatus = "declared-broken";
+    else if (anyRateLimited) sitemapStatus = "declared-unverified";
+  }
+
+  if (sitemapStatus === "missing") {
+    for (const path of SITEMAP_FALLBACK_PATHS) {
+      const url = `${origin}${path}`;
+      const result = await fetchSitemap(url);
+      if (result?.ok) {
+        sitemapStatus = "verified";
+        sitemapUrl = url;
+        break;
+      }
+      // Don't keep hammering a rate-limited host across many fallback
+      // paths - stop after the first ambiguous signal.
+      if (result?.rateLimited) break;
     }
   }
 
   return {
     robotsTxt: !!robots?.ok,
-    sitemap: sitemapFound,
+    sitemap: sitemapStatus === "verified" || sitemapStatus === "declared-unverified",
+    sitemapStatus,
+    sitemapUrl,
     llmsTxt: !!llms?.ok,
     httpToHttps,
   };
@@ -1223,22 +1341,22 @@ export async function fetchPageSpeed(url: string): Promise<CategoryResult> {
     const score = Math.round((lighthouse?.categories?.performance?.score ?? 0) * 100);
 
     if (score >= 90) {
-      checks.push(check("pass", "Performance Score", `${score}/100 — შესანიშნავი`, undefined, score));
+      checks.push(check("pass", "Performance Score", `${score}/100 - შესანიშნავი`, undefined, score));
     } else if (score >= 50) {
-      checks.push(check("warn", "Performance Score", `${score}/100 — საჭიროებს გაუმჯობესებას`, "ოპტიმიზაცია: სურათების შემცირება, JS-ის გაყოფა, კეშირება.", score));
+      checks.push(check("warn", "Performance Score", `${score}/100 - საჭიროებს გაუმჯობესებას`, "ოპტიმიზაცია: სურათების შემცირება, JS-ის გაყოფა, კეშირება.", score));
     } else {
-      checks.push(check("fail", "Performance Score", `${score}/100 — სუსტი`, "კრიტიკული ოპტიმიზაცია სჭირდება — სიჩქარე SEO რანკინგის ფაქტორია.", score));
+      checks.push(check("fail", "Performance Score", `${score}/100 - სუსტი`, "კრიტიკული ოპტიმიზაცია სჭირდება - სიჩქარე SEO რანკინგის ფაქტორია.", score));
     }
 
     const lcp = audits["largest-contentful-paint"]?.numericValue;
     if (lcp !== undefined) {
       const lcpSec = (lcp / 1000).toFixed(2);
       if (lcp < 2500) {
-        checks.push(check("pass", "LCP (Largest Contentful Paint)", `${lcpSec}წ — კარგი ✓`, undefined, lcpSec));
+        checks.push(check("pass", "LCP (Largest Contentful Paint)", `${lcpSec}წ - კარგი ✓`, undefined, lcpSec));
       } else if (lcp < 4000) {
-        checks.push(check("warn", "LCP (Largest Contentful Paint)", `${lcpSec}წ — საჭიროებს გაუმჯობესებას`, "ოპტიმალური <2.5წ. შეამცირეთ hero-სურათი, preload LCP-ისთვის.", lcpSec));
+        checks.push(check("warn", "LCP (Largest Contentful Paint)", `${lcpSec}წ - საჭიროებს გაუმჯობესებას`, "ოპტიმალური <2.5წ. შეამცირეთ hero-სურათი, preload LCP-ისთვის.", lcpSec));
       } else {
-        checks.push(check("fail", "LCP (Largest Contentful Paint)", `${lcpSec}წ — სუსტი`, "კრიტიკული — ოპტიმალური <2.5წ.", lcpSec));
+        checks.push(check("fail", "LCP (Largest Contentful Paint)", `${lcpSec}წ - სუსტი`, "კრიტიკული - ოპტიმალური <2.5წ.", lcpSec));
       }
     }
 
@@ -1246,11 +1364,11 @@ export async function fetchPageSpeed(url: string): Promise<CategoryResult> {
     if (cls !== undefined) {
       const clsVal = cls.toFixed(3);
       if (cls < 0.1) {
-        checks.push(check("pass", "CLS (Cumulative Layout Shift)", `${clsVal} — სტაბილური ✓`, undefined, clsVal));
+        checks.push(check("pass", "CLS (Cumulative Layout Shift)", `${clsVal} - სტაბილური ✓`, undefined, clsVal));
       } else if (cls < 0.25) {
-        checks.push(check("warn", "CLS (Cumulative Layout Shift)", `${clsVal} — საჭიროებს გაუმჯობესებას`, "ოპტიმალური <0.1. დაამატეთ width/height სურათებზე, font-display: swap.", clsVal));
+        checks.push(check("warn", "CLS (Cumulative Layout Shift)", `${clsVal} - საჭიროებს გაუმჯობესებას`, "ოპტიმალური <0.1. დავამატებთ width/height-ს სურათებზე და font-display: swap-ს.", clsVal));
       } else {
-        checks.push(check("fail", "CLS (Cumulative Layout Shift)", `${clsVal} — არასტაბილური`, "კრიტიკული — ოპტიმალური <0.1.", clsVal));
+        checks.push(check("fail", "CLS (Cumulative Layout Shift)", `${clsVal} - არასტაბილური`, "კრიტიკული - ოპტიმალური <0.1.", clsVal));
       }
     }
 
@@ -1258,11 +1376,11 @@ export async function fetchPageSpeed(url: string): Promise<CategoryResult> {
     if (tbt !== undefined) {
       const tbtMs = Math.round(tbt);
       if (tbt < 200) {
-        checks.push(check("pass", "TBT (Total Blocking Time)", `${tbtMs}ms — სწრაფი ✓`, undefined, tbtMs));
+        checks.push(check("pass", "TBT (Total Blocking Time)", `${tbtMs}ms - სწრაფი ✓`, undefined, tbtMs));
       } else if (tbt < 600) {
         checks.push(check("warn", "TBT (Total Blocking Time)", `${tbtMs}ms`, "INP-ის გაუმჯობესებისთვის: გაჰყავით JS, მოაცილეთ third-party.", tbtMs));
       } else {
-        checks.push(check("fail", "TBT (Total Blocking Time)", `${tbtMs}ms — ნელი`, "კრიტიკული — გაჰყავით JS bundle-ები.", tbtMs));
+        checks.push(check("fail", "TBT (Total Blocking Time)", `${tbtMs}ms - ნელი`, "კრიტიკული - გაჰყავით JS bundle-ები.", tbtMs));
       }
     }
 
@@ -1274,18 +1392,18 @@ export async function fetchPageSpeed(url: string): Promise<CategoryResult> {
       } else if (fcp < 3000) {
         checks.push(check("warn", "FCP (First Contentful Paint)", `${fcpSec}წ`, "ოპტიმალური <1.8წ.", fcpSec));
       } else {
-        checks.push(check("fail", "FCP (First Contentful Paint)", `${fcpSec}წ`, "სუსტი — ოპტიმალური <1.8წ.", fcpSec));
+        checks.push(check("fail", "FCP (First Contentful Paint)", `${fcpSec}წ`, "სუსტი - ოპტიმალური <1.8წ.", fcpSec));
       }
     }
 
     const isMobile = audits.viewport?.score === 1;
     if (isMobile) {
-      checks.push(check("pass", "Mobile Viewport", "viewport meta tag მითითებულია — mobile-friendly ✓"));
+      checks.push(check("pass", "Mobile Viewport", "viewport meta tag მითითებულია - mobile-friendly ✓"));
     } else {
-      checks.push(check("fail", "Mobile Viewport", "viewport meta tag არ არის ან არასწორი", "დაამატეთ <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">"));
+      checks.push(check("fail", "Mobile Viewport", "viewport meta tag არ არის ან არასწორი", "დავამატებთ <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">-ს"));
     }
   } catch {
-    checks.push(check("info", "PageSpeed Insights", "PageSpeed API მიუწვდომელია (anonymous limit ან network პრობლემა)", "სცადეთ მოგვიანებით — Google ანონიმური მოთხოვნები შეზღუდულია."));
+    checks.push(check("info", "PageSpeed Insights", "PageSpeed API მიუწვდომელია (anonymous limit ან network პრობლემა)", "სცადეთ მოგვიანებით - Google ანონიმური მოთხოვნები შეზღუდულია."));
   }
 
   return { name: "Performance (Core Web Vitals)", icon: "Zap", checks };

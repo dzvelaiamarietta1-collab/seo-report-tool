@@ -1,0 +1,315 @@
+@import "tailwindcss";
+
+/* === Theme tokens — black + white monochrome ==========================
+ * Pure white background + near-black text. Matches the Optimus v0
+ * template (which uses #000 / #fff in its raw CSS). Italic Instrument
+ * Serif carries the emphasis where a coloured accent would be. The
+ * presentation slides keep their own inline cream palette so this
+ * change does not affect /presentation output.
+ * ========================================================================= */
+:root {
+  --background: #ffffff;
+  --surface: #f7f7f8;
+  --surface-elevated: #ffffff;
+  --foreground: #0a0a0a;
+  --foreground-muted: rgba(10, 10, 10, 0.6);
+  --foreground-subtle: rgba(10, 10, 10, 0.4);
+
+  /* No coloured accent — emphasis is italic typography. Accent token
+     left pointing at foreground for backwards compatibility with any
+     components that still read `--accent`. */
+  --accent: #0a0a0a;
+  --accent-hover: #000000;
+  --accent-soft: rgba(10, 10, 10, 0.04);
+  --accent-foreground: #ffffff;
+
+  --border: rgba(10, 10, 10, 0.1);
+  --border-strong: rgba(10, 10, 10, 0.18);
+
+  /* Inverse — used on dark sections (#0a0a0a bg + white text). */
+  --background-inverse: #0a0a0a;
+  --foreground-inverse: #ffffff;
+  --border-inverse: rgba(255, 255, 255, 0.1);
+  --border-inverse-strong: rgba(255, 255, 255, 0.18);
+
+  --success: #1f6f4a;
+  --warning: #b8843e;
+  --error: #a03a3a;
+  --info: #1e3a8a;
+
+  /* Latin glyphs render with Instrument Sans (the Optimus template's
+     body font); Georgian glyphs fall through to Noto Sans Georgian
+     automatically because the cascade picks per-codepoint coverage. */
+  --font-sans: var(--font-instrument-sans), var(--font-noto-georgian),
+    "Instrument Sans", "Noto Sans Georgian", "Sylfaen", system-ui,
+    -apple-system, "Segoe UI", sans-serif;
+  /* Editorial serif — Instrument Serif for Latin, Noto Serif Georgian
+     for Georgian glyphs. Italic Instrument Serif gives the accent
+     emphasis on headlines. */
+  --font-serif: var(--font-instrument-serif), var(--font-noto-serif-georgian),
+    "Instrument Serif", "Noto Serif Georgian", Georgia, "Times New Roman",
+    serif;
+  --font-mono: var(--font-jetbrains-mono), "JetBrains Mono", ui-monospace,
+    "SF Mono", Menlo, Consolas, monospace;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-elevated: var(--surface-elevated);
+  --color-foreground: var(--foreground);
+  --color-foreground-muted: var(--foreground-muted);
+  --color-foreground-subtle: var(--foreground-subtle);
+
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-foreground: var(--accent-foreground);
+
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-error: var(--error);
+  --color-info: var(--info);
+
+  --font-sans: var(--font-sans);
+  --font-serif: var(--font-serif);
+  --font-mono: var(--font-mono);
+}
+
+html {
+  color-scheme: light;
+  background: var(--background);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  /* Editorial body voice — Noto Serif Georgian for Georgian glyphs,
+     Georgia for Latin. The whole report reads like a publication, not
+     a dashboard. The `cv11/ss01/ss03` features tune Fira Sans details
+     and are no-ops on the serif fonts, which is harmless. */
+  font-family: var(--font-serif);
+  font-feature-settings: "cv11", "ss01", "ss03";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Hero accent-orb breathing — subtle 8s loop that warms the page without
+   demanding attention. prefers-reduced-motion users get a static orb. */
+@keyframes pulse-slow {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.06);
+  }
+}
+.motion-safe\:animate-pulse-slow {
+  animation: pulse-slow 8s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .motion-safe\:animate-pulse-slow {
+    animation: none;
+  }
+}
+
+/* === Print + presentation mode ==========================================
+ * Plain white paper, dark text. Slides keep their cream gradient via inline
+ * styles (they sit on white pages as cards). Dark-mode utility classes that
+ * may still exist in components are neutralised for legibility.
+ * ========================================================================= */
+@media print {
+  :root,
+  html,
+  body {
+    background: #ffffff !important;
+    color: #0f1b3d !important;
+    color-scheme: light !important;
+    --background: #ffffff !important;
+    --foreground: #0f1b3d !important;
+    --surface: #ffffff !important;
+    --surface-elevated: #fafafa !important;
+    --foreground-muted: #4a5a7c !important;
+    --foreground-subtle: #8b95a8 !important;
+    --border: #d9d0bc !important;
+    --border-strong: #c9bfa8 !important;
+  }
+
+  body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    font-size: 10.5pt;
+    line-height: 1.4;
+  }
+
+  @page {
+    size: A4;
+    margin: 14mm 12mm;
+  }
+
+  [data-print-hide] {
+    display: none !important;
+  }
+
+  [class*="dark:bg-"] {
+    background-color: #ffffff !important;
+    background-image: none !important;
+  }
+  [class*="dark:text-zinc-"],
+  [class*="dark:text-neutral-"],
+  [class*="dark:text-stone-"],
+  [class*="dark:text-gray-"],
+  [class*="dark:text-slate-"],
+  [class*="dark:text-white"] {
+    color: #0f1b3d !important;
+  }
+  [class*="dark:border-"] {
+    border-color: #d9d0bc !important;
+  }
+  [class*="dark:stroke-"] {
+    stroke: #d9d0bc !important;
+  }
+
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+  *:hover {
+    background-color: inherit !important;
+    border-color: inherit !important;
+    transform: none !important;
+  }
+
+  section,
+  article,
+  header,
+  .print-keep-together,
+  .group {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  main > section,
+  .space-y-12 > section {
+    page-break-before: auto;
+    break-before: auto;
+  }
+
+  h1,
+  [class*="break-all"],
+  code,
+  pre {
+    word-break: break-all;
+    overflow-wrap: break-word;
+  }
+  pre,
+  pre code {
+    white-space: pre-wrap !important;
+    overflow: visible !important;
+    word-break: break-word !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  .overflow-x-auto,
+  .overflow-y-auto {
+    overflow: visible !important;
+  }
+  [class*="max-h-"] {
+    max-height: none !important;
+  }
+
+  .py-10,
+  .py-14,
+  .sm\:py-14 {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+  }
+  .mb-14 {
+    margin-bottom: 14pt !important;
+  }
+  .mb-10 {
+    margin-bottom: 10pt !important;
+  }
+  .mt-20 {
+    margin-top: 12pt !important;
+  }
+  .lg\:grid-cols-3 {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  .md\:grid-cols-2 {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8pt !important;
+  }
+  .p-5 {
+    padding: 8pt !important;
+  }
+  .p-4 {
+    padding: 7pt !important;
+  }
+  .border-dashed {
+    display: none !important;
+  }
+  [class*="shadow-"] {
+    box-shadow: none !important;
+  }
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+  .max-w-5xl {
+    max-width: 100% !important;
+  }
+}
+
+@media print {
+  body:has(.presentation-root) {
+    background: #ffffff !important;
+  }
+  .presentation-root {
+    background: white !important;
+    padding: 0 !important;
+  }
+  .presentation-deck {
+    padding: 0 !important;
+    max-width: none !important;
+  }
+  .presentation-deck > * {
+    margin: 0 !important;
+  }
+  .presentation-deck .slide {
+    width: 100% !important;
+    aspect-ratio: 16 / 9 !important;
+    border-radius: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    page-break-after: always !important;
+    break-after: page !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    overflow: hidden !important;
+  }
+  .presentation-deck .slide:last-child {
+    page-break-after: auto !important;
+    break-after: auto !important;
+  }
+}
+
+@page presentation {
+  size: 13.333in 7.5in;
+  margin: 0;
+}
+
+.presentation-root {
+  page: presentation;
+}

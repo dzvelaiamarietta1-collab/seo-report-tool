@@ -2,7 +2,7 @@ import type { AnalysisResult, CategoryKey, CheckResult } from "./types";
 
 // A single instance where a competitor passes a check that the user's
 // site fails or warns on (or doesn't run at all). "missing" means the
-// user's analysis didn't include this category — usually because the
+// user's analysis didn't include this category - usually because the
 // site was bot-protected or fetch failed for some category. We treat it
 // as an advantage anyway since the gap is real from the user's POV.
 export interface CompetitorAdvantage {
@@ -27,7 +27,7 @@ export interface ActionRecommendation {
   steps: string[];
   estimatedImpact: string;
   // How many of the analysed competitors already do this. Useful UX
-  // signal — "all 3 competitors do this" is more pressing than "1 of 3".
+  // signal - "all 3 competitors do this" is more pressing than "1 of 3".
   competitorsCount: number;
   totalCompetitors: number;
 }
@@ -42,9 +42,9 @@ export interface SelfIssue {
   status: "fail" | "warn";
   message: string;
   recommendation?: string;
-  // 0..totalCompetitors — how many competitors hit the same fail/warn.
+  // 0..totalCompetitors - how many competitors hit the same fail/warn.
   competitorsAlsoFailing: number;
-  // 0..totalCompetitors — how many competitors pass this. competitorsPassing > 0
+  // 0..totalCompetitors - how many competitors pass this. competitorsPassing > 0
   // means there's a known way to fix this; competitive disadvantage.
   competitorsPassing: number;
   totalCompetitors: number;
@@ -54,7 +54,7 @@ export interface GapReport {
   // Keyed by competitor hostname. Order matches the input array minus index 0.
   advantagesByCompetitor: { hostname: string; advantages: CompetitorAdvantage[] }[];
   totalAdvantages: number;
-  // Sorted by priority descending. Each entry is deduped — if 3 competitors
+  // Sorted by priority descending. Each entry is deduped - if 3 competitors
   // all do FAQ schema, this appears once with competitorsCount=3.
   recommendations: ActionRecommendation[];
   // The user's full fail/warn list, annotated with competitor signals.
@@ -88,7 +88,7 @@ interface RecTemplate {
 }
 
 // Recommendations keyed by check label. Each one is grounded in a
-// specific technical gap that the comparison surfaced — never generic
+// specific technical gap that the comparison surfaced - never generic
 // advice. If a label isn't in this table we still generate a recommendation
 // via the fallback at the bottom of analyseGaps.
 const RECOMMENDATION_TEMPLATES: Record<string, RecTemplate> = {
@@ -97,12 +97,12 @@ const RECOMMENDATION_TEMPLATES: Record<string, RecTemplate> = {
     category: "onPage",
     title: "Title tag-ის ოპტიმიზაცია",
     rationale:
-      "Title არის SERP-ში #1 CTR სიგნალი. კონკურენტს უკეთესი title-ის სტრუქტურა აქვს — keyword + ბრენდი 50-60 სიმბოლოში.",
+      "Title არის SERP-ში #1 CTR სიგნალი. კონკურენტს უკეთესი title-ის სტრუქტურა აქვს - keyword + ბრენდი 50-60 სიმბოლოში.",
     steps: [
       "შეცვალე title 50-60 სიმბოლომდე",
       "მთავარი keyword დააყენე დასაწყისში",
       "ბრენდი დაამატე ბოლოში | სიმბოლოს შემდეგ",
-      "ცალკე title ყოველი გვერდისთვის — დუბლირება არ უნდა იყოს",
+      "ცალკე title ყოველი გვერდისთვის - დუბლირება არ უნდა იყოს",
     ],
     estimatedImpact: "CTR +10-25%",
   },
@@ -114,7 +114,7 @@ const RECOMMENDATION_TEMPLATES: Record<string, RecTemplate> = {
     steps: [
       "დაამატე meta description 140-160 სიმბოლოთი",
       'გამოიყენე active voice ("გაიგე", "სცადე", "შეუკვეთე")',
-      "ჩართე CTA — მოქმედებაზე მოწოდება",
+      "ჩართე CTA - მოქმედებაზე მოწოდება",
     ],
     estimatedImpact: "CTR +5-15%",
   },
@@ -122,7 +122,7 @@ const RECOMMENDATION_TEMPLATES: Record<string, RecTemplate> = {
     category: "onPage",
     title: "H1 სტრუქტურის გასწორება",
     rationale:
-      "H1 გვერდის თემის Google-ისთვის გასაგებად ცენტრალურია. კონკურენტს სუფთა H1 აქვს — ერთი, აღწერითი.",
+      "H1 გვერდის თემის Google-ისთვის გასაგებად ცენტრალურია. კონკურენტს სუფთა H1 აქვს - ერთი, აღწერითი.",
     steps: [
       "გვერდზე ერთი H1 უნდა იყოს",
       "H1 უნდა შეიცავდეს მთავარ keyword-ს",
@@ -150,7 +150,7 @@ const RECOMMENDATION_TEMPLATES: Record<string, RecTemplate> = {
     steps: [
       "ყოველი მთავარი გვერდიდან 3+ შიდა ბმული",
       "Pillar + cluster model: მთავარი თემები ↔ ქვე-თემები",
-      "ბუნებრივი anchor text — არ stuff-ი keyword-ით",
+      "ბუნებრივი anchor text - არ stuff-ი keyword-ით",
     ],
     estimatedImpact: "Internal PageRank +15-30%",
   },
@@ -160,11 +160,11 @@ const RECOMMENDATION_TEMPLATES: Record<string, RecTemplate> = {
     category: "technical",
     title: "HTTPS-ის ჩართვა",
     rationale:
-      "HTTPS Google-ის რანკინგის ფაქტორია 2014-დან. კონკურენტი დაცული კავშირით მუშაობს, შენ — არა.",
+      "HTTPS Google-ის რანკინგის ფაქტორია 2014-დან. კონკურენტი დაცული კავშირით მუშაობს, შენ - არა.",
     steps: [
       "მიიღე SSL/TLS სერტიფიკატი (Let's Encrypt უფასოა)",
       "ყველა HTTP-ი დაარედირექტე HTTPS-ზე (301)",
-      "Mixed content გადახედე — ყველა რესურსი HTTPS-ით",
+      "Mixed content გადახედე - ყველა რესურსი HTTPS-ით",
     ],
     estimatedImpact: "Ranking signal + browser trust",
   },
@@ -184,9 +184,9 @@ const RECOMMENDATION_TEMPLATES: Record<string, RecTemplate> = {
     category: "technical",
     title: "XML Sitemap-ის შექმნა",
     rationale:
-      "Sitemap Google-ს ეუბნება რა გვერდები არსებობს და როდის განახლდა. კონკურენტი ჩქარა და სრულად ინდექსდება — შენ ვერა.",
+      "Sitemap Google-ს ეუბნება რა გვერდები არსებობს და როდის განახლდა. კონკურენტი ჩქარა და სრულად ინდექსდება - შენ ვერა.",
     steps: [
-      "გენერირება — Yoast/RankMath/AIOSEO ან კოდით",
+      "გენერირება - Yoast/RankMath/AIOSEO ან კოდით",
       "URL მიუთითე robots.txt-ში",
       "დაარეგისტრირე Google Search Console-ში",
     ],
@@ -200,7 +200,7 @@ const RECOMMENDATION_TEMPLATES: Record<string, RecTemplate> = {
     steps: [
       'ყოველ გვერდს დაამატე <link rel="canonical" href="...">',
       "Self-canonical: გვერდი თავის თავზე უთითებს",
-      'წყვილი www/non-www — ერთი canonical-ად აირჩიე',
+      'წყვილი www/non-www - ერთი canonical-ად აირჩიე',
     ],
     estimatedImpact: "Duplicate content protection",
   },
@@ -222,11 +222,11 @@ const RECOMMENDATION_TEMPLATES: Record<string, RecTemplate> = {
     category: "schema",
     title: "Structured Data (JSON-LD) დამატება",
     rationale:
-      "JSON-LD Google-ისთვის გვერდის შინაარსის გასაგებად მთავარია. კონკურენტი Rich Results-ში ჩანს — შენ უბრალო ლისტინგი ხარ.",
+      "JSON-LD Google-ისთვის გვერდის შინაარსის გასაგებად მთავარია. კონკურენტი Rich Results-ში ჩანს - შენ უბრალო ლისტინგი ხარ.",
     steps: [
-      "Organization schema — ბრენდის graph-ისთვის",
-      "BreadcrumbList — navigation",
-      "FAQPage / HowTo / Product — შენი კონტენტის ტიპის მიხედვით",
+      "Organization schema - ბრენდის graph-ისთვის",
+      "BreadcrumbList - navigation",
+      "FAQPage / HowTo / Product - შენი კონტენტის ტიპის მიხედვით",
       "სცადე Google Rich Results Test",
     ],
     estimatedImpact: "Rich Results +30%, AI citations +20-40%",
@@ -235,10 +235,10 @@ const RECOMMENDATION_TEMPLATES: Record<string, RecTemplate> = {
     category: "schema",
     title: "Open Graph tags დამატება",
     rationale:
-      "OG tags Facebook/LinkedIn-ში გაზიარების prevuew-ს აკონტროლებს. კონკურენტი share-ში პროფესიონალურად გამოიყურება — შენ ცარიელად.",
+      "OG tags Facebook/LinkedIn-ში გაზიარების prevuew-ს აკონტროლებს. კონკურენტი share-ში პროფესიონალურად გამოიყურება - შენ ცარიელად.",
     steps: [
-      'og:title, og:description, og:image (1200×630px), og:url, og:type — ყველა აუცილებელია',
-      "og:image — JPG/PNG, არა SVG",
+      'og:title, og:description, og:image (1200×630px), og:url, og:type - ყველა აუცილებელია',
+      "og:image - JPG/PNG, არა SVG",
       "ცალკე image ყოველი მნიშვნელოვანი გვერდისთვის",
     ],
     estimatedImpact: "Social CTR +20-50%",
@@ -249,9 +249,9 @@ const RECOMMENDATION_TEMPLATES: Record<string, RecTemplate> = {
     rationale:
       "Twitter/X-ში გაზიარების preview. კონკურენტი feed-ში outstanding-ი ჩანს.",
     steps: [
-      'twitter:card — "summary_large_image"',
+      'twitter:card - "summary_large_image"',
       "twitter:title, twitter:description, twitter:image",
-      "twitter:site — შენი @handle",
+      "twitter:site - შენი @handle",
     ],
     estimatedImpact: "Twitter CTR +15-30%",
   },
@@ -259,7 +259,7 @@ const RECOMMENDATION_TEMPLATES: Record<string, RecTemplate> = {
     category: "schema",
     title: "FAQ Schema-ის ჩაშენება",
     rationale:
-      "FAQ schema Google AI Overviews-ში ციტირების მთავარი სიგნალია. კონკურენტი AI პასუხებში გამოჩნდება, შენ — არა.",
+      "FAQ schema Google AI Overviews-ში ციტირების მთავარი სიგნალია. კონკურენტი AI პასუხებში გამოჩნდება, შენ - არა.",
     steps: [
       "JSON-LD FAQPage schema საიტის ხშირი კითხვებისთვის",
       "კითხვა-პასუხი წყვილებად",
@@ -273,7 +273,7 @@ const RECOMMENDATION_TEMPLATES: Record<string, RecTemplate> = {
     category: "aiEra",
     title: "llms.txt სტანდარტის დანერგვა",
     rationale:
-      "llms.txt 2026 ახალი სტანდარტია AI კრაულერებისთვის (ChatGPT, Claude, Perplexity). კონკურენტი AI ძიებაში გამოჩნდება — შენ უხილავი ხარ.",
+      "llms.txt 2026 ახალი სტანდარტია AI კრაულერებისთვის (ChatGPT, Claude, Perplexity). კონკურენტი AI ძიებაში გამოჩნდება - შენ უხილავი ხარ.",
     steps: [
       "/llms.txt ფაილი მთავარ დონეზე",
       'ჩამოწერე საიტის სტრუქტურა და მთავარი გვერდები markdown-ით',
@@ -285,11 +285,11 @@ const RECOMMENDATION_TEMPLATES: Record<string, RecTemplate> = {
     category: "aiEra",
     title: "Server-Side Rendering ან SSG",
     rationale:
-      "AI კრაულერები JavaScript-ს არ ასრულებენ — მათ სუფთა HTML სჭირდებათ. კონკურენტი SSR-ით მუშაობს, შენი SPA AI-სთვის უხილავია.",
+      "AI კრაულერები JavaScript-ს არ ასრულებენ - მათ სუფთა HTML სჭირდებათ. კონკურენტი SSR-ით მუშაობს, შენი SPA AI-სთვის უხილავია.",
     steps: [
-      "Next.js / Nuxt / Astro — SSR ან SSG mode-ით",
+      "Next.js / Nuxt / Astro - SSR ან SSG mode-ით",
       "Critical content სერვერზე გენერირდეს, არა client-ზე",
-      'Google Mobile Test-ით ვალიდაცია — ხედავს თუ არა შინაარსს',
+      'Google Mobile Test-ით ვალიდაცია - ხედავს თუ არა შინაარსს',
     ],
     estimatedImpact: "AI indexing + Google First Paint",
   },
@@ -297,11 +297,11 @@ const RECOMMENDATION_TEMPLATES: Record<string, RecTemplate> = {
     category: "aiEra",
     title: "Bottom Line Up Front კონტენტის სტრუქტურა",
     rationale:
-      "AI-ი ციტირებს მოკლე, თვითმყოფად პასუხებს. კონკურენტი BLUF სტრუქტურით წერს — AI Overviews-ში ციტირდება.",
+      "AI-ი ციტირებს მოკლე, თვითმყოფად პასუხებს. კონკურენტი BLUF სტრუქტურით წერს - AI Overviews-ში ციტირდება.",
     steps: [
       'ყოველი სტატია იწყებოდეს 1-2 ფრაზიანი answer-ით',
       "შემდეგ ღრმავდებოდე დეტალურ ანალიზში",
-      "გამოიყენე ცხრილები, bullet-ები — AI მათ ციტირებას უპირატესობას ანიჭებს",
+      "გამოიყენე ცხრილები, bullet-ები - AI მათ ციტირებას უპირატესობას ანიჭებს",
     ],
     estimatedImpact: "AI citation rate +30%",
   },
@@ -311,12 +311,12 @@ const RECOMMENDATION_TEMPLATES: Record<string, RecTemplate> = {
     category: "performance",
     title: "LCP-ის გაუმჯობესება",
     rationale:
-      "LCP (Largest Contentful Paint) Google-ის რანკინგ ფაქტორია. კონკურენტი ფიქსირდება 2.5წ-ში, შენი — გადაჭარბებული.",
+      "LCP (Largest Contentful Paint) Google-ის რანკინგ ფაქტორია. კონკურენტი ფიქსირდება 2.5წ-ში, შენი - გადაჭარბებული.",
     steps: [
-      "Hero სურათი — preload + WebP/AVIF ფორმატი",
-      "Render-blocking CSS/JS — defer ან async",
-      "CDN — სტატიკური რესურსები ახლოს მომხმარებელთან",
-      "Fonts — preload + font-display: swap",
+      "Hero სურათი - preload + WebP/AVIF ფორმატი",
+      "Render-blocking CSS/JS - defer ან async",
+      "CDN - სტატიკური რესურსები ახლოს მომხმარებელთან",
+      "Fonts - preload + font-display: swap",
     ],
     estimatedImpact: "Mobile ranking + bounce -15-25%",
   },
@@ -324,11 +324,11 @@ const RECOMMENDATION_TEMPLATES: Record<string, RecTemplate> = {
     category: "performance",
     title: "INP-ის ოპტიმიზაცია",
     rationale:
-      "INP (Interaction to Next Paint) 2024-დან Core Web Vital გახდა. კონკურენტი 200ms-ში პასუხობს — შენ ნელია.",
+      "INP (Interaction to Next Paint) 2024-დან Core Web Vital გახდა. კონკურენტი 200ms-ში პასუხობს - შენ ნელია.",
     steps: [
-      "JavaScript bundle გაყავი — code splitting",
-      "Third-party სკრიპტები გადახედე — Analytics, Tag Manager",
-      "Heavy computation — web workers-ში",
+      "JavaScript bundle გაყავი - code splitting",
+      "Third-party სკრიპტები გადახედე - Analytics, Tag Manager",
+      "Heavy computation - web workers-ში",
       "React → use deferred state, useTransition",
     ],
     estimatedImpact: "Interaction quality + ranking",
@@ -340,14 +340,14 @@ const RECOMMENDATION_TEMPLATES: Record<string, RecTemplate> = {
       "CLS (Cumulative Layout Shift) მომხმარებლის გაღიზიანების მთავარი წყაროა. კონკურენტი stable layout-ით მუშაობს.",
     steps: [
       "<img>-ს ყოველთვის წერე width/height ან aspect-ratio",
-      "Font swap — გამოიყენე size-adjust ან optional",
-      "რეკლამის slots — წინასწარ დაიჯავშნე ფიქსირებული ზომა",
+      "Font swap - გამოიყენე size-adjust ან optional",
+      "რეკლამის slots - წინასწარ დაიჯავშნე ფიქსირებული ზომა",
     ],
     estimatedImpact: "UX score + ranking",
   },
 };
 
-// Performance metrics are special — we compare actual numbers, not just
+// Performance metrics are special - we compare actual numbers, not just
 // pass/fail. This lets us say "their LCP is 1.8s, yours is 3.4s" instead
 // of just "they pass LCP". Parses the value field which the checks store
 // as a string like "1.8s" or "180ms".
@@ -420,7 +420,7 @@ export function analyzeGaps(
           mainMessage = mainCheck.message;
         }
 
-        if (!mainStatus) continue; // main passes too — no gap
+        if (!mainStatus) continue; // main passes too - no gap
 
         const severity: CompetitorAdvantage["severity"] =
           mainStatus === "fail"
@@ -483,17 +483,17 @@ export function analyzeGaps(
         totalCompetitors: competitors.length,
       });
     } else {
-      // Generic fallback — still gives the user a structured recommendation
+      // Generic fallback - still gives the user a structured recommendation
       // even for checks we don't have a hand-tuned template for.
       recommendations.push({
         id: label,
         category: info.category,
-        title: `"${label}" — გასწორება`,
+        title: `"${label}" - გასწორება`,
         priority,
-        rationale: `${info.count}/${competitors.length} კონკურენტი ამ შემოწმებას აკმაყოფილებს, თქვენი საიტი — არა.`,
+        rationale: `${info.count}/${competitors.length} კონკურენტი ამ შემოწმებას აკმაყოფილებს, თქვენი საიტი - არა.`,
         steps: [
           "გადახედე check-ის რეკომენდაცია ცალკეული საიტის audit-ში",
-          "შემდეგ რეგენერირე ანალიზი — გადაამოწმე გასწორება",
+          "შემდეგ რეგენერირე ანალიზი - გადაამოწმე გასწორება",
         ],
         estimatedImpact: "Technical SEO score +5-10%",
         competitorsCount: info.count,
@@ -504,7 +504,7 @@ export function analyzeGaps(
 
   // Build the self-issues list: every fail/warn on the user's own site,
   // annotated with competitor signal. This is the "comprehensive audit"
-  // view — gap analysis alone hides issues that the user has but
+  // view - gap analysis alone hides issues that the user has but
   // competitors also have (industry-wide weaknesses), and those still
   // matter. The action plan below augments recommendations with the
   // ones that didn't already surface through the gap path.
@@ -585,7 +585,7 @@ export function analyzeGaps(
         priority,
         rationale:
           issue.competitorsAlsoFailing === competitors.length
-            ? `ყველა ${competitors.length} კონკურენტი ამ შემოწმებას ვერც აკმაყოფილებს — industry-wide სუსტი წერტილი. გასწორება საუკეთესო შანსია კონკურენტებზე გასაცილებლად.`
+            ? `ყველა ${competitors.length} კონკურენტი ამ შემოწმებას ვერც აკმაყოფილებს - industry-wide სუსტი წერტილი. გასწორება საუკეთესო შანსია კონკურენტებზე გასაცილებლად.`
             : template.rationale,
         steps: template.steps,
         estimatedImpact: template.estimatedImpact,
@@ -596,18 +596,18 @@ export function analyzeGaps(
       recommendations.push({
         id: issue.checkLabel,
         category: issue.category,
-        title: `"${issue.checkLabel}" — ${issue.status === "fail" ? "გასწორება" : "გაუმჯობესება"}`,
+        title: `"${issue.checkLabel}" - ${issue.status === "fail" ? "გასწორება" : "გაუმჯობესება"}`,
         priority,
         rationale:
           issue.recommendation ??
           `თქვენი საიტი ამ შემოწმებას ${issue.status === "fail" ? "ვერ აკმაყოფილებს" : "მხოლოდ ნაწილობრივ აკმაყოფილებს"}. ${
             issue.competitorsAlsoFailing > 0
-              ? `${issue.competitorsAlsoFailing}/${competitors.length} კონკურენტიც იგივე პრობლემას აწყდება — industry-wide გასაუმჯობესებელი წერტილი.`
+              ? `${issue.competitorsAlsoFailing}/${competitors.length} კონკურენტიც იგივე პრობლემას აწყდება - industry-wide გასაუმჯობესებელი წერტილი.`
               : "კონკურენტებიც პრობლემურები არიან, მაგრამ შენი გასწორება ცალკეული უპირატესობაა."
           }`,
         steps: [
           "გადახედე single-site audit-ში ცალკეული რეკომენდაცია",
-          "გასწორების შემდეგ რეგენერირე ანალიზი — გადაამოწმე",
+          "გასწორების შემდეგ რეგენერირე ანალიზი - გადაამოწმე",
         ],
         estimatedImpact:
           issue.status === "fail"
@@ -631,14 +631,14 @@ export function analyzeGaps(
 
 // ── Performance comparison helpers ──────────────────────────────────────
 // These complement the gap analysis with numeric perf deltas. The Core
-// Web Vitals are too important to flatten into pass/fail — we want to
+// Web Vitals are too important to flatten into pass/fail - we want to
 // surface the actual difference ("LCP 1.8s vs 3.4s") in the UI.
 
 export interface PerfComparison {
   metric: "LCP" | "INP" | "CLS" | "TBT" | "FCP";
   mainValue: number | null;
   bestCompetitor: { hostname: string; value: number } | null;
-  // Lower is better for all CWV — so "gap" is mainValue - bestCompetitor.
+  // Lower is better for all CWV - so "gap" is mainValue - bestCompetitor.
   // Positive gap = main is worse.
   gap: number | null;
   unit: "ms" | "score";

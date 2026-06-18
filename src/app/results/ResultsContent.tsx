@@ -24,6 +24,7 @@ import {
   Target,
   Presentation,
   Sparkles,
+  CalendarDays,
   type LucideIcon,
 } from "lucide-react";
 import type {
@@ -79,15 +80,69 @@ const CATEGORY_FALLBACK: Record<CategoryKey, { name: string; icon: string }> = {
   linkHealth: { name: "ბმულების ჯანმრთელობა", icon: "Link" },
   performance: { name: "Performance (Core Web Vitals)", icon: "Zap" },
   schema: { name: "Schema & სოც.მედია", icon: "Tag" },
-  aiEra: { name: "GEO — Generative Engine", icon: "Bot" },
+  aiEra: { name: "GEO - Generative Engine", icon: "Bot" },
 };
 
 const STAGE_LABELS: Record<StageId, string> = {
   fetch: "გვერდის HTML-ის ჩამოტვირთვა",
-  extras: "robots.txt, sitemap, llms.txt",
-  analyze: "HTML ანალიზი",
-  links: "შიდა ბმულების შემოწმება",
-  pagespeed: "Google PageSpeed Insights",
+  extras: "robots.txt, sitemap.xml, llms.txt",
+  analyze: "HTML ანალიზი - 50+ პუნქტი",
+  links: "შიდა და გარე ბმულების შემოწმება",
+  pagespeed: "Google PageSpeed - Core Web Vitals",
+};
+
+// Per-stage expected duration in seconds. Used by the progress UI to
+// show users that a long stage is normal, not stuck.
+const STAGE_EXPECTED_SECONDS: Record<StageId, number> = {
+  fetch: 8,
+  extras: 5,
+  analyze: 12,
+  links: 25,
+  pagespeed: 30,
+};
+
+// Sub-step commentary cycled while a long stage is running. Each entry
+// is one beat - the UI rotates through them every ~1.8s so users see
+// motion even when the backend is silent. Phrasing matches what the
+// audit actually checks under the hood.
+const STAGE_SUBSTEPS: Record<StageId, string[]> = {
+  fetch: [
+    "DNS rezolvi...",
+    "TLS handshake...",
+    "HTML response...",
+    "redirect-ების მიდევნება...",
+  ],
+  extras: [
+    "robots.txt-ის წაკითხვა...",
+    "sitemap.xml-ის შემოწმება...",
+    "llms.txt-ის ძიება...",
+    "HTTP → HTTPS გადამისამართება...",
+  ],
+  analyze: [
+    "Title და Meta Description...",
+    "H1-H6 სათაურების სტრუქტურა...",
+    "ALT ტექსტები სურათებზე...",
+    "Canonical, hreflang...",
+    "Schema markup (JSON-LD)...",
+    "Open Graph და Twitter Card...",
+    "Security headers...",
+    "Image format და lazy loading...",
+  ],
+  links: [
+    "შიდა ბმულების სკანი...",
+    "გარე ბმულების შემოწმება...",
+    "404 და 5xx შეცდომები...",
+    "Redirect chain-ების ანალიზი...",
+    "Anchor text distribution...",
+  ],
+  pagespeed: [
+    "Lighthouse-ის გაშვება...",
+    "LCP - Largest Contentful Paint...",
+    "INP - Interaction to Next Paint...",
+    "CLS - Cumulative Layout Shift...",
+    "JS bundle ანალიზი...",
+    "Performance score-ის გამოანგარიშება...",
+  ],
 };
 
 const ALL_STAGES: StageId[] = [
@@ -568,7 +623,7 @@ function GoogleSerpCard({ data }: { data: PreviewData }) {
           </p>
         ) : (
           <p className="text-[13px] text-error leading-snug italic">
-            Description-ი არ არის — Google ავტომატურად შეარჩევს ტექსტს გვერდიდან.
+            Description-ი არ არის - Google ავტომატურად შეარჩევს ტექსტს გვერდიდან.
           </p>
         )}
       </div>
@@ -701,7 +756,7 @@ function ShareImageDisplay({
         }`}
         onError={(e) => {
           if (!usingFallback && fallback) {
-            // Primary failed but we have a logo fallback — re-render with it.
+            // Primary failed but we have a logo fallback - re-render with it.
             setPrimaryFailed(true);
           } else {
             e.currentTarget.style.display = "none";
@@ -901,16 +956,17 @@ function TopPrioritiesBanner({
   };
   return (
     <section
-      // Inverted callout: deep-navy panel with gold typography so the
-      // priorities band pops against the cream page.
-      className="mb-14 rounded-xl border border-accent/40 bg-foreground p-5 sm:p-6"
+      // Light callout - soft surface + hairline border. Reads cleanly
+      // against the page and keeps the numbered red/amber circles as
+      // the visual accent (instead of inverting the whole panel).
+      className="mb-14 rounded-xl border border-border bg-surface p-5 sm:p-6"
     >
       <header className="flex items-center gap-2.5 mb-4">
-        <Target className="w-4 h-4 text-accent" strokeWidth={2} />
-        <h2 className="text-[13px] font-medium text-accent">
+        <Target className="w-4 h-4 text-foreground" strokeWidth={2} />
+        <h2 className="text-[13px] font-medium text-foreground">
           პრიორიტეტული ცვლილებები
         </h2>
-        <span className="text-[11px] font-mono uppercase tracking-wider text-accent/60">
+        <span className="text-[11px] font-mono uppercase tracking-wider text-foreground-muted">
           ({items.length})
         </span>
       </header>
@@ -925,20 +981,20 @@ function TopPrioritiesBanner({
               <span
                 className={`shrink-0 w-6 h-6 rounded-full inline-flex items-center justify-center text-[11px] font-mono font-medium ${
                   isFail
-                    ? "bg-error/20 text-error"
-                    : "bg-warning/20 text-warning"
+                    ? "bg-error/15 text-error"
+                    : "bg-warning/15 text-warning"
                 }`}
               >
                 {i + 1}
               </span>
               <div className="flex-1 min-w-0">
-                <p className="text-[13px] font-medium text-accent leading-snug truncate">
+                <p className="text-[13px] font-medium text-foreground leading-snug truncate">
                   {item.check.label}
-                  <span className="ml-2 text-[10px] font-mono uppercase tracking-wider text-accent/55">
+                  <span className="ml-2 text-[10px] font-mono uppercase tracking-wider text-foreground-muted">
                     {item.categoryName}
                   </span>
                 </p>
-                <p className="text-[12px] text-[#C9CDD9] truncate leading-snug">
+                <p className="text-[12px] text-foreground-muted truncate leading-snug">
                   {item.check.message}
                 </p>
               </div>
@@ -950,7 +1006,7 @@ function TopPrioritiesBanner({
                   )
                 }
                 data-print-hide
-                className="shrink-0 inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-medium bg-accent text-foreground hover:bg-accent-hover transition"
+                className="shrink-0 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium bg-foreground text-background hover:opacity-90 transition"
               >
                 გასწორება
                 <ChevronRight className="w-3 h-3" strokeWidth={2.25} />
@@ -1066,47 +1122,181 @@ interface StageState {
   error?: string;
 }
 
+// Cycles through stage-specific sub-steps every ~1.8s so a running
+// stage feels alive - users see motion even when the backend is silent
+// (long analyze / pagespeed). Resets on stage change.
+function useSubStepCycle(stageId: StageId | null): string | null {
+  const [idx, setIdx] = useState(0);
+  useEffect(() => {
+    setIdx(0);
+    if (!stageId) return;
+    const id = setInterval(() => {
+      setIdx((i) => i + 1);
+    }, 1800);
+    return () => clearInterval(id);
+  }, [stageId]);
+  if (!stageId) return null;
+  const list = STAGE_SUBSTEPS[stageId];
+  if (!list || list.length === 0) return null;
+  return list[idx % list.length];
+}
+
+// Live elapsed seconds for the running stage, ticked every 250ms.
+function useStageElapsed(running: boolean, stageId: StageId | null): number {
+  const [elapsed, setElapsed] = useState(0);
+  const startRef = useRef(Date.now());
+  useEffect(() => {
+    if (!running) {
+      setElapsed(0);
+      return;
+    }
+    startRef.current = Date.now();
+    const id = setInterval(() => {
+      setElapsed(Math.floor((Date.now() - startRef.current) / 1000));
+    }, 250);
+    return () => clearInterval(id);
+  }, [running, stageId]);
+  return elapsed;
+}
+
 function ProgressTimeline({ stages }: { stages: StageState[] }) {
+  const runningStage = stages.find((s) => s.status === "running") ?? null;
+  const subStep = useSubStepCycle(runningStage?.id ?? null);
+  const stageElapsed = useStageElapsed(
+    runningStage !== null,
+    runningStage?.id ?? null
+  );
+
+  // Global progress: count done stages + partial credit for the running
+  // one based on elapsed vs expected. Caps at 99% until the final stage
+  // resolves so the bar never claims complete prematurely.
+  const totalExpected = stages.reduce(
+    (sum, s) => sum + (STAGE_EXPECTED_SECONDS[s.id] ?? 10),
+    0
+  );
+  const doneSeconds = stages
+    .filter((s) => s.status === "done" || s.status === "error")
+    .reduce((sum, s) => sum + (STAGE_EXPECTED_SECONDS[s.id] ?? 10), 0);
+  const runningCredit = runningStage
+    ? Math.min(
+        STAGE_EXPECTED_SECONDS[runningStage.id] ?? 10,
+        stageElapsed
+      )
+    : 0;
+  const allDone = stages.every(
+    (s) => s.status === "done" || s.status === "error"
+  );
+  const rawPct = totalExpected > 0
+    ? ((doneSeconds + runningCredit) / totalExpected) * 100
+    : 0;
+  const pct = allDone ? 100 : Math.min(99, Math.round(rawPct));
+
+  // Aggregate elapsed across all stages so the global timer keeps
+  // ticking even between stages.
+  const elapsedTotalSeconds = stages.reduce(
+    (sum, s) =>
+      sum +
+      (s.durationMs !== undefined ? Math.floor(s.durationMs / 1000) : 0),
+    0
+  ) + (runningStage ? stageElapsed : 0);
+
+  const expectedDoneEstimate = Math.max(totalExpected, elapsedTotalSeconds);
+
   return (
-    <ul className="space-y-2">
-      {stages.map((s) => (
-        <li key={s.id} className="flex items-center gap-3 text-sm">
-          <span className="w-4 h-4 shrink-0 inline-flex items-center justify-center">
-            {s.status === "pending" && (
-              <span className="w-2.5 h-2.5 rounded-full border border-border-strong" />
-            )}
-            {s.status === "running" && (
-              <Loader2 className="w-4 h-4 animate-spin text-foreground-muted" />
-            )}
-            {s.status === "done" && (
-              <Check
-                strokeWidth={2.5}
-                className="w-4 h-4 text-success"
-              />
-            )}
-            {s.status === "error" && (
-              <X strokeWidth={2.5} className="w-4 h-4 text-error" />
-            )}
+    <div className="space-y-4">
+      {/* Global progress header */}
+      <div className="flex items-end justify-between gap-4 mb-1.5">
+        <div className="flex items-baseline gap-2">
+          <span className="font-mono tabular-nums text-2xl text-foreground">
+            {elapsedTotalSeconds}წ
           </span>
-          <span
-            className={`flex-1 ${
-              s.status === "pending"
-                ? "text-foreground-subtle"
-                : "text-foreground"
-            }`}
-          >
-            {s.label}
+          <span className="text-xs font-mono uppercase tracking-wider text-foreground-subtle">
+            / ~{expectedDoneEstimate}წ
           </span>
-          {s.status === "running" && <RunningTimer />}
-          {(s.status === "done" || s.status === "error") &&
-            s.durationMs !== undefined && (
-              <span className="text-xs font-mono tabular-nums text-foreground-subtle">
-                {(s.durationMs / 1000).toFixed(1)}წ
+        </div>
+        <div className="text-right">
+          <div className="font-mono tabular-nums text-sm text-foreground/85">
+            {pct}%
+          </div>
+          <div className="text-[10px] font-mono uppercase tracking-wider text-foreground-subtle mt-0.5">
+            {stages.filter((s) => s.status === "done").length} /{" "}
+            {stages.length} ეტაპი
+          </div>
+        </div>
+      </div>
+
+      <div className="h-1.5 w-full rounded-full bg-foreground/10 overflow-hidden">
+        <div
+          className="h-full bg-foreground transition-[width] duration-500 ease-out"
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+
+      {/* Per-stage list */}
+      <ul className="space-y-2 mt-4">
+        {stages.map((s) => {
+          const expected = STAGE_EXPECTED_SECONDS[s.id];
+          const isRunning = s.status === "running";
+          return (
+            <li key={s.id} className="flex items-start gap-3 text-sm">
+              <span className="w-4 h-4 shrink-0 inline-flex items-center justify-center mt-0.5">
+                {s.status === "pending" && (
+                  <span className="w-2.5 h-2.5 rounded-full border border-border-strong" />
+                )}
+                {isRunning && (
+                  <Loader2 className="w-4 h-4 animate-spin text-foreground" />
+                )}
+                {s.status === "done" && (
+                  <Check
+                    strokeWidth={2.5}
+                    className="w-4 h-4 text-success"
+                  />
+                )}
+                {s.status === "error" && (
+                  <X strokeWidth={2.5} className="w-4 h-4 text-error" />
+                )}
               </span>
-            )}
-        </li>
-      ))}
-    </ul>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span
+                    className={
+                      s.status === "pending"
+                        ? "text-foreground-subtle"
+                        : isRunning
+                        ? "text-foreground font-medium"
+                        : "text-foreground"
+                    }
+                  >
+                    {s.label}
+                  </span>
+                  {expected !== undefined && s.status === "pending" && (
+                    <span className="text-[10px] font-mono text-foreground-subtle">
+                      ~{expected}წ
+                    </span>
+                  )}
+                </div>
+                {isRunning && subStep && (
+                  <div className="text-[12px] text-foreground-muted mt-0.5 font-mono">
+                    {subStep}
+                  </div>
+                )}
+              </div>
+              {isRunning && (
+                <span className="text-xs font-mono tabular-nums text-foreground-subtle whitespace-nowrap mt-0.5">
+                  {stageElapsed}წ / ~{expected}წ
+                </span>
+              )}
+              {(s.status === "done" || s.status === "error") &&
+                s.durationMs !== undefined && (
+                  <span className="text-xs font-mono tabular-nums text-foreground-subtle mt-0.5">
+                    {(s.durationMs / 1000).toFixed(1)}წ
+                  </span>
+                )}
+            </li>
+          );
+        })}
+      </ul>
+    </div>
   );
 }
 
@@ -1137,10 +1327,10 @@ const initialStages = (): StageState[] =>
   }));
 
 // Consume a single /api/analyze stream and aggregate it into a PageReport.
-// Used for sub-page crawls in deep mode — we don't show their per-event
+// Used for sub-page crawls in deep mode - we don't show their per-event
 // progress, just collect the final shape.
 //
-// Per-page timeout 90s — without this, a single hanging sub-page (slow
+// Per-page timeout 90s - without this, a single hanging sub-page (slow
 // server, hostile origin) blocks the entire multi-page analysis
 // indefinitely. 90s is generous (Vercel function caps at 30s + buffer).
 const SUB_PAGE_TIMEOUT_MS = 90_000;
@@ -1178,7 +1368,7 @@ async function fetchPageReport(
 
   let response: Response;
   try {
-    // skipLinks=1 — link health is reported from the main page only.
+    // skipLinks=1 - link health is reported from the main page only.
     // Without this, depth=10 fired 10 link-check stages and roughly
     // doubled total time; the extra signal was low value because many
     // internal links repeat across pages.
@@ -1246,10 +1436,10 @@ async function fetchPageReport(
   } catch (e) {
     if (signal.aborted) {
       // Distinguish "user navigated away" from "we timed out". The error
-      // message only matters for the latter — parent-abort means the
+      // message only matters for the latter - parent-abort means the
       // result is ignored anyway.
       if (!parentSignal.aborted) {
-        report.error = `Sub-page timeout (>${SUB_PAGE_TIMEOUT_MS / 1000}s) — სერვერი ძალიან ნელია`;
+        report.error = `Sub-page timeout (>${SUB_PAGE_TIMEOUT_MS / 1000}s) - სერვერი ძალიან ნელია`;
       }
     } else {
       report.error = e instanceof Error ? e.message : "სტრიმის შეცდომა";
@@ -1287,7 +1477,9 @@ export default function ResultsContent() {
   const [state, setState] = useState<AnalysisState>(initialState);
   const [filter, setFilter] = useState<CheckStatus | null>(null);
   const [seoOfferError, setSeoOfferError] = useState<string | null>(null);
-  // AI Executive Summary — generated once per audit and cached in
+  const [kwModalOpen, setKwModalOpen] = useState(false);
+  const [kwInput, setKwInput] = useState("");
+  // AI Executive Summary - generated once per audit and cached in
   // component state. Failure to fetch is non-fatal; the rest of the
   // results page works without it. Refresh = new summary.
   const [aiSummary, setAiSummary] = useState<string | null>(null);
@@ -1300,7 +1492,7 @@ export default function ResultsContent() {
   const [subPagesTotal, setSubPagesTotal] = useState(0);
 
   // Recompute summary client-side because /api/pagespeed lands AFTER
-  // /api/analyze's `complete` event — the server's pre-pagespeed summary
+  // /api/analyze's `complete` event - the server's pre-pagespeed summary
   // would otherwise miss the performance category.
   const summary = useMemo(() => {
     if (!state.done) return null;
@@ -1318,7 +1510,7 @@ export default function ResultsContent() {
     subPagesDone;
 
   // Kick off AI summary once the audit is complete. We fire EXACTLY once
-  // per audit using a ref — the previous useEffect-cleanup pattern with
+  // per audit using a ref - the previous useEffect-cleanup pattern with
   // `aiSummaryLoading` in deps was self-aborting: setAiSummaryLoading(true)
   // triggered a re-render → React ran the cleanup → ac.abort() → the
   // in-flight fetch died before Gemini responded, leaving the UI stuck
@@ -1368,7 +1560,7 @@ export default function ResultsContent() {
         if (!cancelled) setAiSummaryLoading(false);
       }
     })();
-    // Cleanup only flips the cancellation flag — we don't abort the
+    // Cleanup only flips the cancellation flag - we don't abort the
     // fetch itself, so a navigation away from the page lets Gemini's
     // response stay cached on the next mount. The `cancelled` guard
     // just prevents setState on an unmounted/replaced component.
@@ -1458,7 +1650,7 @@ export default function ResultsContent() {
       // wait 10×30s = ~5min on slow sites and could hang indefinitely if
       // one sub-page got stuck (no per-page timeout). With C=3 each
       // sub-page also has SUB_PAGE_TIMEOUT_MS, so worst case for 10 URLs
-      // is ~4 × 90s ≈ 6min — and that's only if every site is maxing the
+      // is ~4 × 90s ≈ 6min - and that's only if every site is maxing the
       // timeout, which is rare. Realistic depth=10 now completes in ~60-90s.
       const CONCURRENCY = 3;
       let cursor = 0;
@@ -1601,7 +1793,7 @@ export default function ResultsContent() {
             applyEvent(event);
 
             // Fire /api/pagespeed in parallel after we know whether
-            // the site is bot-protected (skip pagespeed in that case —
+            // the site is bot-protected (skip pagespeed in that case -
             // PSI would just fail on a challenge page).
             if (event.type === "meta") {
               homeFinalUrl = event.finalUrl || event.url;
@@ -1660,7 +1852,7 @@ export default function ResultsContent() {
       // ignore
     }
     const date = new Date(state.meta.fetchedAt).toISOString().slice(0, 10);
-    document.title = `${BRAND.toolName} — ${host} — ${date}`;
+    document.title = `${BRAND.toolName} - ${host} - ${date}`;
     return () => {
       document.title = `ანალიზის შედეგები · ${BRAND.toolName}`;
     };
@@ -1711,14 +1903,14 @@ export default function ResultsContent() {
     let result = trySave(fullPayload);
     if (result === "quota") {
       // Preview (especially share-image probes with sizeBytes) is the
-      // largest dispensable chunk — drop it and retry. Presentation page
+      // largest dispensable chunk - drop it and retry. Presentation page
       // already tolerates a missing preview.
       result = trySave({ ...fullPayload, preview: null });
     }
 
     if (result === "ok") {
       window.open(
-        `/presentation?url=${encodeURIComponent(targetUrl)}`,
+        `/audit-deck?url=${encodeURIComponent(targetUrl)}`,
         "_blank",
         "noopener,noreferrer"
       );
@@ -1727,7 +1919,7 @@ export default function ResultsContent() {
 
     if (result === "quota") {
       setPresentationError(
-        "მონაცემები ძალიან დიდია ლოკალური საცავისთვის — გასუფთავეთ ბრაუზერის storage და სცადეთ ხელახლა."
+        "მონაცემები ძალიან დიდია ლოკალური საცავისთვის - გასუფთავეთ ბრაუზერის storage და სცადეთ ხელახლა."
       );
     } else {
       setPresentationError(
@@ -1782,7 +1974,7 @@ export default function ResultsContent() {
 
     let result = trySave(fullPayload);
     if (result === "quota") {
-      // Drop the preview (heaviest payload) and retry — the offer page
+      // Drop the preview (heaviest payload) and retry - the offer page
       // doesn't render share-image previews, only the audit summary.
       result = trySave({ ...fullPayload, preview: null });
     }
@@ -1798,7 +1990,7 @@ export default function ResultsContent() {
 
     setSeoOfferError(
       result === "quota"
-        ? "მონაცემები ძალიან დიდია ლოკალური საცავისთვის — გასუფთავეთ ბრაუზერის storage და სცადეთ ხელახლა."
+        ? "მონაცემები ძალიან დიდია ლოკალური საცავისთვის - გასუფთავეთ ბრაუზერის storage და სცადეთ ხელახლა."
         : "შეთავაზების მონაცემების შენახვა ვერ მოხერხდა."
     );
   };
@@ -1913,6 +2105,36 @@ export default function ResultsContent() {
             </button>
             <button
               type="button"
+              onClick={() => {
+                if (!fullyDone) return;
+                const targetUrl = meta.finalUrl ?? meta.url;
+                if (!targetUrl) return;
+                window.open(
+                  `/action-plan?url=${encodeURIComponent(targetUrl)}`,
+                  "_blank",
+                  "noopener,noreferrer"
+                );
+              }}
+              disabled={!fullyDone}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-xs text-foreground hover:border-accent/40 hover:text-accent hover:bg-accent-soft transition disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              <CalendarDays className="w-3.5 h-3.5" />
+              სამოქმედო გეგმა
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                if (!fullyDone) return;
+                setKwModalOpen(true);
+              }}
+              disabled={!fullyDone}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-xs text-foreground hover:border-accent/40 hover:text-accent hover:bg-accent-soft transition disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              <FileText className="w-3.5 h-3.5" />
+              კლიენტისთვის
+            </button>
+            <button
+              type="button"
               onClick={handlePrint}
               disabled={!fullyDone}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-xs text-foreground hover:border-accent/40 hover:text-accent hover:bg-accent-soft transition disabled:opacity-40 disabled:cursor-not-allowed"
@@ -1934,7 +2156,7 @@ export default function ResultsContent() {
               </span>
             </div>
             <p className="text-sm text-foreground-muted mb-2 leading-relaxed">
-              საიტი არ გვაძლევს რეალურ HTML-ს — Title, H1, Schema და სხვა
+              საიტი არ გვაძლევს რეალურ HTML-ს - Title, H1, Schema და სხვა
               გვერდულივი შემოწმებები გამოვტოვეთ, რადგან მათი შედეგი ცრუ იქნებოდა.
               ქვემოთ მხოლოდ HTTP/header-დონის რეალური სიგნალებია.
             </p>
@@ -2027,18 +2249,7 @@ export default function ResultsContent() {
                 </div>
               )}
 
-              <dl className="grid grid-cols-3 gap-x-8 gap-y-2 text-xs">
-                <div>
-                  <dt className="font-mono uppercase tracking-wider text-foreground-subtle mb-1">
-                    თარიღი
-                  </dt>
-                  <dd className="text-foreground tabular-nums">
-                    {new Date(meta.fetchedAt).toLocaleString("ka-GE", {
-                      dateStyle: "short",
-                      timeStyle: "short",
-                    })}
-                  </dd>
-                </div>
+              <dl className="grid grid-cols-2 gap-x-8 gap-y-2 text-xs">
                 <div>
                   <dt className="font-mono uppercase tracking-wider text-foreground-subtle mb-1">
                     პასუხი
@@ -2136,7 +2347,7 @@ export default function ResultsContent() {
                 />
               );
             if (state.done) {
-              // Performance lands separately from /api/pagespeed — keep its
+              // Performance lands separately from /api/pagespeed - keep its
               // placeholder visible until pagespeed terminates.
               if (
                 key === "performance" &&
@@ -2237,6 +2448,90 @@ export default function ResultsContent() {
           {BRAND.toolName} · v0.1 MVP
         </p>
       </div>
+
+      {kwModalOpen && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
+          onClick={() => setKwModalOpen(false)}
+          data-print-hide
+        >
+          <div
+            className="bg-background rounded-2xl border border-border shadow-2xl max-w-md w-full p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3
+              className="leading-tight mb-2"
+              style={{
+                fontFamily: "var(--font-serif)",
+                fontSize: "clamp(1.15rem, 2vw, 1.4rem)",
+                fontWeight: 600,
+              }}
+            >
+              კლიენტისთვის SEO პროცესი
+            </h3>
+            <p className="text-sm text-foreground-muted mb-5 leading-relaxed">
+              თუ გსურს, შეიყვანე საძიებო ფრაზები, რომლებზეც კლიენტი მუშაობს - გამოჩნდება გადატანილ გვერდზე. ცარიელად დატოვება შესაძლებელია.
+            </p>
+            <label className="block mb-5">
+              <span className="text-[10px] font-mono uppercase tracking-[0.18em] text-foreground-muted mb-2 block">
+                საძიებო ფრაზები (არჩევითი)
+              </span>
+              <textarea
+                value={kwInput}
+                onChange={(e) => setKwInput(e.target.value)}
+                placeholder="მაგ: კარების მაღაზია, ალუმინის კარები, ფასი"
+                rows={3}
+                className="w-full px-3 py-2.5 rounded-lg border border-border bg-background text-sm text-foreground focus:outline-none focus:border-foreground/40 resize-y"
+              />
+              <span className="block mt-1.5 text-[11px] text-foreground-muted">
+                მძიმით გამოყავი ფრაზები
+              </span>
+            </label>
+            <div className="flex gap-2 justify-end">
+              <button
+                type="button"
+                onClick={() => {
+                  setKwModalOpen(false);
+                  setKwInput("");
+                  const targetUrl = meta.finalUrl ?? meta.url;
+                  if (!targetUrl) return;
+                  window.open(
+                    `/seo-process?url=${encodeURIComponent(targetUrl)}`,
+                    "_blank",
+                    "noopener,noreferrer"
+                  );
+                }}
+                className="px-4 py-2 rounded-lg text-sm text-foreground/65 hover:text-foreground transition"
+              >
+                გამოტოვება
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const targetUrl = meta.finalUrl ?? meta.url;
+                  if (!targetUrl) return;
+                  const kws = kwInput
+                    .split(",")
+                    .map((k) => k.trim())
+                    .filter((k) => k.length > 0);
+                  const params = new URLSearchParams({ url: targetUrl });
+                  if (kws.length > 0) params.set("keywords", kws.join(","));
+                  setKwModalOpen(false);
+                  setKwInput("");
+                  window.open(
+                    `/seo-process?${params.toString()}`,
+                    "_blank",
+                    "noopener,noreferrer"
+                  );
+                }}
+                className="px-4 py-2 rounded-lg bg-foreground text-background text-sm font-medium hover:opacity-90 transition"
+              >
+                გახსნა
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -16,9 +16,9 @@ type Slide = PptxGenJS.Slide;
 // the same publication. Constants are duplicated rather than imported
 // because pptxExport.ts didn't export them; pulling them out is a bigger
 // refactor than this feature deserves.
-const NAVY = "F1EBDD"; // page background — warm cream
-const CYAN = "1E3A8A"; // brand accent — deep royal navy
-const WHITE = "0F1B3D"; // primary text — deep navy on cream
+const NAVY = "F1EBDD"; // page background - warm cream
+const CYAN = "1E3A8A"; // brand accent - deep royal navy
+const WHITE = "0F1B3D"; // primary text - deep navy on cream
 const WHITE_MUTED = "4A5A7C";
 const WHITE_DIM = "8B95A8";
 const WHITE_FAINT = "8B95A8";
@@ -30,7 +30,7 @@ const SUCCESS = "1F6F4A";
 
 // Sylfaen ships with Windows by default and has full Georgian + Latin
 // glyph coverage. FiraGO/JetBrains Mono were our web fonts but they don't
-// ship with PowerPoint — Georgian text fell back to a font without the
+// ship with PowerPoint - Georgian text fell back to a font without the
 // glyphs and rendered as empty boxes for clients.
 const FONT = "Sylfaen";
 const FONT_MONO = "Sylfaen";
@@ -328,7 +328,7 @@ function addScoreboardSlide(
     const warns = entry.site.summary!.warnings;
     const fails = entry.site.summary!.failed;
 
-    // Row background — highlight main
+    // Row background - highlight main
     if (isMain) {
       slide.addShape("rect", {
         x: 0.5,
@@ -469,7 +469,7 @@ function addMatrixSlide(
   const siteW = totalSitesW / sites.length;
   const rowH = 0.55;
 
-  // Header row — site names
+  // Header row - site names
   slide.addText("კატეგორია", {
     x: tableX,
     y: tableY,
@@ -554,7 +554,7 @@ function addMatrixSlide(
     cells.forEach((cell, i) => {
       const xPos = tableX + labelW + i * siteW;
       if (!cell) {
-        slide.addText("—", {
+        slide.addText("-", {
           x: xPos,
           y,
           w: siteW,
@@ -629,7 +629,7 @@ function addPerformanceSlide(
     bold: true,
     charSpacing: 6,
   });
-  slide.addText("Performance — Google-ის რანკინგ ფაქტორი", {
+  slide.addText("Performance - Google-ის რანკინგ ფაქტორი", {
     x: 0.5,
     y: 0.95,
     w: 12,
@@ -697,7 +697,7 @@ function addPerformanceSlide(
         fontFace: FONT_MONO,
         charSpacing: 3,
       });
-      slide.addText(p.mainValue != null ? fmt(p.mainValue) : "—", {
+      slide.addText(p.mainValue != null ? fmt(p.mainValue) : "-", {
         x: 2.5,
         y: y + 0.4,
         w: 2,
@@ -781,13 +781,13 @@ function addGapSummarySlide(
     bold: true,
   });
 
-  // Column per competitor — only those with advantages
+  // Column per competitor - only those with advantages
   const withAdvantages = advantagesByCompetitor.filter(
     (e) => e.advantages.length > 0
   );
   if (withAdvantages.length === 0) {
     slide.addText(
-      "კონკურენტებზე ტექნიკურად წინ ხართ — არცერთი მათგანი არ აღემატება.",
+      "კონკურენტებზე ტექნიკურად წინ ხართ - არცერთი მათგანი არ აღემატება.",
       {
         x: 0.5,
         y: 3,
@@ -802,7 +802,7 @@ function addGapSummarySlide(
     return;
   }
 
-  // Adaptive layout — the previous 4"-wide columns left the slide visually
+  // Adaptive layout - the previous 4"-wide columns left the slide visually
   // empty when the user compares against just one competitor (the case
   // surfaced in the bug report). Single column gets centered and wide,
   // two share the full width, three keep the original tight grid.
@@ -1038,7 +1038,7 @@ export async function generateComparisonPptx(
 
   const validSites = sites.filter((s) => s.summary);
   if (validSites.length < 2) {
-    throw new Error("მოგროვილი მონაცემები არასაკმარისია — სცადეთ ანალიზის გადატარება");
+    throw new Error("მოგროვილი მონაცემები არასაკმარისია - სცადეთ ანალიზის გადატარება");
   }
 
   const gapInput = validSites.map((s) => ({

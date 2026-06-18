@@ -127,6 +127,8 @@ export async function GET(req: NextRequest) {
         const safeExtras = extras ?? {
           robotsTxt: false,
           sitemap: false,
+          sitemapStatus: "missing" as const,
+          sitemapUrl: null,
           llmsTxt: false,
           httpToHttps: "n/a" as const,
         };

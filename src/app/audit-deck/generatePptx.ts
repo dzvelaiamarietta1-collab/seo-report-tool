@@ -104,12 +104,12 @@ export async function generatePptx({
   const addHeader = (slide: any, caption?: string) => {
     slide.addText("INFINITY SOLUTIONS", {
       x: 0.5, y: 0.3, w: 4, h: 0.3,
-      fontSize: 9, color: MUTED, fontFace: SANS, bold: true, charSpacing: 2,
+      fontSize: 9, color: MUTED, fontFace: SANS, bold: true,
     });
     if (caption) {
-      slide.addText(caption.toUpperCase(), {
+      slide.addText(caption, {
         x: 8.83, y: 0.3, w: 4, h: 0.3,
-        fontSize: 9, color: ACCENT, fontFace: SANS, bold: true, charSpacing: 2,
+        fontSize: 9, color: ACCENT, fontFace: SANS, bold: true,
         align: "right",
       });
     }
@@ -263,7 +263,7 @@ export async function generatePptx({
         });
         s.addText("პრობლემა", {
           x: 0.7, y: 2.4, w: 5.6, h: 0.35,
-          fontSize: 11, color: sevColor, fontFace: SANS, bold: true, charSpacing: 2,
+          fontSize: 11, color: sevColor, fontFace: SANS, bold: true, charSpacing: 0,
         });
         const problemBlock = f.problem.map((p) => ({ text: "• " + p + "\n", options: {} }));
         s.addText(problemBlock, {
@@ -279,7 +279,7 @@ export async function generatePptx({
         });
         s.addText("გადაწყვეტა", {
           x: 0.7, y: 4.55, w: 5.6, h: 0.35,
-          fontSize: 11, color: "0369A1", fontFace: SANS, bold: true, charSpacing: 2,
+          fontSize: 11, color: "0369A1", fontFace: SANS, bold: true, charSpacing: 0,
         });
         s.addText(f.solution, {
           x: 0.7, y: 4.95, w: 5.6, h: 1.4,
@@ -316,7 +316,7 @@ export async function generatePptx({
         });
         s.addText("პრობლემა", {
           x: 0.7, y: 2.4, w: 5.6, h: 0.4,
-          fontSize: 12, color: sevColor, fontFace: SANS, bold: true, charSpacing: 2,
+          fontSize: 12, color: sevColor, fontFace: SANS, bold: true, charSpacing: 0,
         });
         const problemBlock = f.problem.map((p) => ({ text: "• " + p + "\n", options: {} }));
         s.addText(problemBlock, {
@@ -331,7 +331,7 @@ export async function generatePptx({
         });
         s.addText("გადაწყვეტა", {
           x: 7.03, y: 2.4, w: 5.6, h: 0.4,
-          fontSize: 12, color: "0369A1", fontFace: SANS, bold: true, charSpacing: 2,
+          fontSize: 12, color: "0369A1", fontFace: SANS, bold: true, charSpacing: 0,
         });
         s.addText(f.solution, {
           x: 7.03, y: 2.9, w: 5.6, h: 3.4,

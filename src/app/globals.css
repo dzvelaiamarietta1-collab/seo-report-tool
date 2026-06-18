@@ -43,12 +43,15 @@
   --font-sans: var(--font-instrument-sans), var(--font-noto-georgian),
     "Instrument Sans", "Noto Sans Georgian", "Sylfaen", system-ui,
     -apple-system, "Segoe UI", sans-serif;
-  /* Editorial serif — Instrument Serif for Latin, Noto Serif Georgian
-     for Georgian glyphs. Italic Instrument Serif gives the accent
-     emphasis on headlines. */
-  --font-serif: var(--font-instrument-serif), var(--font-noto-serif-georgian),
-    "Instrument Serif", "Noto Serif Georgian", Georgia, "Times New Roman",
-    serif;
+  /* Display chain — Instrument Sans for Latin (cleaner reading, matches
+     the geometric reference), Noto Serif Georgian for Georgian glyphs.
+     The browser picks per-codepoint, so mixed Georgian + English copy
+     keeps Georgian editorial while Latin is geometric sans. Variable
+     kept named `--font-serif` for backwards compatibility with the
+     many inline styles already referencing it. */
+  --font-serif: var(--font-instrument-sans), var(--font-noto-serif-georgian),
+    "Instrument Sans", "Noto Serif Georgian", system-ui, -apple-system,
+    "Segoe UI", sans-serif;
   --font-mono: var(--font-jetbrains-mono), "JetBrains Mono", ui-monospace,
     "SF Mono", Menlo, Consolas, monospace;
 }
@@ -100,6 +103,47 @@ body {
 .tabular-nums {
   font-variant-numeric: tabular-nums;
 }
+
+.font-display {
+  font-family: var(--font-serif);
+}
+
+.text-stroke {
+  -webkit-text-stroke: 1.5px currentColor;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Marquee — horizontal infinite scroll for stats/logo strips.
+   Track must duplicate its children so translate -50% loops cleanly. */
+@keyframes marquee {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+@keyframes marquee-reverse {
+  0%   { transform: translateX(-50%); }
+  100% { transform: translateX(0); }
+}
+.marquee         { animation: marquee 40s linear infinite; }
+.marquee-reverse { animation: marquee-reverse 35s linear infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .marquee, .marquee-reverse { animation: none; }
+}
+
+/* Per-character reveal used by the hero cycling word.
+   Each glyph gets staggered via inline animation-delay. */
+@keyframes char-in {
+  0%   { opacity: 0; filter: blur(24px); transform: translateY(60%); }
+  100% { opacity: 1; filter: blur(0);    transform: translateY(0);   }
+}
+.animate-char-in {
+  display: inline-block;
+  animation: char-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  opacity: 0;
+}
+
+/* Subtle lift used by hairline cards on hover. */
+.hover-lift          { transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.hover-lift:hover   { transform: translateY(-3px); }
 
 /* Hero accent-orb breathing — subtle 8s loop that warms the page without
    demanding attention. prefers-reduced-motion users get a static orb. */
@@ -312,4 +356,207 @@ body {
 
 .presentation-root {
   page: presentation;
+}
+
+/* === Proposal (8-slide brand-tinted sales deck) — landscape PDF =========
+ * Each slide is a 16:9 card. In print we strip margins (so browser does
+ * not overlay date/URL) and let each slide claim a full landscape page.
+ * ========================================================================= */
+@page proposal {
+  size: A4 landscape;
+  margin: 0;
+}
+
+.proposal-root {
+  page: proposal;
+}
+
+@media print {
+  .proposal-root {
+    background: #ffffff !important;
+    padding: 0 !important;
+  }
+  .proposal-root [data-print-hide] {
+    display: none !important;
+  }
+  .proposal-root,
+  .proposal-root * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  .proposal-root .proposal-deck {
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    gap: 0 !important;
+  }
+  .proposal-root .proposal-deck > * + * {
+    margin-top: 0 !important;
+  }
+  .proposal-root .proposal-slide {
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    page-break-after: always;
+    break-after: page;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .proposal-root .proposal-slide:last-child {
+    page-break-after: auto;
+    break-after: auto;
+  }
+}
+
+/* === Audit Deck (19-slide /audit-deck) - landscape PDF print ===========
+ * Same margin: 0 trick as /proposal to suppress browser-injected header
+ * overlay. Each .audit-slide becomes its own A4 landscape page.
+ * ========================================================================= */
+
+@page audit-deck {
+  size: A4 landscape;
+  margin: 0;
+}
+
+.audit-root {
+  page: audit-deck;
+}
+
+@media print {
+  .audit-root {
+    background: #ffffff !important;
+    padding: 0 !important;
+  }
+  .audit-root [data-print-hide] {
+    display: none !important;
+  }
+  .audit-root,
+  .audit-root * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  .audit-root .audit-deck {
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    gap: 0 !important;
+  }
+  .audit-root .audit-deck > * + * {
+    margin-top: 0 !important;
+  }
+  .audit-root .audit-slide {
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    page-break-after: always;
+    break-after: page;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .audit-root .audit-slide:last-child {
+    page-break-after: auto;
+    break-after: auto;
+  }
+}
+
+/* === SEO Process (client-facing narrative) — portrait PDF print =========
+ * Single long article designed to flow across A4 portrait pages without
+ * breaking inside cards. Same margin: 0 trick used on /action-plan to
+ * suppress the browser's date/URL/title header overlay.
+ * ========================================================================= */
+@page seo-process {
+  size: A4;
+  margin: 0;
+}
+
+.seo-process-root {
+  page: seo-process;
+}
+
+@media print {
+  .seo-process-root {
+    background: #ffffff !important;
+    padding: 12mm 14mm !important;
+  }
+  .seo-process-root [data-print-hide] {
+    display: none !important;
+  }
+  .seo-process-root,
+  .seo-process-root * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  /* Every card-like container must stay whole on a single page so
+   * containers never split mid-content (which makes the document look
+   * like a generic template). */
+  .seo-process-root article,
+  .seo-process-root section,
+  .seo-process-root table,
+  .seo-process-root tr,
+  .seo-process-root li,
+  .seo-process-root header,
+  .seo-process-root footer,
+  .seo-process-root .rounded-xl,
+  .seo-process-root .rounded-2xl,
+  .seo-process-root .rounded-lg {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+  /* Allow the long monthly task tables to flow if a single card is
+   * taller than one page — but try to keep table rows whole. */
+  .seo-process-root article table {
+    break-inside: auto !important;
+    page-break-inside: auto !important;
+  }
+}
+
+/* === Action Plan — landscape PDF print ====================================
+ * The plan is a Gantt + grouped task list; A4 landscape gives the
+ * timeline room to breathe. Backgrounds + bar colours must print
+ * exactly (print-color-adjust). data-print-hide drops the duration
+ * selector + download button. Each category block tries to stay on
+ * one page so the deliverable list reads cleanly.
+ * ========================================================================= */
+/* margin: 0 suppresses the browser's print header/footer (date / URL /
+ * page-count / document-title) since there's no page margin to host
+ * them. We then recreate the printable margin inside the content with
+ * padding on .action-plan-root in @media print below. */
+@page action-plan {
+  size: A4 landscape;
+  margin: 0;
+}
+
+.action-plan-root {
+  page: action-plan;
+}
+
+@media print {
+  .action-plan-root {
+    background: #ffffff !important;
+    padding: 8mm 8mm 8mm 8mm !important;
+  }
+  .action-plan-root [data-print-hide] {
+    display: none !important;
+  }
+  .action-plan-root,
+  .action-plan-root * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  .action-plan-root section,
+  .action-plan-root header,
+  .action-plan-root footer {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  /* Allow the Gantt and task lists to flow across pages — they are too
+   * tall for a single page in any duration > 1 month. */
+  .action-plan-root .overflow-x-auto,
+  .action-plan-root section:has(> div > ul) {
+    break-inside: auto;
+    page-break-inside: auto;
+    overflow: visible !important;
+  }
+  .action-plan-root li {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
 }

@@ -45,3 +45,7 @@ next-env.d.ts
 # unused brand assets kept locally for future use
 /public/bg-hero.mp4
 /public/bg-hero-poster.jpg
+
+# v0/Optimus template reference (kept locally, never built / committed)
+/docs/optimus-source/
+/docs/optimus-inspection/.browser-profile-*
