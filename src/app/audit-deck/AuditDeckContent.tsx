@@ -1536,7 +1536,9 @@ function selectTopFindings(
       return b.priority - a.priority;
     });
   for (const p of sorted) {
-    const key = p.title.trim().toLowerCase();
+    // Normalize: lowercase, strip punctuation/spaces, first 30 chars
+    // This catches "Robots.txt ფაილი" vs "robots.txt" as the same issue
+    const key = p.title.toLowerCase().replace(/[\s.,:;()/\\-]+/g, "").slice(0, 30);
     if (seen.has(key)) continue;
     seen.add(key);
     deduped.push(p);
