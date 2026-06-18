@@ -103,13 +103,13 @@ export async function generatePptx({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const addHeader = (slide: any, caption?: string) => {
     slide.addText("INFINITY SOLUTIONS", {
-      x: 0.5, y: 0.3, w: 4, h: 0.3,
-      fontSize: 9, color: MUTED, fontFace: SANS, bold: true,
+      x: 0.5, y: 0.25, w: 4, h: 0.35,
+      fontSize: 11, color: MUTED, fontFace: SANS, bold: true,
     });
     if (caption) {
       slide.addText(caption, {
-        x: 8.83, y: 0.3, w: 4, h: 0.3,
-        fontSize: 9, color: ACCENT, fontFace: SANS, bold: true,
+        x: 8.83, y: 0.25, w: 4, h: 0.35,
+        fontSize: 11, color: ACCENT, fontFace: SANS, bold: true,
         align: "right",
       });
     }
