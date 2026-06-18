@@ -344,8 +344,22 @@ export async function generatePptx({
     });
   });
 
-  // 4. Competition ──────────────────────────────────────────────────────
+  // 4. Competition divider + slide ─────────────────────────────────────
   if (data.competition.rows.length > 0) {
+    // Chapter divider
+    {
+      const s = pres.addSlide();
+      s.background = { color: INK };
+      s.addText("03", {
+        x: 0.5, y: 0.5, w: 2, h: 1.2,
+        fontSize: 96, color: ACCENT, fontFace: SERIF, bold: true,
+      });
+      s.addText("კონკურენტების ანალიზი", {
+        x: 0.5, y: 3.0, w: 12, h: 1.2,
+        fontSize: 56, color: "FFFFFF", fontFace: SERIF, bold: true,
+      });
+      slides.push(s);
+    }
     const s = pres.addSlide();
     s.background = { color: BG };
     addHeader(s, "კონკურენცია");
@@ -435,8 +449,22 @@ export async function generatePptx({
     slides.push(s);
   }
 
-  // 6. Goals ─────────────────────────────────────────────────────────────
+  // 6. Goals divider + slide ────────────────────────────────────────────
   if (data.goals.length > 0) {
+    // Chapter divider
+    {
+      const s = pres.addSlide();
+      s.background = { color: INK };
+      s.addText("04", {
+        x: 0.5, y: 0.5, w: 2, h: 1.2,
+        fontSize: 96, color: ACCENT, fontFace: SERIF, bold: true,
+      });
+      s.addText("ჩვენ რას ვაკეთებთ", {
+        x: 0.5, y: 3.0, w: 12, h: 1.2,
+        fontSize: 56, color: "FFFFFF", fontFace: SERIF, bold: true,
+      });
+      slides.push(s);
+    }
     const s = pres.addSlide();
     s.background = { color: BG };
     addHeader(s, "ჩვენ რას ვაკეთებთ");
