@@ -309,34 +309,42 @@ export async function generatePptx({
           });
         }
       } else {
-        // No screenshots — original two-column layout
+        // No screenshots — same layout as with screens: problem+solution left, empty right box
+        // Problem (left top)
         s.addShape("rect", {
-          x: 0.5, y: 2.3, w: 6.0, h: 4.2,
+          x: 0.5, y: 2.3, w: 6.0, h: 2.0,
           fill: { color: "FFFFFF" }, line: { color: "E5E7EB" },
         });
         s.addText("პრობლემა", {
-          x: 0.7, y: 2.4, w: 5.6, h: 0.4,
-          fontSize: 12, color: sevColor, fontFace: SANS, bold: true, charSpacing: 0,
+          x: 0.7, y: 2.4, w: 5.6, h: 0.35,
+          fontSize: 11, color: sevColor, fontFace: SANS, bold: true, charSpacing: 0,
         });
         const problemBlock = f.problem.map((p) => ({ text: "• " + p + "\n", options: {} }));
         s.addText(problemBlock, {
-          x: 0.7, y: 2.9, w: 5.6, h: 3.4,
-          fontSize: 12, color: "374151", fontFace: SANS,
+          x: 0.7, y: 2.8, w: 5.6, h: 1.3,
+          fontSize: 11, color: "374151", fontFace: SANS,
           lineSpacingMultiple: 1.3, valign: "top",
         });
 
+        // Solution (left bottom)
         s.addShape("rect", {
-          x: 6.83, y: 2.3, w: 6.0, h: 4.2,
-          fill: { color: "E0F2FE" }, line: { color: "BAE6FD" },
+          x: 0.5, y: 4.45, w: 6.0, h: 2.05,
+          fill: { color: "EFF6FF" }, line: { color: "DBEAFE" },
         });
         s.addText("გადაწყვეტა", {
-          x: 7.03, y: 2.4, w: 5.6, h: 0.4,
-          fontSize: 12, color: "0369A1", fontFace: SANS, bold: true, charSpacing: 0,
+          x: 0.7, y: 4.55, w: 5.6, h: 0.35,
+          fontSize: 11, color: "0369A1", fontFace: SANS, bold: true, charSpacing: 0,
         });
         s.addText(f.solution, {
-          x: 7.03, y: 2.9, w: 5.6, h: 3.4,
-          fontSize: 12, color: "0C4A6E", fontFace: SANS,
+          x: 0.7, y: 4.95, w: 5.6, h: 1.4,
+          fontSize: 11, color: "0C4A6E", fontFace: SANS,
           lineSpacingMultiple: 1.3, valign: "top",
+        });
+
+        // Right side — empty placeholder box (mirrors browser upload area)
+        s.addShape("rect", {
+          x: 6.83, y: 2.3, w: 6.0, h: 4.2,
+          fill: { color: "F8FAFC" }, line: { color: "E2E8F0", type: "dash" },
         });
       }
 
