@@ -1536,10 +1536,13 @@ function selectTopFindings(
       return b.priority - a.priority;
     });
   for (const p of sorted) {
-    // Normalize: lowercase, strip punctuation/spaces, first 30 chars
-    // This catches "Robots.txt ფაილი" vs "robots.txt" as the same issue
-    const key = p.title.toLowerCase().replace(/[\s.,:;()/\\-]+/g, "").slice(0, 30);
-    if (seen.has(key)) continue;
+    // Normalize title: lowercase + strip punctuation/spaces + first 30 chars
+    const normTitle = p.title.toLowerCase().replace(/[\s.,:;()/\\-]+/g, "").slice(0, 30);
+    // Also key on first 40 chars of problem text to catch same issue from different sources
+    const normProblem = (p.problem[0] ?? "").toLowerCase().replace(/[\s.,:;()/\\-]+/g, "").slice(0, 40);
+    const key = normTitle + "|" + normProblem;
+    if (seen.has(normTitle) || seen.has(key)) continue;
+    seen.add(normTitle);
     seen.add(key);
     deduped.push(p);
     if (deduped.length >= limit) break;
