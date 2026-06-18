@@ -64,8 +64,8 @@ export type GeneratePptxOptions = {
   filename?: string;
 };
 
-const SERIF = "Sylfaen";
-const SANS = "Sylfaen";
+const SERIF = "Arial";
+const SANS = "Arial";
 const INK_DEFAULT = "0A2540";
 const ACCENT_DEFAULT = "DC2626";
 const MUTED = "6B7280";
