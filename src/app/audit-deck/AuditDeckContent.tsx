@@ -1524,23 +1524,31 @@ function selectTopFindings(
   category: "tech" | "onpage",
   limit: number
 ): Finding[] {
-  return pool
+  const seen = new Set<string>();
+  const deduped: PooledFinding[] = [];
+  // Sort first so the highest-priority entry wins when titles collide
+  const sorted = pool
     .filter((p) => p.category === category)
     .sort((a, b) => {
-      // status weight: bad > partial > good
       const w = (s: Status) => (s === "bad" ? 2 : s === "partial" ? 1 : 0);
       const dw = w(b.status) - w(a.status);
       if (dw !== 0) return dw;
       return b.priority - a.priority;
-    })
-    .slice(0, limit)
-    .map((p, i) => ({
-      num: `${category === "tech" ? 1 : 2}.${i + 1}`,
-      title: p.title,
-      status: p.status,
-      problem: p.problem,
-      solution: p.solution,
-    }));
+    });
+  for (const p of sorted) {
+    const key = p.title.trim().toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    deduped.push(p);
+    if (deduped.length >= limit) break;
+  }
+  return deduped.map((p, i) => ({
+    num: `${category === "tech" ? 1 : 2}.${i + 1}`,
+    title: p.title,
+    status: p.status,
+    problem: p.problem,
+    solution: p.solution,
+  }));
 }
 
 // ─── main composition ──────────────────────────────────────────────────
