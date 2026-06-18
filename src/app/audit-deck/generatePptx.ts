@@ -466,21 +466,50 @@ export async function generatePptx({
     slides.push(s);
   }
 
-  // 7. Closing ──────────────────────────────────────────────────────────
-  {
+  // 7. Offering (services) ─────────────────────────────────────────────
+  if (data.services.length > 0) {
     const s = pres.addSlide();
-    s.background = { color: INK };
-    s.addText("გმადლობთ", {
-      x: 0.5, y: 2.2, w: 12.33, h: 1.2,
-      fontSize: 64, color: "FFFFFF", fontFace: SERIF, bold: true,
+    s.background = { color: BG };
+    addHeader(s, "INFINITY");
+    s.addText("რას გთავაზობთ - SEO INFINITY", {
+      x: 0.5, y: 0.8, w: 12.33, h: 0.7,
+      fontSize: 30, color: INK, fontFace: SERIF, bold: true,
     });
-    s.addText("INFINITY SOLUTIONS", {
-      x: 0.5, y: 3.5, w: 12.33, h: 0.6,
-      fontSize: 22, color: ACCENT, fontFace: SANS, bold: true,
+
+    const cols = Math.min(data.services.length, 3);
+    const colW = 12.33 / cols;
+    const colGap = 0.15;
+
+    data.services.slice(0, 3).forEach((sv, i) => {
+      const x = 0.5 + i * (colW + colGap / cols);
+      const w = colW - colGap;
+      // Color bar at top
+      s.addShape("rect", {
+        x, y: 1.75, w, h: 0.08,
+        fill: { color: hex(sv.color) }, line: { color: hex(sv.color) },
+      });
+      // Card background
+      s.addShape("rect", {
+        x, y: 1.83, w, h: 5.3,
+        fill: { color: "F8FAFC" }, line: { color: "E2E8F0" },
+      });
+      // Column title
+      s.addText(sv.title, {
+        x: x + 0.15, y: 1.95, w: w - 0.3, h: 0.55,
+        fontSize: 13, color: INK, fontFace: SANS, bold: true, valign: "top",
+      });
+      // Items
+      const itemText = sv.items.map((it) => "• " + it + "\n").join("");
+      s.addText(itemText, {
+        x: x + 0.15, y: 2.6, w: w - 0.3, h: 4.3,
+        fontSize: 11, color: "374151", fontFace: SANS,
+        lineSpacingMultiple: 1.4, valign: "top",
+      });
     });
-    s.addText("webinfinity12@gmail.com  ·  infinity.ge", {
-      x: 0.5, y: 4.2, w: 12.33, h: 0.4,
-      fontSize: 14, color: "D1D5DB", fontFace: SANS,
+
+    s.addText(`INFINITY SOLUTIONS · SEO აუდიტი · ${data.domain}`, {
+      x: 0.5, y: 7.1, w: 12.33, h: 0.3,
+      fontSize: 9, color: MUTED, fontFace: SANS, align: "center",
     });
     slides.push(s);
   }
@@ -488,7 +517,7 @@ export async function generatePptx({
   // ─── footers ────────────────────────────────────────────────────────
   const total = slides.length;
   slides.forEach((slide, idx) => {
-    if (idx === 0 || idx === total - 1) return;
+    if (idx === 0) return; // cover — no footer
     addFooter(slide, idx + 1, total);
   });
 
