@@ -1992,25 +1992,32 @@ export default function AuditDeckContent() {
   const handlePptxExport = async () => {
     setPptxLoading(true);
     try {
-      const { generatePptx } = await import("./generatePptx");
+      const [{ default: html2canvas }, PptxGenJSModule] = await Promise.all([
+        import("html2canvas"),
+        import("pptxgenjs"),
+      ]);
+      const PptxGenJS = (PptxGenJSModule as { default: new () => unknown }).default;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const pres: any = new (PptxGenJS as any)();
+      pres.layout = "LAYOUT_WIDE"; // 13.33 × 7.5 in
+
+      const slideEls = document.querySelectorAll<HTMLElement>(".audit-slide");
+      for (const el of Array.from(slideEls)) {
+        const canvas = await html2canvas(el, {
+          scale: 2,
+          useCORS: true,
+          allowTaint: true,
+          backgroundColor: null,
+          width: el.offsetWidth,
+          height: el.offsetHeight,
+        });
+        const imgData = canvas.toDataURL("image/png");
+        const slide = pres.addSlide();
+        slide.addImage({ data: imgData, x: 0, y: 0, w: "100%", h: "100%" });
+      }
+
       const safeDomain = (displayData.domain || "audit").replace(/[^a-z0-9.-]/gi, "_");
-      // Inject per-finding screenshots into the data before export
-      const dataWithScreens = {
-        ...displayData,
-        chapters: displayData.chapters.map((ch) => ({
-          ...ch,
-          findings: ch.findings.map((f) => ({
-            ...f,
-            screens: screenshots[f.num] ?? [],
-          })),
-        })),
-      };
-      await generatePptx({
-        data: dataWithScreens,
-        primary,
-        accent,
-        filename: `${safeDomain}-seo-audit.pptx`,
-      });
+      await pres.writeFile({ fileName: `${safeDomain}-seo-audit.pptx` });
     } catch (err) {
       console.error("[audit-deck] PPTX export error", err);
       const msg = err instanceof Error ? err.message : String(err);
