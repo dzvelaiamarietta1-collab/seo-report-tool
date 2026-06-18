@@ -48,6 +48,8 @@ export type AuditDataLite = {
   domain: string;
   brandName: string;
   description: string;
+  coverTitle?: string;
+  coverSubtitle?: string;
   scores: { rankMath: string; passed: string; failed: string; warnings: string };
   keyFindings: KeyFinding[];
   chapters: Chapter[];
@@ -134,7 +136,7 @@ export async function generatePptx({
   {
     const s = pres.addSlide();
     s.background = { color: INK };
-    s.addText("SEO აუდიტი", {
+    s.addText(data.coverTitle ?? "ვებსაიტის SEO აუდიტი", {
       x: 0.5, y: 2.4, w: 12.33, h: 1.2,
       fontSize: 60, color: "FFFFFF", fontFace: SERIF, bold: true,
     });
@@ -142,8 +144,8 @@ export async function generatePptx({
       x: 0.5, y: 3.7, w: 12.33, h: 0.8,
       fontSize: 36, color: ACCENT, fontFace: SERIF,
     });
-    s.addText("მომზადებული: INFINITY SOLUTIONS", {
-      x: 0.5, y: 5.8, w: 12.33, h: 0.4,
+    s.addText(data.coverSubtitle ?? "ტექნიკური · On-page · Off-page · კონკურენტული ანალიზი", {
+      x: 0.5, y: 5.0, w: 12.33, h: 0.5,
       fontSize: 14, color: "D1D5DB", fontFace: SANS,
     });
     slides.push(s);

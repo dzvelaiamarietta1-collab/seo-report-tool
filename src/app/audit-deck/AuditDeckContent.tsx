@@ -63,6 +63,8 @@ type AuditData = {
   domain: string;
   brandName: string;
   description: string;
+  coverTitle?: string;
+  coverSubtitle?: string;
   scores: { rankMath: string; passed: string; failed: string; warnings: string };
   keyFindings: KeyFinding[];
   chapters: Chapter[];
@@ -1775,6 +1777,30 @@ export default function AuditDeckContent() {
       ),
     }));
 
+  const setCoverTitle = (v: string) =>
+    setData((d) => ({ ...d, coverTitle: v }));
+
+  const setCoverSubtitle = (v: string) =>
+    setData((d) => ({ ...d, coverSubtitle: v }));
+
+  const setServiceTitle = (colIdx: number, v: string) =>
+    setData((d) => ({
+      ...d,
+      services: d.services.map((s, i) =>
+        i === colIdx ? { ...s, title: v } : s
+      ),
+    }));
+
+  const setServiceItem = (colIdx: number, itemIdx: number, v: string) =>
+    setData((d) => ({
+      ...d,
+      services: d.services.map((s, i) =>
+        i === colIdx
+          ? { ...s, items: s.items.map((it, j) => (j === itemIdx ? v : it)) }
+          : s
+      ),
+    }));
+
   useEffect(() => {
     if (typeof document === "undefined") return;
     const root = document.querySelector(".audit-root") as HTMLElement | null;
@@ -1999,7 +2025,7 @@ export default function AuditDeckContent() {
   // then competition, keyword strategy, "ჩვენ რას ვაკეთებთ" divider +
   // goals + offering.
   const slides: React.ReactNode[] = [];
-  slides.push(<CoverSlide key="cover" data={displayData} clientLogoUrl={clientLogoUrl} />);
+  slides.push(<CoverSlide key="cover" data={displayData} clientLogoUrl={clientLogoUrl} onTitleChange={setCoverTitle} onSubtitleChange={setCoverSubtitle} />);
   slides.push(
     <AssessmentSlide
       key="assess"
@@ -2066,7 +2092,7 @@ export default function AuditDeckContent() {
       onGoalChange={setGoal}
     />
   );
-  slides.push(<OfferingSlide key="off" data={displayData} clientLogoUrl={clientLogoUrl} />);
+  slides.push(<OfferingSlide key="off" data={displayData} clientLogoUrl={clientLogoUrl} onServiceTitleChange={setServiceTitle} onServiceItemChange={setServiceItem} />);
 
   return (
     <main
@@ -2545,9 +2571,13 @@ function StatusPill({ status }: { status: Status }) {
 function CoverSlide({
   data,
   clientLogoUrl,
+  onTitleChange,
+  onSubtitleChange,
 }: {
   data: AuditData;
   clientLogoUrl: string | null;
+  onTitleChange: (v: string) => void;
+  onSubtitleChange: (v: string) => void;
 }) {
   return (
     <SlideShell dark withHeader={false} data={data} clientLogoUrl={clientLogoUrl}>
@@ -2582,7 +2612,7 @@ function CoverSlide({
             fontFamily: "var(--font-serif), serif",
           }}
         >
-          ვებსაიტის SEO აუდიტი
+          <Editable value={data.coverTitle ?? "ვებსაიტის SEO აუდიტი"} onChange={onTitleChange} />
         </h1>
         <p
           className="text-2xl mb-2"
@@ -2597,7 +2627,7 @@ function CoverSlide({
           className="text-sm mt-6 font-mono"
           style={{ color: "var(--ad-on-primary-muted)" }}
         >
-          ტექნიკური · On-page · Off-page · კონკურენტული ანალიზი
+          <Editable value={data.coverSubtitle ?? "ტექნიკური · On-page · Off-page · კონკურენტული ანალიზი"} onChange={onSubtitleChange} />
         </p>
       </div>
     </SlideShell>
@@ -3220,9 +3250,13 @@ function GoalsSlide({
 function OfferingSlide({
   data,
   clientLogoUrl,
+  onServiceTitleChange,
+  onServiceItemChange,
 }: {
   data: AuditData;
   clientLogoUrl: string | null;
+  onServiceTitleChange: (colIdx: number, v: string) => void;
+  onServiceItemChange: (colIdx: number, itemIdx: number, v: string) => void;
 }) {
   return (
     <SlideShell data={data} clientLogoUrl={clientLogoUrl} chapterCaption="INFINITY">
@@ -3249,13 +3283,15 @@ function OfferingSlide({
                 className="text-[15px] font-bold mb-4 leading-snug"
                 style={{ color: "var(--ad-ink)" }}
               >
-                {s.title}
+                <Editable value={s.title} onChange={(v) => onServiceTitleChange(i, v)} />
               </h3>
               <ul className="space-y-2 text-[12px] text-zinc-700">
                 {s.items.map((it, j) => (
                   <li key={j} className="flex gap-2 leading-snug">
                     <span className="text-zinc-400">•</span>
-                    <span>{it}</span>
+                    <span>
+                      <Editable value={it} onChange={(v) => onServiceItemChange(i, j, v)} />
+                    </span>
                   </li>
                 ))}
               </ul>
