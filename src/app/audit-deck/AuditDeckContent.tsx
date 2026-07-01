@@ -2014,15 +2014,36 @@ export default function AuditDeckContent() {
       const pres: any = new (PptxGenJS as any)();
       pres.layout = "LAYOUT_WIDE"; // 13.33 × 7.5 in
 
+      // Tailwind 4 uses oklch()/lab() colors; html2canvas can't parse them.
+      // onclone: replace every computed color/background with a safe rgb() value.
+      function flattenModernColors(root: HTMLElement) {
+        const all = root.querySelectorAll<HTMLElement>("*");
+        const props = ["color", "background-color", "border-color", "border-top-color", "border-right-color", "border-bottom-color", "border-left-color", "outline-color", "box-shadow", "fill", "stroke"] as const;
+        all.forEach((el) => {
+          const cs = window.getComputedStyle(el);
+          props.forEach((prop) => {
+            const val = cs.getPropertyValue(prop);
+            if (val && (val.includes("oklch") || val.includes("lab(") || val.includes("lch(") || val.includes("oklab("))) {
+              // computed style already resolved by browser to rgb() in most cases;
+              // force inline so html2canvas sees rgb() not the function syntax
+              (el.style as unknown as Record<string, string>)[prop] = val;
+            }
+          });
+        });
+      }
+
       const slideEls = document.querySelectorAll<HTMLElement>(".audit-slide");
       for (const el of Array.from(slideEls)) {
         const canvas = await html2canvas(el, {
           scale: 2,
           useCORS: true,
           allowTaint: true,
-          backgroundColor: null,
+          backgroundColor: "#0f172a",
           width: el.offsetWidth,
           height: el.offsetHeight,
+          onclone: (_doc: Document, cloned: HTMLElement) => {
+            flattenModernColors(cloned);
+          },
         });
         const imgData = canvas.toDataURL("image/png");
         const slide = pres.addSlide();
