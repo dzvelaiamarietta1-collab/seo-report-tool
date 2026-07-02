@@ -2522,7 +2522,7 @@ function SlideShell({
 }) {
   return (
     <section
-      className="audit-slide relative rounded-2xl shadow-[0_2px_24px_-8px_rgba(0,0,0,0.12)] overflow-hidden"
+      className="audit-slide relative rounded-2xl shadow-[0_1px_12px_-4px_rgba(0,0,0,0.10)] border border-zinc-100 overflow-hidden"
       style={
         dark
           ? {
@@ -2605,13 +2605,14 @@ function StatusPill({ status }: { status: Status }) {
       : status === "partial"
       ? "ნაწილობრივ"
       : "კარგად მუშაობს";
-  const bg =
-    status === "bad" ? "#DC2626" : status === "partial" ? "#D97706" : "#16A34A";
+  const cls =
+    status === "bad"
+      ? "bg-red-100 text-red-700 border border-red-200"
+      : status === "partial"
+      ? "bg-amber-100 text-amber-700 border border-amber-200"
+      : "bg-green-100 text-green-700 border border-green-200";
   return (
-    <span
-      className="inline-flex items-center px-4 py-1.5 rounded-full text-[12px] font-semibold text-white"
-      style={{ background: bg }}
-    >
+    <span className={`inline-flex items-center px-4 py-1.5 rounded-full text-[12px] font-semibold ${cls}`}>
       {label}
     </span>
   );
@@ -2774,16 +2775,36 @@ function AssessmentSlide({
 function ChapterDivider({ chapter }: { chapter: Chapter }) {
   return (
     <section
-      className="audit-slide relative rounded-2xl shadow-[0_2px_24px_-8px_rgba(0,0,0,0.12)] overflow-hidden"
+      className="audit-slide relative rounded-2xl shadow-[0_1px_12px_-4px_rgba(0,0,0,0.10)] border border-zinc-100 overflow-hidden"
       style={{
         backgroundColor: "var(--ad-primary)",
         color: "var(--ad-on-primary)",
       }}
     >
       <div className="relative" style={{ aspectRatio: "16 / 9", minHeight: "520px" }}>
+        {/* Ghost chapter numeral */}
+        <div
+          className="absolute bottom-0 right-0 select-none pointer-events-none leading-none"
+          aria-hidden="true"
+          style={{
+            fontSize: "clamp(14rem, 28vw, 20rem)",
+            fontFamily: "var(--font-serif), serif",
+            fontWeight: 700,
+            color: "var(--ad-on-primary)",
+            opacity: 0.06,
+            letterSpacing: "-0.04em",
+            lineHeight: 0.85,
+          }}
+        >
+          {chapter.num}
+        </div>
         <div className="absolute inset-0 p-10 lg:p-14 flex flex-col justify-center">
+          <div
+            className="w-12 mb-6"
+            style={{ height: "3px", background: "var(--ad-accent)" }}
+          />
           <p
-            className="text-[11px] font-mono uppercase tracking-[0.4em] mb-6"
+            className="text-[11px] font-mono uppercase tracking-[0.4em] mb-4"
             style={{ color: "var(--ad-accent)" }}
           >
             ნაწილი {chapter.num}
@@ -2829,11 +2850,12 @@ function FindingSlide({
 
   return (
     <SlideShell data={data} clientLogoUrl={clientLogoUrl} chapterCaption={chapter.caption}>
-      <div className="flex items-baseline gap-5 mb-5">
+      <div className="flex items-start gap-5 mb-5">
         <span
-          className="text-[28px] font-bold leading-none"
+          className="text-[28px] font-bold leading-none mt-1"
           style={{
-            color: "#D1D5DB",
+            color: "var(--ad-accent)",
+            opacity: 0.4,
             fontFamily: "var(--font-serif), serif",
           }}
         >
@@ -2929,8 +2951,11 @@ function FindingSlide({
 
       {/* Bottom: solution box */}
       <div
-        className="mt-6 rounded-xl p-5"
-        style={{ background: "rgba(74,144,226,0.08)" }}
+        className="mt-6 rounded-xl p-5 border-l-4"
+        style={{
+          background: "color-mix(in srgb, var(--ad-accent) 8%, white)",
+          borderLeftColor: "var(--ad-accent)",
+        }}
       >
         <p
           className="text-[10px] font-mono uppercase tracking-[0.22em] mb-2"
