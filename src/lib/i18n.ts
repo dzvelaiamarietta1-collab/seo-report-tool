@@ -101,15 +101,15 @@ export const dict = {
       ],
     },
     metrics: {
-      eyebrow: "METRICS",
-      h2Line1: "რეალური",
-      h2Line2: "audit წუთებში",
-      sub: "ცოცხალი მონაცემები ჩვენი audit pipeline-დან. რეალური მონაცემები რეალური საიტებიდან.",
+      eyebrow: "ᲨᲔᲡᲐᲫᲚᲔᲑᲚᲝᲑᲔᲑᲘ",
+      h2Line1: "რა ამოწმებს",
+      h2Line2: "ეს ინსტრუმენტი",
+      sub: "ავტომატური SEO აუდიტი - ტექნიკური შემოწმებიდან კონტენტის ანალიზამდე, წუთებში.",
       cards: [
-        { label: "ANALYZED SITES", value: "2,847", delta: "+12 ბოლო საათში" },
-        { label: "AVG SEO SCORE", value: "71", delta: "↑ 3 vs Q3" },
-        { label: "ISSUES FOUND", value: "14,209", delta: "ყველა აუდიტში" },
-        { label: "UPTIME", value: "99.97%", delta: "ბოლო 30 დღე" },
+        { label: "ᲢᲔᲥᲜᲘᲙᲣᲠᲘ CHECKS", value: "50+", delta: "HTTPS, robots, sitemap..." },
+        { label: "ON-PAGE ანალიზი", value: "სრული", delta: "Title, H1, Meta, ALT..." },
+        { label: "PERFORMANCE", value: "Core Web Vitals", delta: "Google PageSpeed API" },
+        { label: "ᲐᲜᲒᲐᲠᲘᲨᲘ", value: "PDF + PPTX", delta: "კლიენტისთვის მზა" },
       ],
     },
     platforms: {
@@ -131,12 +131,12 @@ export const dict = {
         },
         {
           kicker: "02",
-          title: "500+ გაანალიზებული საიტი",
+          title: "50+ შემოწმების წერტილი",
           body: "WordPress, Shopify, Webflow, Wix, Magento და custom-coded პლატფორმები.",
         },
         {
           kicker: "03",
-          title: "96% კმაყოფილების მაჩვენებელი",
+          title: "კლიენტზე მორგებული ანგარიში",
           body: "კლიენტების უმეტესობა გრძელვადიან თანამშრომლობას ირჩევს - დიაგნოზიდან SEO სტრატეგიამდე.",
         },
       ],
@@ -168,33 +168,8 @@ export const dict = {
       eyebrow: "TESTIMONIALS",
       h2Line1: "რას ამბობენ",
       h2Line2: "ჩვენი კლიენტები",
-      sub: "ქართული ბიზნესის რეალური გამოცდილება - როგორ შეცვალა SEO აუდიტმა მათი ციფრული მდგომარეობა.",
-      items: [
-        {
-          quote:
-            "INFINITY-ის SEO აუდიტმა გვაჩვენა, რომ Schema Markup სრულად აკლდა ჩვენს 200+ პროდუქტს. გასწორების შემდეგ ორგანული ტრაფიკი 3 თვეში 40%-ით გაიზარდა.",
-          name: "გიორგი მახარაძე",
-          role: "E-commerce Manager, TechHub Tbilisi",
-        },
-        {
-          quote:
-            "ანგარიში ისე იყო დაწერილი, რომ ჩვენმა დეველოპერმა ერთ დღეში გაასწორა ის, რაც წლები გვაწუხებდა. პრიორიტეტი პირველივე წუთიდან ნათელი იყო.",
-          name: "ნათია ლუხუმაშვილი",
-          role: "Founder, Lusoa Studio",
-        },
-        {
-          quote:
-            "შედარებამ კონკურენტებთან გვაჩვენა, რომ ჩვენი Core Web Vitals 20%-ით სუსტი იყო. ეს გახდა ჩვენი Q4 პრიორიტეტი - და მუშაობს.",
-          name: "ლევან აფხაზიძე",
-          role: "CEO, Aphi Group",
-        },
-        {
-          quote:
-            "სრული რეპორტი ქართულად, რეალური მაგალითებით. ჩვენი მარკეტინგ-გუნდი მაშინვე მიხვდა, რა გვაკლდა და რა ცვლილებამ მოგვცა შედეგი.",
-          name: "დავით ხატია",
-          role: "CMO, LocalBiz.ge",
-        },
-      ],
+      sub: "",
+      items: [],
     },
     pricing: {
       eyebrow: "PRICING",
@@ -455,15 +430,15 @@ export const dict = {
       ],
     },
     metrics: {
-      eyebrow: "METRICS",
-      h2Line1: "Real",
-      h2Line2: "audit in minutes",
-      sub: "Live numbers from our audit pipeline. Real data from real sites.",
+      eyebrow: "CAPABILITIES",
+      h2Line1: "What this",
+      h2Line2: "tool checks",
+      sub: "Automated SEO audit - from technical checks to content analysis, in minutes.",
       cards: [
-        { label: "ANALYZED SITES", value: "2,847", delta: "+12 in last hour" },
-        { label: "AVG SEO SCORE", value: "71", delta: "↑ 3 vs Q3" },
-        { label: "ISSUES FOUND", value: "14,209", delta: "across all audits" },
-        { label: "UPTIME", value: "99.97%", delta: "last 30 days" },
+        { label: "TECHNICAL CHECKS", value: "50+", delta: "HTTPS, robots, sitemap..." },
+        { label: "ON-PAGE ANALYSIS", value: "Full", delta: "Title, H1, Meta, ALT..." },
+        { label: "PERFORMANCE", value: "Core Web Vitals", delta: "Google PageSpeed API" },
+        { label: "REPORT", value: "PDF + PPTX", delta: "Client-ready" },
       ],
     },
     platforms: {
@@ -485,12 +460,12 @@ export const dict = {
         },
         {
           kicker: "02",
-          title: "500+ sites analyzed",
+          title: "50+ checkpoints",
           body: "WordPress, Shopify, Webflow, Wix, Magento, and custom-coded platforms.",
         },
         {
           kicker: "03",
-          title: "96% client satisfaction",
+          title: "Client-ready reports",
           body: "Most clients move to long-term partnerships - from diagnosis to SEO strategy.",
         },
       ],
@@ -522,33 +497,8 @@ export const dict = {
       eyebrow: "TESTIMONIALS",
       h2Line1: "What our",
       h2Line2: "clients say",
-      sub: "Real experiences from Georgian businesses - how an SEO audit changed their digital position.",
-      items: [
-        {
-          quote:
-            "INFINITY's SEO audit showed us that Schema Markup was completely missing from our 200+ products. After fixing it, organic traffic grew 40% in 3 months.",
-          name: "Giorgi Makharadze",
-          role: "E-commerce Manager, TechHub Tbilisi",
-        },
-        {
-          quote:
-            "The report was written so well that our developer fixed in one day issues that had bothered us for years. The priority was clear from the first minute.",
-          name: "Natia Lukhumashvili",
-          role: "Founder, Lusoa Studio",
-        },
-        {
-          quote:
-            "The competitor comparison showed our Core Web Vitals were 20% weaker. That became our Q4 priority - and it's working.",
-          name: "Levan Apkhazidze",
-          role: "CEO, Aphi Group",
-        },
-        {
-          quote:
-            "A full report in Georgian with real examples. Our marketing team immediately understood what was missing and which changes would drive results.",
-          name: "Davit Khatia",
-          role: "CMO, LocalBiz.ge",
-        },
-      ],
+      sub: "",
+      items: [],
     },
     pricing: {
       eyebrow: "PRICING",
