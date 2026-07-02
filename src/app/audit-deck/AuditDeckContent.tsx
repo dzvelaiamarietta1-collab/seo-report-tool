@@ -2067,6 +2067,11 @@ export default function AuditDeckContent() {
   for (let ci = 0; ci < displayData.chapters.length; ci++) {
     const chapter = displayData.chapters[ci];
     slides.push(<ChapterDivider key={`div-${chapter.num}`} chapter={chapter} />);
+    if (chapter.findings.length === 0) {
+      slides.push(
+        <NoFindingsSlide key={`nof-${chapter.num}`} chapter={chapter} data={displayData} clientLogoUrl={clientLogoUrl} />
+      );
+    }
     for (let fi = 0; fi < chapter.findings.length; fi++) {
       const finding = chapter.findings[fi];
       slides.push(
@@ -2822,6 +2827,40 @@ function ChapterDivider({ chapter }: { chapter: Chapter }) {
         </div>
       </div>
     </section>
+  );
+}
+
+function NoFindingsSlide({
+  chapter,
+  data,
+  clientLogoUrl,
+}: {
+  chapter: Chapter;
+  data: AuditData;
+  clientLogoUrl: string | null;
+}) {
+  return (
+    <SlideShell data={data} clientLogoUrl={clientLogoUrl} chapterCaption={chapter.caption}>
+      <div className="flex flex-col items-center justify-center flex-1 text-center gap-4">
+        <div
+          className="w-14 h-14 rounded-full flex items-center justify-center mb-2"
+          style={{ background: "color-mix(in srgb, var(--ad-accent) 10%, white)" }}
+        >
+          <svg className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24" style={{ color: "var(--ad-accent)" }}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+          </svg>
+        </div>
+        <h3
+          className="font-bold"
+          style={{ fontSize: "clamp(1.4rem, 2.5vw, 1.8rem)", color: "var(--ad-ink)", fontFamily: "var(--font-serif), serif" }}
+        >
+          ამ კატეგორიაში პრობლემა არ გამოვლინდა
+        </h3>
+        <p className="text-[14px] text-zinc-500 max-w-md leading-relaxed">
+          {chapter.caption} განყოფილება შემოწმდა - კრიტიკული ან გასაუმჯობესებელი საკითხი არ აღმოჩნდა.
+        </p>
+      </div>
+    </SlideShell>
   );
 }
 
