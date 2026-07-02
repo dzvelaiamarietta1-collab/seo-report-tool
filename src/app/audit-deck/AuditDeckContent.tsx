@@ -2015,6 +2015,8 @@ export default function AuditDeckContent() {
   };
 
   const [pptxLoading, setPptxLoading] = useState(false);
+  const [presentMode, setPresentMode] = useState(false);
+  const [presentIdx, setPresentIdx] = useState(0);
   const handlePptxExport = async () => {
     setPptxLoading(true);
     try {
@@ -2128,6 +2130,77 @@ export default function AuditDeckContent() {
     />
   );
   slides.push(<OfferingSlide key="off" data={displayData} clientLogoUrl={clientLogoUrl} onServiceTitleChange={setServiceTitle} onServiceItemChange={setServiceItem} />);
+
+  // Keyboard navigation for presentation mode
+  useEffect(() => {
+    if (!presentMode) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "ArrowRight" || e.key === "ArrowDown" || e.key === " ") {
+        e.preventDefault();
+        setPresentIdx((i) => Math.min(i + 1, slides.length - 1));
+      } else if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+        e.preventDefault();
+        setPresentIdx((i) => Math.max(i - 1, 0));
+      } else if (e.key === "Escape") {
+        setPresentMode(false);
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [presentMode, slides.length]);
+
+  if (presentMode) {
+    return (
+      <div
+        className="fixed inset-0 z-50 flex flex-col bg-black"
+        style={{ ["--ad-primary" as string]: primary, ["--ad-accent" as string]: accent }}
+      >
+        {/* Slide */}
+        <div className="flex-1 flex items-center justify-center p-4 overflow-hidden">
+          <div
+            style={{
+              width: "min(100vw, calc(100vh * 16 / 9))",
+              maxHeight: "100%",
+              aspectRatio: "16/9",
+            }}
+          >
+            {slides[presentIdx]}
+          </div>
+        </div>
+
+        {/* Controls */}
+        <div className="flex items-center justify-between px-6 py-3 bg-black/80 text-white/60 text-sm">
+          <button
+            onClick={() => setPresentMode(false)}
+            className="flex items-center gap-2 hover:text-white transition"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+            </svg>
+            გასვლა (Esc)
+          </button>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => setPresentIdx((i) => Math.max(i - 1, 0))}
+              disabled={presentIdx === 0}
+              className="px-3 py-1 rounded hover:text-white transition disabled:opacity-30"
+            >
+              ←
+            </button>
+            <span className="tabular-nums">{presentIdx + 1} / {slides.length}</span>
+            <button
+              onClick={() => setPresentIdx((i) => Math.min(i + 1, slides.length - 1))}
+              disabled={presentIdx === slides.length - 1}
+              className="px-3 py-1 rounded hover:text-white transition disabled:opacity-30"
+            >
+              →
+            </button>
+          </div>
+          <span className="text-xs opacity-50">← → სლაიდები · Esc გასვლა</span>
+        </div>
+      </div>
+    );
+  }
 
   if (missingSnapshot && rawUrl) {
     return (
@@ -2355,6 +2428,17 @@ export default function AuditDeckContent() {
         >
           <Download className="w-4 h-4" />
           {pptxLoading ? "იქმნება..." : "PPTX"}
+        </button>
+        <button
+          type="button"
+          onClick={() => { setPresentIdx(0); setPresentMode(true); }}
+          className="h-10 px-5 rounded-lg bg-slate-800 text-white text-sm font-medium inline-flex items-center gap-2 hover:bg-slate-900 transition"
+          title="Presentation mode (fullscreen)"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
+          </svg>
+          პრეზენტაცია
         </button>
       </div>
 
