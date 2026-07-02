@@ -1619,6 +1619,8 @@ export default function AuditDeckContent() {
   // render time from the toolbar inputs so the bind stays live.
   const [data, setData] = useState<AuditData>(DEFAULT_DATA);
   const [usingRealData, setUsingRealData] = useState(false);
+  const [findingOverrides, setFindingOverrides] = useState<Record<string, Partial<Finding>>>({});
+  const [missingSnapshot, setMissingSnapshot] = useState(false);
 
   // Per-source finding pools. Each handler updates ONE pool; the deck's
   // chapters are derived from the merged pool every render.
@@ -1661,12 +1663,14 @@ export default function AuditDeckContent() {
       const raw =
         localStorage.getItem(storageKey(rawUrl)) ??
         sessionStorage.getItem(storageKey(rawUrl));
-      if (!raw) return;
+      if (!raw) {
+        setMissingSnapshot(true);
+        return;
+      }
       const stored = JSON.parse(raw) as StoredAnalysis;
       const { data: nextData, analyzerFindings } = mapAnalysisToAuditData(stored);
       setData(nextData);
       setAnalyzerPool(analyzerFindings);
-      // Auto-derive Rich Results too from the same snapshot.
       const rich = extractRichResultsFromAnalysis(stored.analysis);
       setRichPool(rich.findings);
       setRichInfo({
@@ -1675,10 +1679,19 @@ export default function AuditDeckContent() {
         issues: rich.findings.length,
       });
       setUsingRealData(true);
+      setMissingSnapshot(false);
     } catch {
       // Snapshot present but malformed; silently fall back to template.
     }
   }, [rawUrl]);
+
+  // Warn before leaving when real data is loaded to prevent accidental loss
+  useEffect(() => {
+    if (!usingRealData) return;
+    const handler = (e: BeforeUnloadEvent) => { e.preventDefault(); };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [usingRealData]);
 
   // Merge all pools and pick top 10 + 10 per chapter every render. This
   // keeps chapter content perfectly in sync with whatever sources the
@@ -1701,7 +1714,7 @@ export default function AuditDeckContent() {
   // pool when any source has loaded; otherwise the template stays.
   const displayData = useMemo(() => {
     const usePool = mergedPool.length > 0;
-    const chapters = usePool
+    const rawChapters = usePool
       ? [
           {
             ...data.chapters[0],
@@ -1714,13 +1727,19 @@ export default function AuditDeckContent() {
           ...data.chapters.slice(2),
         ]
       : data.chapters;
+    const chapters = rawChapters.map((ch) => ({
+      ...ch,
+      findings: ch.findings.map((f) =>
+        findingOverrides[f.num] ? { ...f, ...findingOverrides[f.num] } : f
+      ),
+    }));
     return {
       ...data,
       domain: hostname,
       brandName: brand,
       chapters,
     };
-  }, [data, hostname, brand, mergedPool.length, derivedTech, derivedOnPage]);
+  }, [data, hostname, brand, mergedPool.length, derivedTech, derivedOnPage, findingOverrides]);
 
   // ─── editable-field setters (immutable updates over `data`) ─────────
   const setDescription = (v: string) =>
@@ -1730,20 +1749,13 @@ export default function AuditDeckContent() {
     chapterIdx: number,
     findingIdx: number,
     updates: Partial<Finding>
-  ) =>
-    setData((d) => ({
-      ...d,
-      chapters: d.chapters.map((c, ci) =>
-        ci === chapterIdx
-          ? {
-              ...c,
-              findings: c.findings.map((f, fi) =>
-                fi === findingIdx ? { ...f, ...updates } : f
-              ),
-            }
-          : c
-      ),
+  ) => {
+    const num = `${chapterIdx === 0 ? 1 : 2}.${findingIdx + 1}`;
+    setFindingOverrides((prev) => ({
+      ...prev,
+      [num]: { ...(prev[num] ?? {}), ...updates },
     }));
+  };
 
   const setCompetitionRow = (
     rowIdx: number,
@@ -2110,6 +2122,27 @@ export default function AuditDeckContent() {
     />
   );
   slides.push(<OfferingSlide key="off" data={displayData} clientLogoUrl={clientLogoUrl} onServiceTitleChange={setServiceTitle} onServiceItemChange={setServiceItem} />);
+
+  if (missingSnapshot && rawUrl) {
+    return (
+      <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-slate-900 text-white text-center p-8">
+        <svg className="w-16 h-16 mb-6 text-slate-400" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
+        </svg>
+        <h2 className="text-2xl font-bold mb-3">ანალიზი ვერ მოიძებნა</h2>
+        <p className="text-slate-400 mb-8 max-w-md leading-relaxed">
+          ეს ბმული მუშაობს მხოლოდ იმ მოწყობილობაზე, სადაც ანალიზი ჩატარდა.
+          ახლიდან გაუშვი ანალიზი ამ URL-ზე.
+        </p>
+        <a
+          href={`/?url=${encodeURIComponent(rawUrl)}`}
+          className="px-6 py-3 bg-blue-600 rounded-lg hover:bg-blue-700 transition font-medium"
+        >
+          ანალიზის გაშვება: {rawUrl}
+        </a>
+      </div>
+    );
+  }
 
   return (
     <main
