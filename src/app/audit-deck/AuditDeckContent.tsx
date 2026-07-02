@@ -1689,7 +1689,7 @@ export default function AuditDeckContent() {
   // Warn before leaving when real data is loaded to prevent accidental loss
   useEffect(() => {
     if (!usingRealData) return;
-    const handler = (e: BeforeUnloadEvent) => { e.preventDefault(); };
+    const handler = (e: BeforeUnloadEvent) => { e.preventDefault(); e.returnValue = ""; };
     window.addEventListener("beforeunload", handler);
     return () => window.removeEventListener("beforeunload", handler);
   }, [usingRealData]);
@@ -1845,6 +1845,59 @@ export default function AuditDeckContent() {
     );
     root.style.setProperty("--ad-ink", primaryLight ? "#0F172A" : primary);
   }, [primary, accent]);
+
+  const deckLoadInputRef = useRef<HTMLInputElement | null>(null);
+
+  const handleSaveDeck = () => {
+    const payload = JSON.stringify({
+      v: 1,
+      urlInput,
+      brandOverride,
+      primary,
+      accent,
+      data,
+      findingOverrides,
+      analyzerPool,
+      sfPool,
+      rmPool,
+      psiPool,
+      richPool,
+      screenshots,
+    });
+    const blob = new Blob([payload], { type: "application/json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    const safeDomain = (urlInput || "audit").replace(/[^a-z0-9.-]/gi, "_");
+    a.download = `${safeDomain}-deck.json`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  };
+
+  const handleLoadDeck = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const payload = JSON.parse(text);
+      if (payload.v !== 1) { alert("ფაილის ფორმატი არ არის სწორი."); return; }
+      if (payload.urlInput !== undefined) setUrlInput(payload.urlInput);
+      if (payload.brandOverride !== undefined) setBrandOverride(payload.brandOverride);
+      if (payload.primary !== undefined) setPrimary(payload.primary);
+      if (payload.accent !== undefined) setAccent(payload.accent);
+      if (payload.data !== undefined) setData(payload.data);
+      if (payload.findingOverrides !== undefined) setFindingOverrides(payload.findingOverrides);
+      if (payload.analyzerPool !== undefined) setAnalyzerPool(payload.analyzerPool);
+      if (payload.sfPool !== undefined) setSfPool(payload.sfPool);
+      if (payload.rmPool !== undefined) setRmPool(payload.rmPool);
+      if (payload.psiPool !== undefined) setPsiPool(payload.psiPool);
+      if (payload.richPool !== undefined) setRichPool(payload.richPool);
+      if (payload.screenshots !== undefined) setScreenshots(payload.screenshots);
+      setUsingRealData(true);
+    } catch {
+      alert("ფაილის წაკითხვა ვერ მოხერხდა.");
+    }
+    e.target.value = "";
+  };
 
   const handleScreamingFrogUpload = async (
     e: React.ChangeEvent<HTMLInputElement>
@@ -2031,9 +2084,12 @@ export default function AuditDeckContent() {
       const domToImage = (await import("dom-to-image-more")).default;
       const slideEls = document.querySelectorAll<HTMLElement>(".audit-slide");
       for (const el of Array.from(slideEls)) {
+        const inner = el.querySelector<HTMLElement>('[style*="aspect-ratio"]') ?? el;
+        const w = inner.offsetWidth || 1280;
+        const h = inner.offsetHeight || 720;
         const dataUrl: string = await domToImage.toPng(el, {
-          width: el.offsetWidth,
-          height: el.offsetHeight,
+          width: w,
+          height: h,
           style: { transform: "none" },
         });
         const imgData = dataUrl;
@@ -2440,6 +2496,29 @@ export default function AuditDeckContent() {
           </svg>
           პრეზენტაცია
         </button>
+        <button
+          type="button"
+          onClick={handleSaveDeck}
+          className="h-10 px-5 rounded-lg bg-emerald-700 text-white text-sm font-medium inline-flex items-center gap-2 hover:bg-emerald-800 transition"
+          title="ანგარიშის შენახვა JSON ფაილად"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+          </svg>
+          შენახვა
+        </button>
+        <button
+          type="button"
+          onClick={() => deckLoadInputRef.current?.click()}
+          className="h-10 px-5 rounded-lg bg-zinc-600 text-white text-sm font-medium inline-flex items-center gap-2 hover:bg-zinc-700 transition"
+          title="შენახული JSON ფაილის გახსნა"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 7.5m0 0L7.5 12M12 7.5V21" />
+          </svg>
+          გახსნა
+        </button>
+        <input ref={deckLoadInputRef} type="file" accept=".json" className="hidden" onChange={handleLoadDeck} />
       </div>
 
       <div

@@ -319,7 +319,7 @@ export default function Home() {
       </section>
 
       {/* TESTIMONIALS */}
-      <section className="bg-white border-b border-[#0a0a0a]/10">
+      {t.testimonials.items.length > 0 && <section className="bg-white border-b border-[#0a0a0a]/10">
         <div className="max-w-6xl mx-auto px-6 py-24 sm:py-32">
           <div className="mb-16 max-w-2xl">
             <p className="text-[11px] font-mono uppercase tracking-[0.3em] text-[#0a0a0a]/55 mb-4">
@@ -352,7 +352,7 @@ export default function Home() {
             ))}
           </div>
         </div>
-      </section>
+      </section>}
 
       {/* PRICING */}
       <section className="bg-white border-b border-[#0a0a0a]/10">

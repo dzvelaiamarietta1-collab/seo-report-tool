@@ -169,7 +169,7 @@ export const dict = {
       h2Line1: "რას ამბობენ",
       h2Line2: "ჩვენი კლიენტები",
       sub: "",
-      items: [],
+      items: [] as Array<{ quote: string; name: string; role: string }>,
     },
     pricing: {
       eyebrow: "PRICING",
@@ -498,7 +498,7 @@ export const dict = {
       h2Line1: "What our",
       h2Line2: "clients say",
       sub: "",
-      items: [],
+      items: [] as Array<{ quote: string; name: string; role: string }>,
     },
     pricing: {
       eyebrow: "PRICING",
