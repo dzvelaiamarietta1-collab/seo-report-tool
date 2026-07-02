@@ -2014,26 +2014,49 @@ export default function AuditDeckContent() {
       const pres: any = new (PptxGenJS as any)();
       pres.layout = "LAYOUT_WIDE"; // 13.33 × 7.5 in
 
-      // Tailwind 4 uses oklch()/lab() colors; html2canvas can't parse them.
-      // onclone: replace every computed color/background with a safe rgb() value.
-      function flattenModernColors(root: HTMLElement) {
-        const all = root.querySelectorAll<HTMLElement>("*");
-        const props = ["color", "background-color", "border-color", "border-top-color", "border-right-color", "border-bottom-color", "border-left-color", "outline-color", "box-shadow", "fill", "stroke"] as const;
-        all.forEach((el) => {
-          const cs = window.getComputedStyle(el);
-          props.forEach((prop) => {
-            const val = cs.getPropertyValue(prop);
-            if (val && (val.includes("oklch") || val.includes("lab(") || val.includes("lch(") || val.includes("oklab("))) {
-              // computed style already resolved by browser to rgb() in most cases;
-              // force inline so html2canvas sees rgb() not the function syntax
-              (el.style as unknown as Record<string, string>)[prop] = val;
+      // Tailwind 4 uses oklch()/lab() — html2canvas cannot parse them.
+      // Before capturing each slide, inline all computed color values so
+      // html2canvas sees plain rgb() strings, then restore afterward.
+      const COLOR_PROPS = [
+        "color", "background-color", "border-top-color", "border-right-color",
+        "border-bottom-color", "border-left-color", "outline-color", "fill", "stroke",
+      ] as const;
+
+      function inlineComputedColors(el: HTMLElement): Map<HTMLElement, Record<string, string>> {
+        const saved = new Map<HTMLElement, Record<string, string>>();
+        const all = [el, ...Array.from(el.querySelectorAll<HTMLElement>("*"))];
+        for (const node of all) {
+          const cs = window.getComputedStyle(node);
+          const backup: Record<string, string> = {};
+          let changed = false;
+          for (const prop of COLOR_PROPS) {
+            const computed = cs.getPropertyValue(prop);
+            if (computed) {
+              backup[prop] = node.style.getPropertyValue(prop);
+              node.style.setProperty(prop, computed, "important");
+              changed = true;
             }
-          });
-        });
+          }
+          if (changed) saved.set(node, backup);
+        }
+        return saved;
+      }
+
+      function restoreColors(saved: Map<HTMLElement, Record<string, string>>) {
+        for (const [node, backup] of saved) {
+          for (const prop of COLOR_PROPS) {
+            if (prop in backup) {
+              node.style.setProperty(prop, backup[prop]);
+            } else {
+              node.style.removeProperty(prop);
+            }
+          }
+        }
       }
 
       const slideEls = document.querySelectorAll<HTMLElement>(".audit-slide");
       for (const el of Array.from(slideEls)) {
+        const saved = inlineComputedColors(el);
         const canvas = await html2canvas(el, {
           scale: 2,
           useCORS: true,
@@ -2041,10 +2064,8 @@ export default function AuditDeckContent() {
           backgroundColor: "#0f172a",
           width: el.offsetWidth,
           height: el.offsetHeight,
-          onclone: (_doc: Document, cloned: HTMLElement) => {
-            flattenModernColors(cloned);
-          },
         });
+        restoreColors(saved);
         const imgData = canvas.toDataURL("image/png");
         const slide = pres.addSlide();
         slide.addImage({ data: imgData, x: 0, y: 0, w: "100%", h: "100%" });
