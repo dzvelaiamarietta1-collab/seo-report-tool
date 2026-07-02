@@ -2005,8 +2005,7 @@ export default function AuditDeckContent() {
   const handlePptxExport = async () => {
     setPptxLoading(true);
     try {
-      const [{ default: html2canvas }, PptxGenJSModule] = await Promise.all([
-        import("html2canvas"),
+      const [PptxGenJSModule] = await Promise.all([
         import("pptxgenjs"),
       ]);
       const PptxGenJS = (PptxGenJSModule as { default: new () => unknown }).default;
@@ -2014,59 +2013,15 @@ export default function AuditDeckContent() {
       const pres: any = new (PptxGenJS as any)();
       pres.layout = "LAYOUT_WIDE"; // 13.33 × 7.5 in
 
-      // Tailwind 4 uses oklch()/lab() — html2canvas cannot parse them.
-      // Before capturing each slide, inline all computed color values so
-      // html2canvas sees plain rgb() strings, then restore afterward.
-      const COLOR_PROPS = [
-        "color", "background-color", "border-top-color", "border-right-color",
-        "border-bottom-color", "border-left-color", "outline-color", "fill", "stroke",
-      ] as const;
-
-      function inlineComputedColors(el: HTMLElement): Map<HTMLElement, Record<string, string>> {
-        const saved = new Map<HTMLElement, Record<string, string>>();
-        const all = [el, ...Array.from(el.querySelectorAll<HTMLElement>("*"))];
-        for (const node of all) {
-          const cs = window.getComputedStyle(node);
-          const backup: Record<string, string> = {};
-          let changed = false;
-          for (const prop of COLOR_PROPS) {
-            const computed = cs.getPropertyValue(prop);
-            if (computed) {
-              backup[prop] = node.style.getPropertyValue(prop);
-              node.style.setProperty(prop, computed, "important");
-              changed = true;
-            }
-          }
-          if (changed) saved.set(node, backup);
-        }
-        return saved;
-      }
-
-      function restoreColors(saved: Map<HTMLElement, Record<string, string>>) {
-        for (const [node, backup] of saved) {
-          for (const prop of COLOR_PROPS) {
-            if (prop in backup) {
-              node.style.setProperty(prop, backup[prop]);
-            } else {
-              node.style.removeProperty(prop);
-            }
-          }
-        }
-      }
-
+      const domToImage = (await import("dom-to-image-more")).default;
       const slideEls = document.querySelectorAll<HTMLElement>(".audit-slide");
       for (const el of Array.from(slideEls)) {
-        const saved = inlineComputedColors(el);
-        const canvas = await html2canvas(el, {
-          scale: 2,
-          useCORS: true,
-          allowTaint: true,
-          backgroundColor: "#0f172a",
+        const dataUrl: string = await domToImage.toPng(el, {
           width: el.offsetWidth,
           height: el.offsetHeight,
+          style: { transform: "none" },
         });
-        restoreColors(saved);
-        const imgData = canvas.toDataURL("image/png");
+        const imgData = dataUrl;
         const slide = pres.addSlide();
         slide.addImage({ data: imgData, x: 0, y: 0, w: "100%", h: "100%" });
       }
