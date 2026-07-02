@@ -29,6 +29,7 @@ type Finding = {
   title: string;
   status: Status;
   problem: string[];
+  explanation?: string; // plain-language explanation for non-technical clients
   solution: string;
 };
 
@@ -2883,6 +2884,23 @@ function FindingSlide({
               </li>
             ))}
           </ul>
+
+          {/* Plain-language explanation for non-technical clients */}
+          <div className="mt-4">
+            <p
+              className="text-[10px] font-mono uppercase tracking-[0.22em] mb-2"
+              style={{ color: "var(--ad-ink)" }}
+            >
+              რას ნიშნავს
+            </p>
+            <p className="text-[12px] text-zinc-600 leading-relaxed italic">
+              <Editable
+                multiline
+                value={finding.explanation ?? "დააჭირე და ჩაწერე კლიენტისთვის გასაგები ახსნა..."}
+                onChange={(v) => onFindingChange({ explanation: v })}
+              />
+            </p>
+          </div>
         </div>
 
         {/* Right: screenshot evidence slots */}
